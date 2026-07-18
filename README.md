@@ -72,9 +72,11 @@ A Cloudexus az *1 telepítés = 1 cég* modellt követi: minden vállalat a saj�
 | Backend | PHP 8.4, egyedi könnyűsúlyú MVC (framework nélkül) |
 | Adatbázis | MySQL / MariaDB, PDO prepared statement-ekkel |
 | Sablonozás | [Twig 3](https://twig.symfony.com/) |
-| Frontend | Bootstrap 5.3 + Bootstrap Icons + egyedi CSS design-rendszer |
-| Grafikonok | Chart.js 4 |
-| Levelezés | PHPMailer (tranzakciós e-mailekhez) |
+| Frontend | [Bootstrap 5.3](https://getbootstrap.com/) + [Bootstrap Icons](https://icons.getbootstrap.com/) + [Select2](https://select2.org/) + egyedi CSS design-rendszer |
+| Grafikonok | [Chart.js 4](https://www.chartjs.org/) |
+| Levelezés | [PHPMailer](https://github.com/PHPMailer/PHPMailer) (tranzakciós e-mailekhez) |
+
+> Minden front-end függőség lokálisan, a `web/assets/vendor/` mappából töltődik be — a rendszer internet nélkül is működik.
 
 A publikus dokumentumgyökér kizárólag a `web/` mappa — minden alkalmazáskód, konfiguráció és futásidejű adat azon kívül él.
 
