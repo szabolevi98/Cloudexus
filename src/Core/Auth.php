@@ -18,7 +18,11 @@ class Auth
             return false;
         }
 
+        // Session fixation ellen: új session id a sikeres belépéskor.
+        Session::regenerate();
+
         Session::set('user_id', (int) $user['id']);
+        Session::set('logged_in_at', time());
         Session::set('user_role', $user['role']);
         Session::set('user_name', $user['full_name']);
 

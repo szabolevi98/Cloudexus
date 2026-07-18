@@ -7,3 +7,5 @@
 .idea/
 .DS_Store
 Thumbs.db
+/var/sessions/*
+!/var/sessions/.gitkeep

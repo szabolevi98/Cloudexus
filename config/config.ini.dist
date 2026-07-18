@@ -15,7 +15,8 @@ timezone = "Europe/Budapest"
 
 [session]
 name = cloudexus_session
-lifetime = 7200
+; élettartam másodpercben (alap: 30 nap)
+lifetime = 2592000
 
 [company]
 name = "Mintacég Kft."
