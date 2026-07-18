@@ -1,0 +1,22 @@
+.auth-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background: var(--color-bg);
+}
+
+.auth-box {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 32px;
+    width: 100%;
+    max-width: 360px;
+}
+
+.auth-box__title {
+    text-align: center;
+    margin: 0 0 20px;
+}

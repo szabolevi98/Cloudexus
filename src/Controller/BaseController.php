@@ -1,0 +1,54 @@
+<?php
+
+namespace Cloudexus\Controller;
+
+use Cloudexus\Core\Auth;
+use Cloudexus\Core\Config;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
+
+abstract class BaseController
+{
+    protected Environment $twig;
+
+    public function __construct()
+    {
+        $loader = new FilesystemLoader(dirname(__DIR__) . '/View/Twig');
+        $this->twig = new Environment($loader, [
+            'cache' => Config::get('app.debug') ? false : dirname(__DIR__, 2) . '/var/cache/twig',
+        ]);
+    }
+
+    protected function render(string $template, array $data = []): void
+    {
+        echo $this->twig->render($template, array_merge([
+            'auth_user_id' => Auth::id(),
+            'auth_user_name' => Auth::check() ? \Cloudexus\Core\Session::get('user_name') : null,
+            'auth_is_admin' => Auth::isAdmin(),
+            'base_url' => Config::get('app.base_url'),
+        ], $data));
+    }
+
+    protected function redirect(string $path): void
+    {
+        header('Location: ' . Config::get('app.base_url') . $path);
+        exit;
+    }
+
+    protected function requireAuth(): void
+    {
+        if (!Auth::check()) {
+            $this->redirect('/login');
+        }
+    }
+
+    protected function requireAdmin(): void
+    {
+        $this->requireAuth();
+        if (!Auth::isAdmin()) {
+            http_response_code(403);
+            echo 'Nincs jogosultságod ehhez a felülethez.';
+            exit;
+        }
+    }
+}

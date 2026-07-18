@@ -1,0 +1,17 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <h1>Vezérlőpult</h1>
+    <p>Üdv, {{ auth_user_name }}!</p>
+
+    <div class="card-grid">
+        <div class="card">
+            <h2>Kintlevőség</h2>
+            <p class="card__value">0 Ft</p>
+        </div>
+        <div class="card">
+            <h2>Kötelezettség</h2>
+            <p class="card__value">0 Ft</p>
+        </div>
+    </div>
+{% endblock %}

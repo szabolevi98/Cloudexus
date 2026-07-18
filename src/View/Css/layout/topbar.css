@@ -1,0 +1,31 @@
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: 0 var(--spacing);
+    height: 56px;
+}
+
+.topbar__brand {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.topbar__nav {
+    display: flex;
+    gap: var(--spacing);
+}
+
+.topbar__user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: var(--spacing);
+}

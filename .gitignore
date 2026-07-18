@@ -1,0 +1,9 @@
+/vendor/
+/config/config.ini
+/var/cache/*
+!/var/cache/.gitkeep
+/var/log/*
+!/var/log/.gitkeep
+.idea/
+.DS_Store
+Thumbs.db

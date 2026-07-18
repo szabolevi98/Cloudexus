@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title|default('Cloudexus') }}</title>
+    <link rel="stylesheet" href="{{ base_url }}/assets/css/app.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar__brand">Cloudexus</div>
+    {% if auth_user_id %}
+        <nav class="topbar__nav">
+            <a href="{{ base_url }}/dashboard">Vezérlőpult</a>
+            {% if auth_is_admin %}
+                <a href="{{ base_url }}/users">Felhasználók</a>
+            {% endif %}
+        </nav>
+        <div class="topbar__user">
+            <span>{{ auth_user_name }}</span>
+            <a href="{{ base_url }}/logout">Kilépés</a>
+        </div>
+    {% endif %}
+</header>
+<main class="content">
+    {% block content %}{% endblock %}
+</main>
+</body>
+</html>

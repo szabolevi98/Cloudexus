@@ -1,0 +1,26 @@
+[database]
+host = 127.0.0.1
+port = 3306
+name = cloudexus
+user = root
+password =
+charset = utf8mb4
+
+[app]
+name = "Cloudexus"
+env = dev
+debug = 1
+base_url = "http://localhost/Cloudexus/web"
+timezone = "Europe/Budapest"
+
+[session]
+name = cloudexus_session
+lifetime = 7200
+
+[mail]
+host =
+port = 587
+username =
+password =
+from_address = "no-reply@cloudexus.local"
+from_name = "Cloudexus"
