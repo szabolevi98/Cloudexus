@@ -159,8 +159,6 @@ Cloudexus/
 - [ ] Futárszolgálat-integrációk (GLS, MPL, Foxpost, …)
 - [ ] Webshop-integrációk + REST API
 
-**Tudatosan kihagyva** (az *1 telepítés = 1 cég* modell vagy a szűk célközönség miatt): belső licensz-/előfizetés-kezelés, több bérlős (multi-tenant) elkülönítés, bővítménybolt/plugin-marketplace, white-label testreszabás, valamint niche hatósági funkciók (pl. CMR, Intrastat).
-
 ## 📄 Licenc
 
 Minden jog fenntartva. © 2026 Cloudexus
