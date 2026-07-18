@@ -1,6 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="8" fill="#4f5bd5"/>
-  <g transform="translate(8 8)" fill="#ffffff">
-    <path d="M7.752.066a.5.5 0 0 1 .496 0l3.75 2.143a.5.5 0 0 1 .252.434v3.995l3.498 2a.5.5 0 0 1 .252.434v4.286a.5.5 0 0 1-.252.434l-3.75 2.143a.5.5 0 0 1-.496 0l-3.502-2-3.502 2.001a.5.5 0 0 1-.496 0l-3.75-2.143A.5.5 0 0 1 0 15.503V11.21a.5.5 0 0 1 .252-.434L3.75 8.776V4.78a.5.5 0 0 1 .252-.434L7.752.066ZM4.25 5.63 1.508 7.21 4.25 8.79l2.742-1.58zm3.25 4.303L4.75 11.515v3.048L7.5 12.99zM1 11.769v3.048l2.75 1.572v-3.202zm11.25 4.62 2.75-1.572v-3.048l-2.75 1.578zm2.242-4.87L11.75 9.436 9 11.017l2.742 1.58zM7.5 5.128v3.048l2.75-1.572V3.556zM8 2.043 5.258 3.62 8 5.202l2.742-1.58zM4.75 9.436 2 11.017l2.742 1.58 2.75-1.58z"/>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="76" height="79" viewBox="0 0 76 79" fill="none" preserveAspectRatio="xMidYMid meet">
+
+  <rect x="4" y="5" width="66" height="67" rx="18" fill="#EEF0FD"></rect>
+
+  <g stroke="#4F5BD5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Felső kocka -->
+    <path d="M36.5 21.5 44.5 26 36.5 30.5 28.5 26 36.5 21.5Z"></path>
+    <path d="M28.5 26v9.5l8 4.5 8-4.5V26"></path>
+    <path d="M36.5 30.5V40"></path>
+
+    <!-- Bal alsó kocka -->
+    <path d="M27.5 35.5 36.5 40.5 27.5 45.5 19.5 40.5 27.5 35.5Z"></path>
+    <path d="M19.5 40.5V50l8 5 9-5v-9.5"></path>
+    <path d="M27.5 45.5V55"></path>
+
+    <!-- Jobb alsó kocka -->
+    <path d="M45.5 35.5 53.5 40.5 45.5 45.5 36.5 40.5 45.5 35.5Z"></path>
+    <path d="M36.5 40.5V50l9 5 8-5v-9.5"></path>
+    <path d="M45.5 45.5V55"></path>
   </g>
 </svg>
