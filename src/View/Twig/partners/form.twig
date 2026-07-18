@@ -1,0 +1,51 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card" style="max-width: 560px;">
+        <div class="cx-card__header">
+            <h2>{{ partner ? 'Partner szerkesztése' : 'Új partner' }}</h2>
+        </div>
+        <div class="cx-card__body">
+            <form method="post" action="{{ base_url }}/partners{{ partner ? '/' ~ partner.id : '/create' }}">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Név</label>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ partner.name|default('') }}" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="type" class="form-label">Típus</label>
+                        <select id="type" name="type" class="form-select">
+                            <option value="customer" {{ partner.type == 'customer' ? 'selected' : '' }}>Vevő</option>
+                            <option value="supplier" {{ partner.type == 'supplier' ? 'selected' : '' }}>Szállító</option>
+                            <option value="both" {{ partner.type == 'both' ? 'selected' : '' }}>Vevő + Szállító</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="tax_number" class="form-label">Adószám</label>
+                        <input type="text" id="tax_number" name="tax_number" class="form-control" value="{{ partner.tax_number|default('') }}">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input type="email" id="email" name="email" class="form-control" value="{{ partner.email|default('') }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label">Telefon</label>
+                        <input type="text" id="phone" name="phone" class="form-control" value="{{ partner.phone|default('') }}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="address" class="form-label">Cím</label>
+                    <input type="text" id="address" name="address" class="form-control" value="{{ partner.address|default('') }}">
+                </div>
+                <div class="form-check mb-4">
+                    <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {{ (partner is null or partner.is_active) ? 'checked' : '' }}>
+                    <label for="is_active" class="form-check-label">Aktív</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Mentés</button>
+                <a href="{{ base_url }}/partners" class="btn btn-outline-secondary">Mégse</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

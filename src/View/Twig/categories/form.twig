@@ -1,0 +1,30 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card" style="max-width: 480px;">
+        <div class="cx-card__header">
+            <h2>{{ category ? 'Kategória szerkesztése' : 'Új kategória' }}</h2>
+        </div>
+        <div class="cx-card__body">
+            <form method="post" action="{{ base_url }}/categories{{ category ? '/' ~ category.id : '/create' }}">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Név</label>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ category.name|default('') }}" required>
+                </div>
+                <div class="mb-4">
+                    <label for="parent_id" class="form-label">Szülő kategória</label>
+                    <select id="parent_id" name="parent_id" class="form-select">
+                        <option value="">— nincs —</option>
+                        {% for c in categories %}
+                            {% if not category or c.id != category.id %}
+                                <option value="{{ c.id }}" {{ category and category.parent_id == c.id ? 'selected' : '' }}>{{ c.name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Mentés</button>
+                <a href="{{ base_url }}/categories" class="btn btn-outline-secondary">Mégse</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

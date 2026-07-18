@@ -1,0 +1,59 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card">
+        <div class="cx-card__header">
+            <h2>Termékek</h2>
+            <a href="{{ base_url }}/products/create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i>Új termék
+            </a>
+        </div>
+        <div class="cx-card__body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 cx-table">
+                    <thead>
+                    <tr>
+                        <th>Cikkszám</th>
+                        <th>Megnevezés</th>
+                        <th>Kategória</th>
+                        <th>Mennyiségi egység</th>
+                        <th class="text-end">Ár</th>
+                        <th>Állapot</th>
+                        <th class="text-end">Műveletek</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for product in products %}
+                        <tr>
+                            <td class="fw-medium">{{ product.sku }}</td>
+                            <td>{{ product.name }}</td>
+                            <td class="text-muted">{{ product.category_name ?: '—' }}</td>
+                            <td class="text-muted">{{ product.unit }}</td>
+                            <td class="text-end">{{ product.price|number_format(0, ',', ' ') }} Ft</td>
+                            <td>
+                                {% if product.is_active %}
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>
+                                {% else %}
+                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Inaktív</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ base_url }}/products/{{ product.id }}/edit" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" action="{{ base_url }}/products/{{ product.id }}/delete" class="d-inline" onsubmit="return confirm('Biztosan törlöd?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="7" class="text-center text-muted py-4">Még nincs termék.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
