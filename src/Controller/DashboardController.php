@@ -13,16 +13,24 @@ class DashboardController extends BaseController
     {
         $this->requireAuth();
 
-        $dailyOrders = (new OrderModel())->dailyTotals(10);
+        $orders = new OrderModel();
+        $invoices = new InvoiceModel();
+
+        $dailyOrders = $orders->dailyTotals(10);
+        $topCategories = $orders->topCategories(30, 6);
 
         $this->activeMenu = 'dashboard';
         $this->pageTitle = 'Vezérlőpult';
         $this->render('dashboard.twig', [
             'product_count' => (new ProductModel())->count(),
-            'outstanding_total' => (new InvoiceModel())->outstandingTotal(),
-            'payable_total' => (new IncomingInvoiceModel())->outstandingTotal(),
+            'outstanding' => $invoices->outstandingBreakdown(),
+            'payable' => (new IncomingInvoiceModel())->outstandingBreakdown(),
             'daily_orders' => $dailyOrders,
             'orders_total_value' => array_sum(array_column($dailyOrders, 'total_value')),
+            'top_categories' => $topCategories,
+            'top_categories_max' => $topCategories ? max(array_column($topCategories, 'value')) : 0,
+            'recent_invoices' => $invoices->recent(6),
+            'today' => date('Y-m-d'),
         ]);
     }
 }

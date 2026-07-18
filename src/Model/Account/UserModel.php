@@ -34,6 +34,33 @@ class UserModel
             ->fetchAll();
     }
 
+    /** Filters: q (username/full_name/email). */
+    public function paginate(array $filters, \Cloudexus\Core\Paginator $pager): array
+    {
+        $where = '';
+        $params = [];
+
+        if ($filters['q'] !== '') {
+            $where = 'WHERE username LIKE :q1 OR full_name LIKE :q2 OR email LIKE :q3';
+            $params['q1'] = '%' . $filters['q'] . '%';
+            $params['q2'] = '%' . $filters['q'] . '%';
+            $params['q3'] = '%' . $filters['q'] . '%';
+        }
+
+        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM users $where");
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT id, username, email, full_name, role, is_active, last_login_at, created_at
+             FROM users $where ORDER BY id ASC LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
     public function create(array $data): int
     {
         $stmt = DatabaseConnection::get()->prepare(

@@ -39,6 +39,19 @@
                         <input type="date" name="due_date" class="form-control" value="{{ "now"|date_modify("+8 days")|date("Y-m-d") }}">
                     </div>
                 </div>
+                <div class="mb-3" style="max-width: 320px;">
+                    <label for="warehouse_id" class="form-label">
+                        Készletkiadás raktárból
+                        <span class="text-muted small">(opcionális)</span>
+                    </label>
+                    <select id="warehouse_id" name="warehouse_id" class="form-select">
+                        <option value="">— nincs automatikus kiadás —</option>
+                        {% for w in warehouses %}
+                            <option value="{{ w.id }}">{{ w.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Ha megadod, a számla tételei automatikusan raktári kiadásként is könyvelődnek.</div>
+                </div>
 
                 {% include 'common/line-items.twig' with {
                     products: products,

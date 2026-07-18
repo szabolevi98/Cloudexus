@@ -34,6 +34,7 @@ abstract class BaseController
             'auth_user_name' => Auth::check() ? Session::get('user_name') : null,
             'auth_is_admin' => Auth::isAdmin(),
             'base_url' => Config::get('app.base_url'),
+            'csrf_token' => \Cloudexus\Core\Csrf::token(),
             'active_menu' => $this->activeMenu,
             'page_title' => $this->pageTitle,
             'flashes' => $flashes,

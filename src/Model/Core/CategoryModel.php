@@ -16,6 +16,36 @@ class CategoryModel
         )->fetchAll();
     }
 
+    /** Filters: q (name). Includes parent name and product count per category. */
+    public function paginate(array $filters, \Cloudexus\Core\Paginator $pager): array
+    {
+        $where = '';
+        $params = [];
+
+        if ($filters['q'] !== '') {
+            $where = 'WHERE c.name LIKE :q';
+            $params['q'] = '%' . $filters['q'] . '%';
+        }
+
+        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM categories c $where");
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT c.*, p.name AS parent_name,
+                    (SELECT COUNT(*) FROM products pr WHERE pr.category_id = c.id) AS product_count
+             FROM categories c
+             LEFT JOIN categories p ON p.id = c.parent_id
+             $where
+             ORDER BY c.name ASC
+             LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
     public function findById(int $id): ?array
     {
         $stmt = DatabaseConnection::get()->prepare('SELECT * FROM categories WHERE id = :id LIMIT 1');

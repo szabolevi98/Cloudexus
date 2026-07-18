@@ -49,6 +49,53 @@ class PurchaseOrderModel
         return $stmt->fetchAll();
     }
 
+    /** Filters: q (po_number), partner_id, status, date_from, date_to. */
+    public function paginate(array $filters, \Cloudexus\Core\Paginator $pager): array
+    {
+        $where = [];
+        $params = [];
+
+        if ($filters['q'] !== '') {
+            $where[] = 'po.po_number LIKE :q';
+            $params['q'] = '%' . $filters['q'] . '%';
+        }
+        if (!empty($filters['partner_id'])) {
+            $where[] = 'po.partner_id = :partner_id';
+            $params['partner_id'] = (int) $filters['partner_id'];
+        }
+        if ($filters['status'] !== '') {
+            $where[] = 'po.status = :status';
+            $params['status'] = $filters['status'];
+        }
+        if ($filters['date_from'] !== '') {
+            $where[] = 'po.order_date >= :date_from';
+            $params['date_from'] = $filters['date_from'];
+        }
+        if ($filters['date_to'] !== '') {
+            $where[] = 'po.order_date <= :date_to';
+            $params['date_to'] = $filters['date_to'];
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM purchase_orders po $whereSql");
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT po.*, p.name AS partner_name
+             FROM purchase_orders po
+             JOIN partners p ON p.id = po.partner_id
+             $whereSql
+             ORDER BY po.order_date DESC, po.id DESC
+             LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
     public function nextPoNumber(): string
     {
         $year = date('Y');

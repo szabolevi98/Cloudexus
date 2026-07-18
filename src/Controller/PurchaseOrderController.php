@@ -26,9 +26,21 @@ class PurchaseOrderController extends BaseController
     {
         $this->requireAuth();
 
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'partner_id' => (int) ($_GET['partner_id'] ?? 0),
+            'status' => $_GET['status'] ?? '',
+            'date_from' => $_GET['date_from'] ?? '',
+            'date_to' => $_GET['date_to'] ?? '',
+        ];
+        $pager = new \Cloudexus\Core\Paginator(25);
+
         $this->pageTitle = 'Szállítói rendelések';
         $this->render('purchase-orders/list.twig', [
-            'orders' => $this->orders->all(),
+            'orders' => $this->orders->paginate($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
+            'partners' => $this->partners->suppliersAndBoth(),
         ]);
     }
 

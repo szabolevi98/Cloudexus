@@ -19,9 +19,14 @@ class CategoryController extends BaseController
     {
         $this->requireAuth();
 
+        $filters = ['q' => trim($_GET['q'] ?? '')];
+        $pager = new \Cloudexus\Core\Paginator(25);
+
         $this->pageTitle = 'Termékkategóriák';
         $this->render('categories/list.twig', [
-            'categories' => $this->categories->all(),
+            'categories' => $this->categories->paginate($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
         ]);
     }
 

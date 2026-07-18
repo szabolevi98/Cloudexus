@@ -9,6 +9,35 @@
             </a>
         </div>
         <div class="cx-card__body p-0">
+            <form method="get" class="p-3 border-bottom">
+                <div class="row g-2 align-items-end">
+                    <div class="col-sm-4 col-lg-3">
+                        <label class="form-label small text-muted mb-1">Keresés</label>
+                        <input type="text" name="q" class="form-control form-control-sm" placeholder="Cikkszám vagy megnevezés…" value="{{ filters.q }}">
+                    </div>
+                    <div class="col-sm-3 col-lg-2">
+                        <label class="form-label small text-muted mb-1">Kategória</label>
+                        <select name="category_id" class="form-select form-select-sm">
+                            <option value="">Mind</option>
+                            {% for c in categories %}
+                                <option value="{{ c.id }}" {{ filters.category_id == c.id ? 'selected' : '' }}>{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-3 col-lg-2">
+                        <label class="form-label small text-muted mb-1">Állapot</label>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">Mind</option>
+                            <option value="active" {{ filters.status == 'active' ? 'selected' : '' }}>Aktív</option>
+                            <option value="inactive" {{ filters.status == 'inactive' ? 'selected' : '' }}>Inaktív</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
+                        <a href="{{ base_url }}/products" class="btn btn-sm btn-outline-secondary">Törlés</a>
+                    </div>
+                </div>
+            </form>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0 cx-table">
                     <thead>
@@ -16,7 +45,7 @@
                         <th>Cikkszám</th>
                         <th>Megnevezés</th>
                         <th>Kategória</th>
-                        <th>Mennyiségi egység</th>
+                        <th class="text-end">Készlet</th>
                         <th class="text-end">Ár</th>
                         <th>Állapot</th>
                         <th class="text-end">Műveletek</th>
@@ -28,7 +57,11 @@
                             <td class="fw-medium">{{ product.sku }}</td>
                             <td>{{ product.name }}</td>
                             <td class="text-muted">{{ product.category_name ?: '—' }}</td>
-                            <td class="text-muted">{{ product.unit }}</td>
+                            <td class="text-end">
+                                <span class="badge rounded-pill {{ product.stock_qty <= 0 ? 'text-bg-danger-subtle text-danger-emphasis' : 'text-bg-success-subtle text-success-emphasis' }}">
+                                    {{ product.stock_qty|number_format(0, ',', ' ') }} {{ product.unit }}
+                                </span>
+                            </td>
                             <td class="text-end">{{ product.price|number_format(0, ',', ' ') }} Ft</td>
                             <td>
                                 {% if product.is_active %}
@@ -49,11 +82,12 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="7" class="text-center text-muted py-4">Még nincs termék.</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő termék.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>
             </div>
+            {% include 'common/pagination.twig' %}
         </div>
     </div>
 {% endblock %}

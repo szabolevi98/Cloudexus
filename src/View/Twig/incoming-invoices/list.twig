@@ -9,6 +9,45 @@
             </a>
         </div>
         <div class="cx-card__body p-0">
+            <form method="get" class="p-3 border-bottom">
+                <div class="row g-2 align-items-end">
+                    <div class="col-sm-3 col-lg-2">
+                        <label class="form-label small text-muted mb-1">Számlaszám</label>
+                        <input type="text" name="q" class="form-control form-control-sm" placeholder="BSZLA-…" value="{{ filters.q }}">
+                    </div>
+                    <div class="col-sm-3 col-lg-2">
+                        <label class="form-label small text-muted mb-1">Szállító</label>
+                        <select name="partner_id" class="form-select form-select-sm">
+                            <option value="">Mind</option>
+                            {% for p in partners %}
+                                <option value="{{ p.id }}" {{ filters.partner_id == p.id ? 'selected' : '' }}>{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-3 col-lg-2">
+                        <label class="form-label small text-muted mb-1">Állapot</label>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">Mind</option>
+                            <option value="unpaid" {{ filters.status == 'unpaid' ? 'selected' : '' }}>Fizetésre vár</option>
+                            <option value="overdue" {{ filters.status == 'overdue' ? 'selected' : '' }}>Lejárt</option>
+                            <option value="paid" {{ filters.status == 'paid' ? 'selected' : '' }}>Kifizetve</option>
+                            <option value="cancelled" {{ filters.status == 'cancelled' ? 'selected' : '' }}>Stornózva</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3 col-lg-2">
+                        <label class="form-label small text-muted mb-1">Kiállítástól</label>
+                        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ filters.date_from }}">
+                    </div>
+                    <div class="col-sm-3 col-lg-2">
+                        <label class="form-label small text-muted mb-1">Kiállításig</label>
+                        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ filters.date_to }}">
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
+                        <a href="{{ base_url }}/incoming-invoices" class="btn btn-sm btn-outline-secondary">Törlés</a>
+                    </div>
+                </div>
+            </form>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0 cx-table">
                     <thead>
@@ -23,6 +62,7 @@
                     </tr>
                     </thead>
                     <tbody>
+                    {% set today = "now"|date("Y-m-d") %}
                     {% for invoice in invoices %}
                         <tr>
                             <td class="fw-medium">{{ invoice.invoice_number }}</td>
@@ -30,7 +70,9 @@
                             <td class="text-muted">{{ invoice.issue_date }}</td>
                             <td class="text-muted">{{ invoice.due_date }}</td>
                             <td>
-                                {% if invoice.status == 'unpaid' %}
+                                {% if invoice.status == 'unpaid' and invoice.due_date < today %}
+                                    <span class="badge rounded-pill text-bg-danger">Lejárt</span>
+                                {% elseif invoice.status == 'unpaid' %}
                                     <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">Fizetésre vár</span>
                                 {% elseif invoice.status == 'paid' %}
                                     <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Kifizetve</span>
@@ -46,11 +88,12 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="7" class="text-center text-muted py-4">Még nincs bejövő számla.</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő számla.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>
             </div>
+            {% include 'common/pagination.twig' %}
         </div>
     </div>
 {% endblock %}

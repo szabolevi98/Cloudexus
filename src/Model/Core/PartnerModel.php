@@ -18,6 +18,44 @@ class PartnerModel
         return $stmt->fetch() ?: null;
     }
 
+    /**
+     * Filters: q (name/tax_number/email), type ('customer'|'supplier'|'both'), status.
+     */
+    public function paginate(array $filters, \Cloudexus\Core\Paginator $pager): array
+    {
+        $where = [];
+        $params = [];
+
+        if ($filters['q'] !== '') {
+            $where[] = '(name LIKE :q1 OR tax_number LIKE :q2 OR email LIKE :q3)';
+            $params['q1'] = '%' . $filters['q'] . '%';
+            $params['q2'] = '%' . $filters['q'] . '%';
+            $params['q3'] = '%' . $filters['q'] . '%';
+        }
+        if ($filters['type'] !== '') {
+            $where[] = 'type = :type';
+            $params['type'] = $filters['type'];
+        }
+        if ($filters['status'] !== '') {
+            $where[] = 'is_active = :is_active';
+            $params['is_active'] = $filters['status'] === 'active' ? 1 : 0;
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM partners $whereSql");
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT * FROM partners $whereSql ORDER BY name ASC LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
     public function customersAndBoth(): array
     {
         return DatabaseConnection::get()

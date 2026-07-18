@@ -20,9 +20,14 @@ class UserController extends BaseController
     {
         $this->requireAdmin();
 
+        $filters = ['q' => trim($_GET['q'] ?? '')];
+        $pager = new \Cloudexus\Core\Paginator(25);
+
         $this->pageTitle = 'Felhasználók';
         $this->render('users/list.twig', [
-            'users' => $this->users->all(),
+            'users' => $this->users->paginate($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
         ]);
     }
 

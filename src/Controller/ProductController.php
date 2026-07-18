@@ -22,9 +22,19 @@ class ProductController extends BaseController
     {
         $this->requireAuth();
 
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'category_id' => (int) ($_GET['category_id'] ?? 0),
+            'status' => $_GET['status'] ?? '',
+        ];
+        $pager = new \Cloudexus\Core\Paginator(25);
+
         $this->pageTitle = 'Termékek';
         $this->render('products/list.twig', [
-            'products' => $this->products->all(),
+            'products' => $this->products->paginate($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
+            'categories' => $this->categories->all(),
         ]);
     }
 

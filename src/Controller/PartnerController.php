@@ -19,9 +19,18 @@ class PartnerController extends BaseController
     {
         $this->requireAuth();
 
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'type' => $_GET['type'] ?? '',
+            'status' => $_GET['status'] ?? '',
+        ];
+        $pager = new \Cloudexus\Core\Paginator(25);
+
         $this->pageTitle = 'Partnerek';
         $this->render('partners/list.twig', [
-            'partners' => $this->partners->all(),
+            'partners' => $this->partners->paginate($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
         ]);
     }
 

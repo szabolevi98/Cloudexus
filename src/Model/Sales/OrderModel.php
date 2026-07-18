@@ -77,6 +77,72 @@ class OrderModel
         return $result;
     }
 
+    /** Filters: q (order_number), partner_id, status, date_from, date_to. */
+    public function paginate(array $filters, \Cloudexus\Core\Paginator $pager): array
+    {
+        $where = [];
+        $params = [];
+
+        if ($filters['q'] !== '') {
+            $where[] = 'o.order_number LIKE :q';
+            $params['q'] = '%' . $filters['q'] . '%';
+        }
+        if (!empty($filters['partner_id'])) {
+            $where[] = 'o.partner_id = :partner_id';
+            $params['partner_id'] = (int) $filters['partner_id'];
+        }
+        if ($filters['status'] !== '') {
+            $where[] = 'o.status = :status';
+            $params['status'] = $filters['status'];
+        }
+        if ($filters['date_from'] !== '') {
+            $where[] = 'o.order_date >= :date_from';
+            $params['date_from'] = $filters['date_from'];
+        }
+        if ($filters['date_to'] !== '') {
+            $where[] = 'o.order_date <= :date_to';
+            $params['date_to'] = $filters['date_to'];
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM orders o $whereSql");
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT o.*, p.name AS partner_name
+             FROM orders o
+             JOIN partners p ON p.id = o.partner_id
+             $whereSql
+             ORDER BY o.order_date DESC, o.id DESC
+             LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
+    /** Top product categories by ordered value in the last $days days. */
+    public function topCategories(int $days = 30, int $limit = 6): array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT COALESCE(c.name, 'Kategorizálatlan') AS name, SUM(oi.line_total) AS value
+             FROM order_items oi
+             JOIN orders o ON o.id = oi.order_id AND o.status != 'cancelled'
+             JOIN products p ON p.id = oi.product_id
+             LEFT JOIN categories c ON c.id = p.category_id
+             WHERE o.order_date >= :from
+             GROUP BY c.id, c.name
+             ORDER BY value DESC
+             LIMIT " . (int) $limit
+        );
+        $stmt->execute(['from' => date('Y-m-d', strtotime("-$days days"))]);
+
+        return $stmt->fetchAll();
+    }
+
     public function nextOrderNumber(): string
     {
         $year = date('Y');

@@ -29,9 +29,19 @@ class CashVoucherController extends BaseController
     {
         $this->requireAuth();
 
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'type' => $_GET['type'] ?? '',
+            'date_from' => $_GET['date_from'] ?? '',
+            'date_to' => $_GET['date_to'] ?? '',
+        ];
+        $pager = new \Cloudexus\Core\Paginator(25);
+
         $this->pageTitle = 'Pénztárbizonylat';
         $this->render('cash/list.twig', [
-            'vouchers' => $this->vouchers->all(),
+            'vouchers' => $this->vouchers->paginate($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
             'balance' => $this->vouchers->currentBalance(),
         ]);
     }

@@ -9,6 +9,35 @@
             </a>
         </div>
         <div class="cx-card__body p-0">
+            <form method="get" class="p-3 border-bottom">
+                <div class="row g-2 align-items-end">
+                    <div class="col-sm-4 col-lg-3">
+                        <label class="form-label small text-muted mb-1">Keresés</label>
+                        <input type="text" name="q" class="form-control form-control-sm" placeholder="Név, adószám vagy e-mail…" value="{{ filters.q }}">
+                    </div>
+                    <div class="col-sm-3 col-lg-2">
+                        <label class="form-label small text-muted mb-1">Típus</label>
+                        <select name="type" class="form-select form-select-sm">
+                            <option value="">Mind</option>
+                            <option value="customer" {{ filters.type == 'customer' ? 'selected' : '' }}>Vevő</option>
+                            <option value="supplier" {{ filters.type == 'supplier' ? 'selected' : '' }}>Szállító</option>
+                            <option value="both" {{ filters.type == 'both' ? 'selected' : '' }}>Vevő + Szállító</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3 col-lg-2">
+                        <label class="form-label small text-muted mb-1">Állapot</label>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">Mind</option>
+                            <option value="active" {{ filters.status == 'active' ? 'selected' : '' }}>Aktív</option>
+                            <option value="inactive" {{ filters.status == 'inactive' ? 'selected' : '' }}>Inaktív</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
+                        <a href="{{ base_url }}/partners" class="btn btn-sm btn-outline-secondary">Törlés</a>
+                    </div>
+                </div>
+            </form>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0 cx-table">
                     <thead>
@@ -57,11 +86,12 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="7" class="text-center text-muted py-4">Még nincs partner.</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő partner.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>
             </div>
+            {% include 'common/pagination.twig' %}
         </div>
     </div>
 {% endblock %}

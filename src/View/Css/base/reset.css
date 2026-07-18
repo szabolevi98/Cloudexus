@@ -28,3 +28,12 @@ a {
     border-color: var(--cx-primary);
     box-shadow: 0 0 0 0.2rem rgba(79, 91, 213, 0.15);
 }
+
+.page-link {
+    color: var(--cx-primary);
+}
+
+.page-item.active .page-link {
+    background: var(--cx-primary);
+    border-color: var(--cx-primary);
+}

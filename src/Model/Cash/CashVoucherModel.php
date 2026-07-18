@@ -20,6 +20,57 @@ class CashVoucherModel
         )->fetchAll();
     }
 
+    /** Filters: q (voucher_number/note/partner), type, date_from, date_to. */
+    public function paginate(array $filters, \Cloudexus\Core\Paginator $pager): array
+    {
+        $where = [];
+        $params = [];
+
+        if ($filters['q'] !== '') {
+            $where[] = '(v.voucher_number LIKE :q1 OR v.note LIKE :q2 OR p.name LIKE :q3)';
+            $params['q1'] = '%' . $filters['q'] . '%';
+            $params['q2'] = '%' . $filters['q'] . '%';
+            $params['q3'] = '%' . $filters['q'] . '%';
+        }
+        if ($filters['type'] !== '') {
+            $where[] = 'v.type = :type';
+            $params['type'] = $filters['type'];
+        }
+        if ($filters['date_from'] !== '') {
+            $where[] = 'v.voucher_date >= :date_from';
+            $params['date_from'] = $filters['date_from'];
+        }
+        if ($filters['date_to'] !== '') {
+            $where[] = 'v.voucher_date <= :date_to';
+            $params['date_to'] = $filters['date_to'];
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $count = DatabaseConnection::get()->prepare(
+            "SELECT COUNT(*) FROM cash_vouchers v LEFT JOIN partners p ON p.id = v.partner_id $whereSql"
+        );
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT v.*, p.name AS partner_name,
+                    i.invoice_number AS sales_invoice_number,
+                    ii.invoice_number AS incoming_invoice_number
+             FROM cash_vouchers v
+             LEFT JOIN partners p ON p.id = v.partner_id
+             LEFT JOIN invoices i ON i.id = v.invoice_id
+             LEFT JOIN incoming_invoices ii ON ii.id = v.incoming_invoice_id
+             $whereSql
+             ORDER BY v.voucher_date DESC, v.id DESC
+             LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
     public function nextVoucherNumber(): string
     {
         $year = date('Y');

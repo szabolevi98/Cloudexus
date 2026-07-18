@@ -50,6 +50,73 @@ class IncomingInvoiceModel
         return $stmt->fetchAll();
     }
 
+    /** Filters: q (invoice_number), partner_id, status, date_from, date_to (issue_date). */
+    public function paginate(array $filters, \Cloudexus\Core\Paginator $pager): array
+    {
+        $where = [];
+        $params = [];
+
+        if ($filters['q'] !== '') {
+            $where[] = 'i.invoice_number LIKE :q';
+            $params['q'] = '%' . $filters['q'] . '%';
+        }
+        if (!empty($filters['partner_id'])) {
+            $where[] = 'i.partner_id = :partner_id';
+            $params['partner_id'] = (int) $filters['partner_id'];
+        }
+        if ($filters['status'] !== '') {
+            if ($filters['status'] === 'overdue') {
+                $where[] = "i.status = 'unpaid' AND i.due_date < CURDATE()";
+            } else {
+                $where[] = 'i.status = :status';
+                $params['status'] = $filters['status'];
+            }
+        }
+        if ($filters['date_from'] !== '') {
+            $where[] = 'i.issue_date >= :date_from';
+            $params['date_from'] = $filters['date_from'];
+        }
+        if ($filters['date_to'] !== '') {
+            $where[] = 'i.issue_date <= :date_to';
+            $params['date_to'] = $filters['date_to'];
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM incoming_invoices i $whereSql");
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT i.*, p.name AS partner_name
+             FROM incoming_invoices i
+             JOIN partners p ON p.id = i.partner_id
+             $whereSql
+             ORDER BY i.issue_date DESC, i.id DESC
+             LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
+    /** Unpaid total split into overdue (past due date) and current. */
+    public function outstandingBreakdown(): array
+    {
+        $row = DatabaseConnection::get()->query(
+            "SELECT COALESCE(SUM(total_amount), 0) AS total,
+                    COALESCE(SUM(CASE WHEN due_date < CURDATE() THEN total_amount ELSE 0 END), 0) AS overdue
+             FROM incoming_invoices WHERE status = 'unpaid'"
+        )->fetch();
+
+        return [
+            'total' => (float) $row['total'],
+            'overdue' => (float) $row['overdue'],
+            'current' => (float) $row['total'] - (float) $row['overdue'],
+        ];
+    }
+
     public function nextInvoiceNumber(): string
     {
         $year = date('Y');

@@ -9,11 +9,13 @@ use Cloudexus\Controller\LoginController;
 use Cloudexus\Controller\OrderController;
 use Cloudexus\Controller\PartnerController;
 use Cloudexus\Controller\ProductController;
+use Cloudexus\Controller\ProfileController;
 use Cloudexus\Controller\PurchaseOrderController;
 use Cloudexus\Controller\StockController;
 use Cloudexus\Controller\UserController;
 use Cloudexus\Controller\WarehouseController;
 use Cloudexus\Core\Config;
+use Cloudexus\Core\Csrf;
 use Cloudexus\Core\Router;
 use Cloudexus\Core\Session;
 
@@ -28,6 +30,11 @@ set_error_handler(function (int $level, string $message, string $file, int $line
 });
 
 Session::start();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !Csrf::validate($_POST['_token'] ?? null)) {
+    http_response_code(403);
+    exit('Érvénytelen vagy lejárt munkamenet. Frissítsd az oldalt, majd próbáld újra.');
+}
 
 $router = new Router();
 
@@ -52,6 +59,9 @@ $router->get('/logout', fn() => (new LoginController())->logout());
 
 $router->get('/dashboard', fn() => (new DashboardController())->show());
 
+$router->get('/profile', fn() => (new ProfileController())->show());
+$router->post('/profile', fn() => (new ProfileController())->update());
+
 registerCrud($router, '/users', UserController::class);
 registerCrud($router, '/categories', CategoryController::class);
 registerCrud($router, '/products', ProductController::class);
@@ -63,6 +73,8 @@ $router->get('/stock/in', fn() => (new StockController())->inList());
 $router->post('/stock/in/create', fn() => (new StockController())->inCreate());
 $router->get('/stock/out', fn() => (new StockController())->outList());
 $router->post('/stock/out/create', fn() => (new StockController())->outCreate());
+$router->get('/stock/transfer', fn() => (new StockController())->transferForm());
+$router->post('/stock/transfer', fn() => (new StockController())->transferCreate());
 
 $router->get('/orders', fn() => (new OrderController())->list());
 $router->get('/orders/create', fn() => (new OrderController())->createForm());

@@ -3,6 +3,7 @@
 namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Auth;
+use Cloudexus\Core\Paginator;
 use Cloudexus\Model\Core\ProductModel;
 use Cloudexus\Model\Core\StockMovementModel;
 use Cloudexus\Model\Core\WarehouseModel;
@@ -25,10 +26,19 @@ class StockController extends BaseController
     {
         $this->requireAuth();
 
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'warehouse_id' => (int) ($_GET['warehouse_id'] ?? 0),
+        ];
+        $pager = new Paginator(25);
+
         $this->activeMenu = 'stock-overview';
         $this->pageTitle = 'Raktárkészlet';
         $this->render('stock/overview.twig', [
-            'rows' => $this->movements->overview(),
+            'rows' => $this->movements->overview($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
+            'warehouses' => $this->warehouses->activeList(),
         ]);
     }
 
@@ -36,10 +46,14 @@ class StockController extends BaseController
     {
         $this->requireAuth();
 
+        [$filters, $pager, $rows] = $this->movementListData('in');
+
         $this->activeMenu = 'stock-in';
         $this->pageTitle = 'Raktári bevét';
         $this->render('stock/in.twig', [
-            'movements' => $this->movements->listByType('in'),
+            'movements' => $rows,
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
             'warehouses' => $this->warehouses->activeList(),
             'products' => $this->products->all(),
         ]);
@@ -55,10 +69,14 @@ class StockController extends BaseController
     {
         $this->requireAuth();
 
+        [$filters, $pager, $rows] = $this->movementListData('out');
+
         $this->activeMenu = 'stock-out';
         $this->pageTitle = 'Raktári kiadás';
         $this->render('stock/out.twig', [
-            'movements' => $this->movements->listByType('out'),
+            'movements' => $rows,
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
             'warehouses' => $this->warehouses->activeList(),
             'products' => $this->products->all(),
         ]);
@@ -68,6 +86,75 @@ class StockController extends BaseController
     {
         $this->requireAuth();
         $this->createMovement('out', '/stock/out');
+    }
+
+    public function transferForm(): void
+    {
+        $this->requireAuth();
+
+        $this->activeMenu = 'stock-transfer';
+        $this->pageTitle = 'Raktárközi átadás';
+        $this->render('stock/transfer.twig', [
+            'warehouses' => $this->warehouses->activeList(),
+            'products' => $this->products->all(),
+            'transfers' => $this->movements->recentTransfers(30),
+        ]);
+    }
+
+    public function transferCreate(): void
+    {
+        $this->requireAuth();
+
+        $fromId = (int) ($_POST['from_warehouse_id'] ?? 0);
+        $toId = (int) ($_POST['to_warehouse_id'] ?? 0);
+        $productId = (int) ($_POST['product_id'] ?? 0);
+        $quantity = (float) str_replace(',', '.', $_POST['quantity'] ?? '0');
+        $note = trim($_POST['note'] ?? '');
+
+        if ($fromId <= 0 || $toId <= 0 || $productId <= 0 || $quantity <= 0) {
+            $this->flashError('Forrás- és célraktár, termék és pozitív mennyiség megadása kötelező.');
+            $this->redirect('/stock/transfer');
+        }
+
+        if ($fromId === $toId) {
+            $this->flashError('A forrás- és célraktár nem lehet azonos.');
+            $this->redirect('/stock/transfer');
+        }
+
+        $available = $this->movements->availableQuantity($productId, $fromId);
+        if ($quantity > $available) {
+            $this->flashError(sprintf('Nincs elég készlet a forrásraktárban: elérhető %s, kért %s.', $available, $quantity));
+            $this->redirect('/stock/transfer');
+        }
+
+        $from = $this->warehouses->findById($fromId);
+        $to = $this->warehouses->findById($toId);
+
+        $this->movements->transfer(
+            $fromId,
+            $toId,
+            $productId,
+            $quantity,
+            'Raktárközi átadás: ' . ($from['name'] ?? $fromId) . ' → ' . ($to['name'] ?? $toId) . ($note !== '' ? ' — ' . $note : ''),
+            Auth::id()
+        );
+
+        $this->flashSuccess('Raktárközi átadás rögzítve.');
+        $this->redirect('/stock/transfer');
+    }
+
+    /** @return array{0: array, 1: Paginator, 2: array} */
+    private function movementListData(string $type): array
+    {
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'warehouse_id' => (int) ($_GET['warehouse_id'] ?? 0),
+            'date_from' => $_GET['date_from'] ?? '',
+            'date_to' => $_GET['date_to'] ?? '',
+        ];
+        $pager = new Paginator(20);
+
+        return [$filters, $pager, $this->movements->paginateByType($type, $filters, $pager)];
     }
 
     private function createMovement(string $type, string $redirectPath): void
@@ -83,12 +170,7 @@ class StockController extends BaseController
         }
 
         if ($type === 'out') {
-            $stmt = \Cloudexus\Core\DatabaseConnection::get()->prepare(
-                "SELECT SUM(CASE WHEN type = 'in' THEN quantity ELSE -quantity END)
-                 FROM stock_movements WHERE product_id = :product_id AND warehouse_id = :warehouse_id"
-            );
-            $stmt->execute(['product_id' => $productId, 'warehouse_id' => $warehouseId]);
-            $available = (float) ($stmt->fetchColumn() ?: 0);
+            $available = $this->movements->availableQuantity($productId, $warehouseId);
 
             if ($quantity > $available) {
                 $this->flashError(sprintf('Nincs elég készlet: elérhető %s db, kért %s db.', $available, $quantity));

@@ -32,9 +32,21 @@ class IncomingInvoiceController extends BaseController
     {
         $this->requireAuth();
 
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'partner_id' => (int) ($_GET['partner_id'] ?? 0),
+            'status' => $_GET['status'] ?? '',
+            'date_from' => $_GET['date_from'] ?? '',
+            'date_to' => $_GET['date_to'] ?? '',
+        ];
+        $pager = new \Cloudexus\Core\Paginator(25);
+
         $this->pageTitle = 'Bejövő számlák';
         $this->render('incoming-invoices/list.twig', [
-            'invoices' => $this->invoices->all(),
+            'invoices' => $this->invoices->paginate($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
+            'partners' => $this->partners->suppliersAndBoth(),
         ]);
     }
 
