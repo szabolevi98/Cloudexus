@@ -13,6 +13,45 @@
     top: 0;
     height: 100vh;
     overflow-y: auto;
+
+    /* Subtle scrollbar: hidden until you hover the sidebar or scroll it. */
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.2s ease;
+}
+
+.cx-sidebar:hover {
+    scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+
+.cx-sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.cx-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cx-sidebar::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.cx-sidebar:hover::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.cx-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.cx-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 22, 48, 0.45);
+    z-index: 15;
 }
 
 .cx-sidebar__brand {
@@ -91,4 +130,40 @@
     .cx-sidebar.is-open {
         left: 0;
     }
+
+    .cx-backdrop.is-visible {
+        display: block;
+    }
+}
+
+/* Global refined scrollbar for the rest of the app (light surfaces). */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(124, 132, 148, 0.35) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(124, 132, 148, 0.28);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(124, 132, 148, 0.5);
+    background-clip: content-box;
+}
+
+/* The sidebar keeps its own (light-on-dark) rules above. */
+.cx-sidebar {
+    scrollbar-color: transparent transparent;
 }
