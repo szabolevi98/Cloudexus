@@ -16,7 +16,7 @@ class CashVoucherModel
              LEFT JOIN partners p ON p.id = v.partner_id
              LEFT JOIN invoices i ON i.id = v.invoice_id
              LEFT JOIN incoming_invoices ii ON ii.id = v.incoming_invoice_id
-             ORDER BY v.created_at DESC'
+             ORDER BY v.voucher_date DESC, v.id DESC'
         )->fetchAll();
     }
 
@@ -46,9 +46,9 @@ class CashVoucherModel
                 'voucher_number' => $data['voucher_number'],
                 'type' => $data['type'],
                 'amount' => $data['amount'],
-                'partner_id' => $data['partner_id'] ?: null,
-                'invoice_id' => $data['invoice_id'] ?: null,
-                'incoming_invoice_id' => $data['incoming_invoice_id'] ?: null,
+                'partner_id' => $data['partner_id'] ?? null,
+                'invoice_id' => $data['invoice_id'] ?? null,
+                'incoming_invoice_id' => $data['incoming_invoice_id'] ?? null,
                 'note' => $data['note'] ?: null,
                 'voucher_date' => $data['voucher_date'],
                 'created_by' => $data['created_by'] ?: null,

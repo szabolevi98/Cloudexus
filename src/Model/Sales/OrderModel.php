@@ -12,7 +12,7 @@ class OrderModel
             'SELECT o.*, p.name AS partner_name
              FROM orders o
              JOIN partners p ON p.id = o.partner_id
-             ORDER BY o.created_at DESC'
+             ORDER BY o.order_date DESC, o.id DESC'
         )->fetchAll();
     }
 
@@ -47,6 +47,34 @@ class OrderModel
         $stmt->execute(['order_id' => $orderId]);
 
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Daily order count/value for the last $days days (including today), oldest first.
+     * Cancelled orders are excluded.
+     */
+    public function dailyTotals(int $days = 10): array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT order_date, COUNT(*) AS order_count, COALESCE(SUM(total_amount), 0) AS total_value
+             FROM orders
+             WHERE status != 'cancelled' AND order_date >= :from
+             GROUP BY order_date"
+        );
+        $stmt->execute(['from' => date('Y-m-d', strtotime("-$days days"))]);
+        $rows = array_column($stmt->fetchAll(), null, 'order_date');
+
+        $result = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-$i days"));
+            $result[] = [
+                'date' => $date,
+                'order_count' => (int) ($rows[$date]['order_count'] ?? 0),
+                'total_value' => (float) ($rows[$date]['total_value'] ?? 0),
+            ];
+        }
+
+        return $result;
     }
 
     public function nextOrderNumber(): string

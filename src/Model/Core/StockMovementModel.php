@@ -23,11 +23,14 @@ class StockMovementModel
         return $stmt->fetchAll();
     }
 
+    /**
+     * @param array $data Accepts an optional 'created_at' (Y-m-d H:i:s) to backdate the movement, e.g. for seeding demo data.
+     */
     public function create(array $data): int
     {
         $stmt = DatabaseConnection::get()->prepare(
             'INSERT INTO stock_movements (warehouse_id, product_id, type, quantity, note, created_by, created_at)
-             VALUES (:warehouse_id, :product_id, :type, :quantity, :note, :created_by, NOW())'
+             VALUES (:warehouse_id, :product_id, :type, :quantity, :note, :created_by, :created_at)'
         );
         $stmt->execute([
             'warehouse_id' => $data['warehouse_id'],
@@ -36,6 +39,7 @@ class StockMovementModel
             'quantity' => $data['quantity'],
             'note' => $data['note'] ?: null,
             'created_by' => $data['created_by'] ?: null,
+            'created_at' => $data['created_at'] ?? date('Y-m-d H:i:s'),
         ]);
 
         return (int) DatabaseConnection::get()->lastInsertId();

@@ -12,7 +12,7 @@ class IncomingInvoiceModel
             'SELECT i.*, p.name AS partner_name
              FROM incoming_invoices i
              JOIN partners p ON p.id = i.partner_id
-             ORDER BY i.created_at DESC'
+             ORDER BY i.issue_date DESC, i.id DESC'
         )->fetchAll();
     }
 
@@ -98,7 +98,7 @@ class IncomingInvoiceModel
             );
             $stockStmt = $pdo->prepare(
                 "INSERT INTO stock_movements (warehouse_id, product_id, type, quantity, note, created_by, created_at)
-                 VALUES (:warehouse_id, :product_id, 'in', :quantity, :note, :created_by, NOW())"
+                 VALUES (:warehouse_id, :product_id, 'in', :quantity, :note, :created_by, :created_at)"
             );
 
             foreach ($items as $item) {
@@ -117,6 +117,7 @@ class IncomingInvoiceModel
                         'quantity' => $item['quantity'],
                         'note' => 'Beszerzés: ' . $data['invoice_number'],
                         'created_by' => $data['created_by'] ?: null,
+                        'created_at' => $data['issue_date'] . ' 09:00:00',
                     ]);
                 }
             }

@@ -6,8 +6,8 @@
             <div class="cx-stat cx-stat--primary">
                 <div class="cx-stat__icon"><i class="bi bi-cart-check"></i></div>
                 <div>
-                    <div class="cx-stat__label">Vevői rendelés</div>
-                    <div class="cx-stat__value">0 Ft</div>
+                    <div class="cx-stat__label">Vevői rendelés (10 nap)</div>
+                    <div class="cx-stat__value">{{ orders_total_value|default(0)|number_format(0, ',', ' ') }} Ft</div>
                 </div>
             </div>
         </div>
@@ -47,9 +47,8 @@
                     <h2>Vevői rendelések</h2>
                     <span class="text-muted small">Elmúlt 10 nap</span>
                 </div>
-                <div class="cx-card__body text-center text-muted py-5">
-                    <i class="bi bi-graph-up fs-1 d-block mb-2"></i>
-                    Még nincs elég adat a grafikonhoz.
+                <div class="cx-card__body">
+                    <canvas id="orders-chart" height="90"></canvas>
                 </div>
             </div>
         </div>
@@ -65,4 +64,32 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        const dailyOrders = {{ daily_orders|default([])|json_encode|raw }};
+        const ctx = document.getElementById('orders-chart');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dailyOrders.map(d => d.date.slice(5).replace('-', '.')),
+                datasets: [{
+                    label: 'Rendelés érték (Ft)',
+                    data: dailyOrders.map(d => d.total_value),
+                    borderColor: '#4f5bd5',
+                    backgroundColor: 'rgba(79, 91, 213, 0.12)',
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 3,
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: (v) => new Intl.NumberFormat('hu-HU').format(v) } }
+                }
+            }
+        });
+    </script>
 {% endblock %}

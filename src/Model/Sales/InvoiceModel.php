@@ -12,7 +12,7 @@ class InvoiceModel
             'SELECT i.*, p.name AS partner_name
              FROM invoices i
              JOIN partners p ON p.id = i.partner_id
-             ORDER BY i.created_at DESC'
+             ORDER BY i.issue_date DESC, i.id DESC'
         )->fetchAll();
     }
 

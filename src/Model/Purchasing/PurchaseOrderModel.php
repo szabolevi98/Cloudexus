@@ -12,7 +12,7 @@ class PurchaseOrderModel
             'SELECT po.*, p.name AS partner_name
              FROM purchase_orders po
              JOIN partners p ON p.id = po.partner_id
-             ORDER BY po.created_at DESC'
+             ORDER BY po.order_date DESC, po.id DESC'
         )->fetchAll();
     }
 
