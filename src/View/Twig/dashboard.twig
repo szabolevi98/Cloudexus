@@ -25,7 +25,7 @@
                 <div class="cx-stat__icon"><i class="bi bi-exclamation-circle"></i></div>
                 <div>
                     <div class="cx-stat__label">Kötelezettség</div>
-                    <div class="cx-stat__value">0 Ft</div>
+                    <div class="cx-stat__value">{{ payable_total|default(0)|number_format(0, ',', ' ') }} Ft</div>
                 </div>
             </div>
         </div>

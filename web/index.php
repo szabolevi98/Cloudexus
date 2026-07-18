@@ -2,11 +2,13 @@
 
 use Cloudexus\Controller\CategoryController;
 use Cloudexus\Controller\DashboardController;
+use Cloudexus\Controller\IncomingInvoiceController;
 use Cloudexus\Controller\InvoiceController;
 use Cloudexus\Controller\LoginController;
 use Cloudexus\Controller\OrderController;
 use Cloudexus\Controller\PartnerController;
 use Cloudexus\Controller\ProductController;
+use Cloudexus\Controller\PurchaseOrderController;
 use Cloudexus\Controller\StockController;
 use Cloudexus\Controller\UserController;
 use Cloudexus\Controller\WarehouseController;
@@ -75,5 +77,20 @@ $router->get('/invoices/{id}', fn($id) => (new InvoiceController())->show((int) 
 $router->post('/invoices/{id}/mark-paid', fn($id) => (new InvoiceController())->markPaid((int) $id));
 $router->post('/invoices/{id}/cancel', fn($id) => (new InvoiceController())->cancel((int) $id));
 $router->post('/invoices/{id}/delete', fn($id) => (new InvoiceController())->delete((int) $id));
+
+$router->get('/purchase-orders', fn() => (new PurchaseOrderController())->list());
+$router->get('/purchase-orders/create', fn() => (new PurchaseOrderController())->createForm());
+$router->post('/purchase-orders/create', fn() => (new PurchaseOrderController())->create());
+$router->get('/purchase-orders/{id}', fn($id) => (new PurchaseOrderController())->show((int) $id));
+$router->post('/purchase-orders/{id}/cancel', fn($id) => (new PurchaseOrderController())->cancel((int) $id));
+$router->post('/purchase-orders/{id}/delete', fn($id) => (new PurchaseOrderController())->delete((int) $id));
+
+$router->get('/incoming-invoices', fn() => (new IncomingInvoiceController())->list());
+$router->get('/incoming-invoices/create', fn() => (new IncomingInvoiceController())->createForm());
+$router->post('/incoming-invoices/create', fn() => (new IncomingInvoiceController())->create());
+$router->get('/incoming-invoices/{id}', fn($id) => (new IncomingInvoiceController())->show((int) $id));
+$router->post('/incoming-invoices/{id}/mark-paid', fn($id) => (new IncomingInvoiceController())->markPaid((int) $id));
+$router->post('/incoming-invoices/{id}/cancel', fn($id) => (new IncomingInvoiceController())->cancel((int) $id));
+$router->post('/incoming-invoices/{id}/delete', fn($id) => (new IncomingInvoiceController())->delete((int) $id));
 
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
