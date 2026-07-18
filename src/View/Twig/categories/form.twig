@@ -17,7 +17,7 @@
                         <option value="">— nincs —</option>
                         {% for c in categories %}
                             {% if not category or c.id != category.id %}
-                                <option value="{{ c.id }}" {{ category and category.parent_id == c.id ? 'selected' : '' }}>{{ c.name }}</option>
+                                <option value="{{ c.id }}" {{ category and category.parent_id == c.id ? 'selected' : '' }}>{{ paths[c.id] }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>

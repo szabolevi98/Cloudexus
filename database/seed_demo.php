@@ -19,6 +19,7 @@ use Cloudexus\Model\Core\CategoryModel;
 use Cloudexus\Model\Core\PartnerModel;
 use Cloudexus\Model\Core\ProductModel;
 use Cloudexus\Model\Core\StockMovementModel;
+use Cloudexus\Model\Core\StocktakingModel;
 use Cloudexus\Model\Core\WarehouseModel;
 use Cloudexus\Model\Purchasing\IncomingInvoiceModel;
 use Cloudexus\Model\Purchasing\PurchaseOrderModel;
@@ -130,7 +131,26 @@ foreach ($catalog as $categoryName => $items) {
     }
 }
 
-echo count($products) . " products in " . count($categoryIds) . " categories.\n";
+// Néhány alkategória, hogy a kategória-útvonal (Szülő > Gyerek) megjelenjen.
+$subcategories = [
+    'Kerékpár' => ['Városi kerékpár', 'Hegyi kerékpár', 'Elektromos kerékpár'],
+    'Elektronika' => ['Számítástechnika', 'Audió eszközök'],
+    'Bútor' => ['Irodabútor', 'Otthon'],
+];
+$subCount = 0;
+foreach ($subcategories as $parentName => $children) {
+    foreach ($children as $childName) {
+        $childId = $categoryModel->create(['name' => $childName, 'parent_id' => $categoryIds[$parentName]]);
+        // Egy-két unoka szint is, hogy többszintű útvonal is legyen.
+        if ($childName === 'Számítástechnika') {
+            $categoryModel->create(['name' => 'Perifériák', 'parent_id' => $childId]);
+            $subCount++;
+        }
+        $subCount++;
+    }
+}
+
+echo count($products) . " products in " . (count($categoryIds) + $subCount) . " categories (incl. subcategories).\n";
 
 // ---------------------------------------------------------------------------
 // Partners
@@ -415,6 +435,42 @@ for ($i = 0; $i < 15; $i++) {
         'created_by' => null,
     ]);
 }
+
+// ---------------------------------------------------------------------------
+// Leltárak (stocktakings) — néhány raktárra, kis eltérésekkel
+// ---------------------------------------------------------------------------
+echo "Seeding stocktakings...\n";
+
+$stocktakingModel = new StocktakingModel();
+$stocktakingCount = 0;
+
+foreach ([$warehouseIds[0], $warehouseIds[1]] as $whId) {
+    $sheet = $stockModel->stockSheet($whId);
+    if (!$sheet) {
+        continue;
+    }
+
+    // Kb. 12 véletlen termék leltározása, részben eltéréssel.
+    shuffle($sheet);
+    $subset = array_slice($sheet, 0, 12);
+
+    $items = [];
+    foreach ($subset as $row) {
+        $book = (float) $row['book_quantity'];
+        // ~40% eséllyel van eltérés (+/- pár darab), egyébként pontos.
+        $counted = rand(1, 100) <= 40 ? max(0, $book + rand(-4, 4)) : $book;
+        $items[] = [
+            'product_id' => (int) $row['product_id'],
+            'book_quantity' => $book,
+            'counted_quantity' => $counted,
+        ];
+    }
+
+    $stocktakingModel->book($whId, 'Időszaki leltár', $items, null);
+    $stocktakingCount++;
+}
+
+echo "$stocktakingCount stocktakings.\n";
 
 // ---------------------------------------------------------------------------
 // Teendők (CRM todos)

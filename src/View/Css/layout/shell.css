@@ -23,6 +23,12 @@
     font-weight: 700;
     font-size: 1.15rem;
     padding: 8px 10px 24px;
+    text-decoration: none;
+}
+
+.cx-sidebar__brand:hover {
+    color: #fff;
+    opacity: 0.9;
 }
 
 .cx-sidebar__brand-icon {

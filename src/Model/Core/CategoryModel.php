@@ -46,6 +46,34 @@ class CategoryModel
         return $stmt->fetchAll();
     }
 
+    /**
+     * Full breadcrumb path for every category, e.g. "Szülő > Gyerek > Unoka",
+     * keyed by category id. Used to show the hierarchy in lists and selects.
+     */
+    public function paths(): array
+    {
+        $rows = DatabaseConnection::get()->query('SELECT id, name, parent_id FROM categories')->fetchAll();
+
+        $byId = [];
+        foreach ($rows as $row) {
+            $byId[$row['id']] = $row;
+        }
+
+        $paths = [];
+        foreach ($byId as $id => $row) {
+            $parts = [];
+            $current = $row;
+            $guard = 0;
+            while ($current && $guard++ < 50) {
+                array_unshift($parts, $current['name']);
+                $current = $current['parent_id'] ? ($byId[$current['parent_id']] ?? null) : null;
+            }
+            $paths[$id] = implode(' > ', $parts);
+        }
+
+        return $paths;
+    }
+
     public function findById(int $id): ?array
     {
         $stmt = DatabaseConnection::get()->prepare('SELECT * FROM categories WHERE id = :id LIMIT 1');

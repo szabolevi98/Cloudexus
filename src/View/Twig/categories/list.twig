@@ -25,8 +25,7 @@
                 <table class="table table-hover align-middle mb-0 cx-table">
                     <thead>
                     <tr>
-                        <th>Név</th>
-                        <th>Szülő kategória</th>
+                        <th>Kategória (útvonal)</th>
                         <th class="text-end">Termékek</th>
                         <th class="text-end">Műveletek</th>
                     </tr>
@@ -34,8 +33,13 @@
                     <tbody>
                     {% for category in categories %}
                         <tr>
-                            <td class="fw-medium">{{ category.name }}</td>
-                            <td class="text-muted">{{ category.parent_name ?: '—' }}</td>
+                            <td class="fw-medium">
+                                {% if category.parent_name %}
+                                    <span class="text-muted fw-normal">{{ paths[category.id]|slice(0, paths[category.id]|length - category.name|length) }}</span>{{ category.name }}
+                                {% else %}
+                                    {{ category.name }}
+                                {% endif %}
+                            </td>
                             <td class="text-end">
                                 <a href="{{ base_url }}/products?category_id={{ category.id }}" class="badge rounded-pill text-bg-primary text-decoration-none">
                                     {{ category.product_count }} db
@@ -53,7 +57,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="4" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő kategória.</td></tr>
+                        <tr><td colspan="3" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő kategória.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

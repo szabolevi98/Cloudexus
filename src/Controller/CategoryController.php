@@ -27,6 +27,7 @@ class CategoryController extends BaseController
             'categories' => $this->categories->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
+            'paths' => $this->categories->paths(),
         ]);
     }
 
@@ -38,6 +39,7 @@ class CategoryController extends BaseController
         $this->render('categories/form.twig', [
             'category' => null,
             'categories' => $this->categories->all(),
+            'paths' => $this->categories->paths(),
         ]);
     }
 
@@ -70,6 +72,7 @@ class CategoryController extends BaseController
         $this->render('categories/form.twig', [
             'category' => $category,
             'categories' => $this->categories->all(),
+            'paths' => $this->categories->paths(),
         ]);
     }
 
