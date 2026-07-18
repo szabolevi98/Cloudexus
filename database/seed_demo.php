@@ -108,6 +108,7 @@ $catalog = [
 
 $categoryIds = [];
 $products = [];
+$productIdsByParent = []; // parentName => [productId, ...]
 $skuCounter = 1;
 
 foreach ($catalog as $categoryName => $items) {
@@ -128,6 +129,7 @@ foreach ($catalog as $categoryName => $items) {
             'is_active' => 1,
         ]);
         $products[] = ['id' => $productId, 'price' => $price];
+        $productIdsByParent[$categoryName][] = $productId;
     }
 }
 
@@ -138,15 +140,31 @@ $subcategories = [
     'Bútor' => ['Irodabútor', 'Otthon'],
 ];
 $subCount = 0;
+$subIdsByParent = []; // parentName => [childCategoryId, ...]
 foreach ($subcategories as $parentName => $children) {
     foreach ($children as $childName) {
         $childId = $categoryModel->create(['name' => $childName, 'parent_id' => $categoryIds[$parentName]]);
+        $subIdsByParent[$parentName][] = $childId;
         // Egy-két unoka szint is, hogy többszintű útvonal is legyen.
         if ($childName === 'Számítástechnika') {
             $categoryModel->create(['name' => 'Perifériák', 'parent_id' => $childId]);
             $subCount++;
         }
         $subCount++;
+    }
+}
+
+// Termékek szétosztása az alkategóriákba, hogy a Top kategóriák változatosabb
+// legyen (pl. külön "Kerékpár > Városi kerékpár" sor is szerepeljen).
+$reassignStmt = $pdo->prepare('UPDATE products SET category_id = :cat WHERE id = :id');
+foreach ($subIdsByParent as $parentName => $childIds) {
+    foreach ($productIdsByParent[$parentName] ?? [] as $index => $productId) {
+        // A szülő termékeinek nagy részét egy-egy alkategóriába soroljuk,
+        // néhányat viszont a szülőn hagyunk.
+        if ($index === 0) {
+            continue;
+        }
+        $reassignStmt->execute(['cat' => $childIds[array_rand($childIds)], 'id' => $productId]);
     }
 }
 

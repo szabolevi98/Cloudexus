@@ -17,7 +17,7 @@ class DashboardController extends BaseController
         $invoices = new InvoiceModel();
 
         $dailyOrders = $orders->dailyTotals(10);
-        $topCategories = $orders->topCategories(30, 6);
+        $topCategories = $orders->topCategories(30, 10);
 
         $this->activeMenu = 'dashboard';
         $this->pageTitle = 'Vezérlőpult';
