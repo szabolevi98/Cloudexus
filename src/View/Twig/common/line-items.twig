@@ -1,0 +1,108 @@
+<div class="cx-line-items">
+    <label class="form-label">Tételek</label>
+    <div class="table-responsive">
+        <table class="table cx-table align-middle" id="line-items-table">
+            <thead>
+            <tr>
+                <th>Termék</th>
+                <th style="width:120px;">Mennyiség</th>
+                <th style="width:150px;">Egységár (Ft)</th>
+                <th style="width:150px;" class="text-end">Sor összesen</th>
+                <th style="width:40px;"></th>
+            </tr>
+            </thead>
+            <tbody id="line-items-body"></tbody>
+            <tfoot>
+            <tr>
+                <td colspan="3" class="text-end fw-medium">Végösszeg</td>
+                <td class="text-end fw-bold" id="line-items-total">0 Ft</td>
+                <td></td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <button type="button" class="btn btn-outline-primary btn-sm" id="add-line-item">
+        <i class="bi bi-plus-lg me-1"></i>Tétel hozzáadása
+    </button>
+</div>
+
+<template id="line-item-template">
+    <tr class="cx-line-item">
+        <td>
+            <select name="product_id[]" class="form-select form-select-sm cx-line-item__product" required>
+                <option value="">Válassz terméket…</option>
+                {% for p in products %}
+                    <option value="{{ p.id }}" data-price="{{ p.price }}">{{ p.sku }} — {{ p.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td><input type="number" step="0.001" min="0.001" name="quantity[]" class="form-control form-control-sm cx-line-item__quantity" required></td>
+        <td><input type="number" step="0.01" min="0" name="unit_price[]" class="form-control form-control-sm cx-line-item__price" required></td>
+        <td class="text-end cx-line-item__total">0 Ft</td>
+        <td class="text-end">
+            <button type="button" class="btn btn-sm btn-outline-danger cx-line-item__remove">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<script>
+(function () {
+    const body = document.getElementById('line-items-body');
+    const template = document.getElementById('line-item-template');
+    const totalCell = document.getElementById('line-items-total');
+    const prefill = {{ prefill|default([])|json_encode|raw }};
+    const numberFormat = (n) => new Intl.NumberFormat('hu-HU').format(Math.round(n)) + ' Ft';
+
+    function recalcRow(row) {
+        const qty = parseFloat(row.querySelector('.cx-line-item__quantity').value) || 0;
+        const price = parseFloat(row.querySelector('.cx-line-item__price').value) || 0;
+        row.querySelector('.cx-line-item__total').textContent = numberFormat(qty * price);
+        recalcTotal();
+    }
+
+    function recalcTotal() {
+        let total = 0;
+        body.querySelectorAll('tr').forEach((row) => {
+            const qty = parseFloat(row.querySelector('.cx-line-item__quantity').value) || 0;
+            const price = parseFloat(row.querySelector('.cx-line-item__price').value) || 0;
+            total += qty * price;
+        });
+        totalCell.textContent = numberFormat(total);
+    }
+
+    function addRow(data) {
+        const row = template.content.firstElementChild.cloneNode(true);
+
+        row.querySelector('.cx-line-item__product').addEventListener('change', (e) => {
+            const price = e.target.selectedOptions[0]?.dataset.price || 0;
+            row.querySelector('.cx-line-item__price').value = price;
+            recalcRow(row);
+        });
+        row.querySelector('.cx-line-item__quantity').addEventListener('input', () => recalcRow(row));
+        row.querySelector('.cx-line-item__price').addEventListener('input', () => recalcRow(row));
+        row.querySelector('.cx-line-item__remove').addEventListener('click', () => {
+            row.remove();
+            recalcTotal();
+        });
+
+        body.appendChild(row);
+
+        if (data) {
+            row.querySelector('.cx-line-item__product').value = data.product_id;
+            row.querySelector('.cx-line-item__quantity').value = data.quantity;
+            row.querySelector('.cx-line-item__price').value = data.unit_price;
+            recalcRow(row);
+        }
+    }
+
+    document.getElementById('add-line-item').addEventListener('click', () => addRow());
+
+    if (prefill.length) {
+        prefill.forEach((item) => addRow(item));
+    } else {
+        addRow();
+    }
+})();
+</script>

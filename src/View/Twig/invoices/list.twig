@@ -1,0 +1,56 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card">
+        <div class="cx-card__header">
+            <h2>Számlák</h2>
+            <a href="{{ base_url }}/invoices/create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i>Új számla
+            </a>
+        </div>
+        <div class="cx-card__body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 cx-table">
+                    <thead>
+                    <tr>
+                        <th>Számlaszám</th>
+                        <th>Partner</th>
+                        <th>Kiállítás</th>
+                        <th>Fizetési határidő</th>
+                        <th>Állapot</th>
+                        <th class="text-end">Összeg</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for invoice in invoices %}
+                        <tr>
+                            <td class="fw-medium">{{ invoice.invoice_number }}</td>
+                            <td>{{ invoice.partner_name }}</td>
+                            <td class="text-muted">{{ invoice.issue_date }}</td>
+                            <td class="text-muted">{{ invoice.due_date }}</td>
+                            <td>
+                                {% if invoice.status == 'unpaid' %}
+                                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">Fizetésre vár</span>
+                                {% elseif invoice.status == 'paid' %}
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Kifizetve</span>
+                                {% else %}
+                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Stornózva</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>
+                            <td class="text-end">
+                                <a href="{{ base_url }}/invoices/{{ invoice.id }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="7" class="text-center text-muted py-4">Még nincs számla.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

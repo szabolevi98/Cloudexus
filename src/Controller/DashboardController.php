@@ -3,6 +3,7 @@
 namespace Cloudexus\Controller;
 
 use Cloudexus\Model\Core\ProductModel;
+use Cloudexus\Model\Sales\InvoiceModel;
 
 class DashboardController extends BaseController
 {
@@ -14,6 +15,7 @@ class DashboardController extends BaseController
         $this->pageTitle = 'Vezérlőpult';
         $this->render('dashboard.twig', [
             'product_count' => (new ProductModel())->count(),
+            'outstanding_total' => (new InvoiceModel())->outstandingTotal(),
         ]);
     }
 }

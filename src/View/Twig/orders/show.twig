@@ -1,0 +1,71 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card">
+        <div class="cx-card__header">
+            <div>
+                <h2>{{ order.order_number }}</h2>
+                <div class="text-muted small">{{ order.partner_name }} · {{ order.order_date }}</div>
+            </div>
+            <div>
+                {% if order.status == 'draft' %}
+                    <span class="badge rounded-pill text-bg-secondary">Piszkozat</span>
+                {% elseif order.status == 'confirmed' %}
+                    <span class="badge rounded-pill text-bg-primary">Visszaigazolt</span>
+                {% elseif order.status == 'invoiced' %}
+                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Számlázva</span>
+                {% else %}
+                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Törölve</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="cx-card__body p-0">
+            <div class="table-responsive">
+                <table class="table cx-table align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>Cikkszám</th>
+                        <th>Megnevezés</th>
+                        <th class="text-end">Mennyiség</th>
+                        <th class="text-end">Egységár</th>
+                        <th class="text-end">Sor összesen</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in order.items %}
+                        <tr>
+                            <td>{{ item.sku }}</td>
+                            <td>{{ item.product_name }}</td>
+                            <td class="text-end">{{ item.quantity|number_format(0, ',', ' ') }} {{ item.unit }}</td>
+                            <td class="text-end">{{ item.unit_price|number_format(0, ',', ' ') }} Ft</td>
+                            <td class="text-end">{{ item.line_total|number_format(0, ',', ' ') }} Ft</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-end fw-medium">Végösszeg</td>
+                        <td class="text-end fw-bold">{{ order.total_amount|number_format(0, ',', ' ') }} Ft</td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a href="{{ base_url }}/orders" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Vissza a listához
+        </a>
+        {% if order.status != 'invoiced' and order.status != 'cancelled' %}
+            <a href="{{ base_url }}/invoices/create?order_id={{ order.id }}" class="btn btn-primary">
+                <i class="bi bi-receipt me-1"></i>Számla készítése
+            </a>
+            <form method="post" action="{{ base_url }}/orders/{{ order.id }}/cancel" onsubmit="return confirm('Biztosan stornózod a rendelést?');">
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-x-circle me-1"></i>Stornózás
+                </button>
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}

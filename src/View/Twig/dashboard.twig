@@ -16,7 +16,7 @@
                 <div class="cx-stat__icon"><i class="bi bi-hourglass-split"></i></div>
                 <div>
                     <div class="cx-stat__label">Kintlevőség</div>
-                    <div class="cx-stat__value">0 Ft</div>
+                    <div class="cx-stat__value">{{ outstanding_total|default(0)|number_format(0, ',', ' ') }} Ft</div>
                 </div>
             </div>
         </div>

@@ -1,0 +1,90 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card">
+        <div class="cx-card__header">
+            <div>
+                <h2>{{ invoice.invoice_number }}</h2>
+                <div class="text-muted small">
+                    {{ invoice.partner_name }}
+                    {% if invoice.tax_number %} · Adószám: {{ invoice.tax_number }}{% endif %}
+                </div>
+            </div>
+            <div>
+                {% if invoice.status == 'unpaid' %}
+                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">Fizetésre vár</span>
+                {% elseif invoice.status == 'paid' %}
+                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Kifizetve</span>
+                {% else %}
+                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Stornózva</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="cx-card__body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="text-muted small">Kiállítás dátuma</div>
+                    <div class="fw-medium">{{ invoice.issue_date }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Fizetési határidő</div>
+                    <div class="fw-medium">{{ invoice.due_date }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Cím</div>
+                    <div class="fw-medium">{{ invoice.address ?: '—' }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="cx-card__body p-0">
+            <div class="table-responsive">
+                <table class="table cx-table align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>Cikkszám</th>
+                        <th>Megnevezés</th>
+                        <th class="text-end">Mennyiség</th>
+                        <th class="text-end">Egységár</th>
+                        <th class="text-end">Sor összesen</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in invoice.items %}
+                        <tr>
+                            <td>{{ item.sku }}</td>
+                            <td>{{ item.product_name }}</td>
+                            <td class="text-end">{{ item.quantity|number_format(0, ',', ' ') }} {{ item.unit }}</td>
+                            <td class="text-end">{{ item.unit_price|number_format(0, ',', ' ') }} Ft</td>
+                            <td class="text-end">{{ item.line_total|number_format(0, ',', ' ') }} Ft</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-end fw-medium">Végösszeg</td>
+                        <td class="text-end fw-bold">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a href="{{ base_url }}/invoices" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Vissza a listához
+        </a>
+        {% if invoice.status == 'unpaid' %}
+            <form method="post" action="{{ base_url }}/invoices/{{ invoice.id }}/mark-paid">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle me-1"></i>Kifizetve jelölés
+                </button>
+            </form>
+            <form method="post" action="{{ base_url }}/invoices/{{ invoice.id }}/cancel" onsubmit="return confirm('Biztosan stornózod a számlát?');">
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-x-circle me-1"></i>Stornózás
+                </button>
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}

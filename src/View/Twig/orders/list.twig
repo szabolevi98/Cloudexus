@@ -1,0 +1,56 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card">
+        <div class="cx-card__header">
+            <h2>Vevői rendelések</h2>
+            <a href="{{ base_url }}/orders/create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i>Új rendelés
+            </a>
+        </div>
+        <div class="cx-card__body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 cx-table">
+                    <thead>
+                    <tr>
+                        <th>Rendelésszám</th>
+                        <th>Partner</th>
+                        <th>Dátum</th>
+                        <th>Állapot</th>
+                        <th class="text-end">Összeg</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td class="fw-medium">{{ order.order_number }}</td>
+                            <td>{{ order.partner_name }}</td>
+                            <td class="text-muted">{{ order.order_date }}</td>
+                            <td>
+                                {% if order.status == 'draft' %}
+                                    <span class="badge rounded-pill text-bg-secondary">Piszkozat</span>
+                                {% elseif order.status == 'confirmed' %}
+                                    <span class="badge rounded-pill text-bg-primary">Visszaigazolt</span>
+                                {% elseif order.status == 'invoiced' %}
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Számlázva</span>
+                                {% else %}
+                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Törölve</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">{{ order.total_amount|number_format(0, ',', ' ') }} Ft</td>
+                            <td class="text-end">
+                                <a href="{{ base_url }}/orders/{{ order.id }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="6" class="text-center text-muted py-4">Még nincs rendelés.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

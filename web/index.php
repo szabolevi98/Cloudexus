@@ -2,7 +2,9 @@
 
 use Cloudexus\Controller\CategoryController;
 use Cloudexus\Controller\DashboardController;
+use Cloudexus\Controller\InvoiceController;
 use Cloudexus\Controller\LoginController;
+use Cloudexus\Controller\OrderController;
 use Cloudexus\Controller\PartnerController;
 use Cloudexus\Controller\ProductController;
 use Cloudexus\Controller\StockController;
@@ -58,5 +60,20 @@ $router->get('/stock/in', fn() => (new StockController())->inList());
 $router->post('/stock/in/create', fn() => (new StockController())->inCreate());
 $router->get('/stock/out', fn() => (new StockController())->outList());
 $router->post('/stock/out/create', fn() => (new StockController())->outCreate());
+
+$router->get('/orders', fn() => (new OrderController())->list());
+$router->get('/orders/create', fn() => (new OrderController())->createForm());
+$router->post('/orders/create', fn() => (new OrderController())->create());
+$router->get('/orders/{id}', fn($id) => (new OrderController())->show((int) $id));
+$router->post('/orders/{id}/cancel', fn($id) => (new OrderController())->cancel((int) $id));
+$router->post('/orders/{id}/delete', fn($id) => (new OrderController())->delete((int) $id));
+
+$router->get('/invoices', fn() => (new InvoiceController())->list());
+$router->get('/invoices/create', fn() => (new InvoiceController())->createForm());
+$router->post('/invoices/create', fn() => (new InvoiceController())->create());
+$router->get('/invoices/{id}', fn($id) => (new InvoiceController())->show((int) $id));
+$router->post('/invoices/{id}/mark-paid', fn($id) => (new InvoiceController())->markPaid((int) $id));
+$router->post('/invoices/{id}/cancel', fn($id) => (new InvoiceController())->cancel((int) $id));
+$router->post('/invoices/{id}/delete', fn($id) => (new InvoiceController())->delete((int) $id));
 
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);

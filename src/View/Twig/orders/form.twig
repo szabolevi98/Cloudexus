@@ -1,0 +1,41 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card">
+        <div class="cx-card__header">
+            <h2>Új vevői rendelés</h2>
+        </div>
+        <div class="cx-card__body">
+            <form method="post" action="{{ base_url }}/orders/create" id="order-form">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Rendelésszám</label>
+                        <input type="text" name="order_number" class="form-control" value="{{ order_number }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="partner_id" class="form-label">Partner (vevő)</label>
+                        <select id="partner_id" name="partner_id" class="form-select" required>
+                            <option value="">Válassz partnert…</option>
+                            {% for p in partners %}
+                                <option value="{{ p.id }}">{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Rendelés dátuma</label>
+                        <input type="date" name="order_date" class="form-control" value="{{ "now"|date("Y-m-d") }}">
+                    </div>
+                </div>
+
+                {% include 'common/line-items.twig' with {products: products} %}
+
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <a href="{{ base_url }}/orders" class="btn btn-outline-secondary">Mégse</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>Rendelés létrehozása
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
