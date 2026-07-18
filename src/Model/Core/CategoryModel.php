@@ -16,7 +16,14 @@ class CategoryModel
         )->fetchAll();
     }
 
-    /** Filters: q (name). Includes parent name and product count per category. */
+    /**
+     * Filters: q (name). Includes parent name and product count per category.
+     *
+     * Rows are ordered by their full breadcrumb path, so parents come in
+     * alphabetical order and each parent's children follow alphabetically
+     * (e.g. "Bútor", "Bútor > Irodabútor", "Bútor > Otthon", "Elektronika", …).
+     * Sorting/paging is done in PHP so arbitrary nesting depths order correctly.
+     */
     public function paginate(array $filters, \Cloudexus\Core\Paginator $pager): array
     {
         $where = '';
@@ -27,23 +34,39 @@ class CategoryModel
             $params['q'] = '%' . $filters['q'] . '%';
         }
 
-        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM categories c $where");
-        $count->execute($params);
-        $pager->total = (int) $count->fetchColumn();
-        $pager->clamp();
-
         $stmt = DatabaseConnection::get()->prepare(
             "SELECT c.*, p.name AS parent_name,
                     (SELECT COUNT(*) FROM products pr WHERE pr.category_id = c.id) AS product_count
              FROM categories c
              LEFT JOIN categories p ON p.id = c.parent_id
-             $where
-             ORDER BY c.name ASC
-             LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+             $where"
         );
         $stmt->execute($params);
+        $rows = $stmt->fetchAll();
 
-        return $stmt->fetchAll();
+        $paths = $this->paths();
+        $collator = class_exists('Collator') ? new \Collator('hu_HU') : null;
+        foreach ($rows as &$row) {
+            $path = $paths[$row['id']] ?? $row['name'];
+            $row['sort_path'] = $path;
+            // Accent-folded key so Hungarian letters sort naturally without intl.
+            $row['sort_key'] = strtr(mb_strtolower($path, 'UTF-8'), [
+                'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ö' => 'o',
+                'ő' => 'o', 'ú' => 'u', 'ü' => 'u', 'ű' => 'u',
+            ]);
+        }
+        unset($row);
+
+        usort($rows, function ($a, $b) use ($collator) {
+            return $collator
+                ? $collator->compare($a['sort_path'], $b['sort_path'])
+                : strcmp($a['sort_key'], $b['sort_key']);
+        });
+
+        $pager->total = count($rows);
+        $pager->clamp();
+
+        return array_slice($rows, $pager->offset(), $pager->perPage);
     }
 
     /**
