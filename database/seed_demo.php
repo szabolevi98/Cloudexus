@@ -284,16 +284,16 @@ $orderCount = 0;
 $invoiceCount = 0;
 $paidCount = 0;
 
-for ($i = 0; $i < 45; $i++) {
+for ($i = 0; $i < 130; $i++) {
     $orderDate = randDate(30, 0);
-    $itemCount = rand(1, 4);
+    $itemCount = rand(1, 6);
     $items = [];
 
     for ($j = 0; $j < $itemCount; $j++) {
         $product = $products[array_rand($products)];
         $items[] = [
             'product_id' => $product['id'],
-            'quantity' => rand(1, 8),
+            'quantity' => rand(1, 12),
             'unit_price' => round($product['price'] * (rand(95, 105) / 100)),
         ];
     }
@@ -355,9 +355,9 @@ $poCount = 0;
 $incomingCount = 0;
 $incomingPaidCount = 0;
 
-for ($i = 0; $i < 20; $i++) {
+for ($i = 0; $i < 45; $i++) {
     $orderDate = randDate(45, 0);
-    $itemCount = rand(1, 3);
+    $itemCount = rand(1, 4);
     $items = [];
 
     for ($j = 0; $j < $itemCount; $j++) {
@@ -424,7 +424,7 @@ echo "Seeding standalone cash vouchers...\n";
 
 $standaloneNotes = ['Készpénzes vásárlás', 'Irodai apróbeszerzés', 'Üzemanyag', 'Postai költség', 'Takarítás'];
 
-for ($i = 0; $i < 15; $i++) {
+for ($i = 0; $i < 30; $i++) {
     $cashModel->create([
         'voucher_number' => $cashModel->nextVoucherNumber(),
         'type' => rand(0, 1) ? 'bevetel' : 'kiadas',
