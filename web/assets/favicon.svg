@@ -1,9 +1,9 @@
 
 <svg xmlns="http://www.w3.org/2000/svg" width="76" height="79" viewBox="0 0 76 79" fill="none" preserveAspectRatio="xMidYMid meet">
 
-  <rect x="4" y="5" width="66" height="67" rx="18" fill="#EEF0FD"></rect>
+  <rect x="4" y="5" width="66" height="67" rx="18" fill="#4F5BD5"></rect>
 
-  <g stroke="#4F5BD5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <g stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <!-- Felső kocka -->
     <path d="M36.5 21.5 44.5 26 36.5 30.5 28.5 26 36.5 21.5Z"></path>
     <path d="M28.5 26v9.5l8 4.5 8-4.5V26"></path>
