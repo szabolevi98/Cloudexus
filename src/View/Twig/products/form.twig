@@ -1,58 +1,269 @@
 {% extends 'common/layout.twig' %}
 
 {% block content %}
-    <div class="cx-card" style="max-width: 560px;">
-        <div class="cx-card__header">
-            <h2>{{ product ? 'Termék szerkesztése' : 'Új termék' }}</h2>
-        </div>
-        <div class="cx-card__body">
-            <form method="post" action="{{ base_url }}/products{{ product ? '/' ~ product.id : '/create' }}">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="sku" class="form-label">Cikkszám</label>
-                        <input type="text" id="sku" name="sku" class="form-control" value="{{ product.sku|default('') }}" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="barcode" class="form-label">Vonalkód <span class="text-muted small">(EAN/UPC)</span></label>
-                        <input type="text" id="barcode" name="barcode" class="form-control" value="{{ product.barcode|default('') }}">
+    <form method="post" action="{{ base_url }}/products{{ product ? '/' ~ product.id : '/create' }}" enctype="multipart/form-data">
+        <div class="row g-3">
+            <div class="col-lg-8">
+                {# --- Alapadatok --- #}
+                <div class="cx-card mb-3">
+                    <div class="cx-card__header"><h2>{{ product ? 'Termék szerkesztése' : 'Új termék' }}</h2></div>
+                    <div class="cx-card__body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="sku" class="form-label">Cikkszám *</label>
+                                <input type="text" id="sku" name="sku" class="form-control" value="{{ product.sku|default('') }}" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="barcode" class="form-label">Vonalkód <span class="text-muted small">(EAN/UPC)</span></label>
+                                <input type="text" id="barcode" name="barcode" class="form-control" value="{{ product.barcode|default('') }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="unit" class="form-label">Mennyiségi egység</label>
+                                <select id="unit" name="unit" class="form-select">
+                                    {% for u in units %}
+                                        <option value="{{ u.code }}" {{ (product.unit|default('db')) == u.code ? 'selected' : '' }}>{{ u.name }} ({{ u.code }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Megnevezés *</label>
+                            <input type="text" id="name" name="name" class="form-control" value="{{ product.name|default('') }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="short_description" class="form-label">Rövid leírás</label>
+                            <input type="text" id="short_description" name="short_description" class="form-control" maxlength="255" value="{{ product.short_description|default('') }}">
+                        </div>
+                        <div class="mb-1">
+                            <label for="description" class="form-label">Hosszú leírás</label>
+                            <textarea id="description" name="description" class="form-control" rows="5">{{ product.description|default('') }}</textarea>
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="unit" class="form-label">Mennyiségi egység</label>
-                        <input type="text" id="unit" name="unit" class="form-control" value="{{ product.unit|default('db') }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="min_stock" class="form-label">Minimális készlet <span class="text-muted small">(riasztási szint)</span></label>
-                        <input type="number" step="0.001" min="0" id="min_stock" name="min_stock" class="form-control" value="{{ product.min_stock|default(0) }}">
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label for="name" class="form-label">Megnevezés</label>
-                    <input type="text" id="name" name="name" class="form-control" value="{{ product.name|default('') }}" required>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="category_id" class="form-label">Kategória</label>
-                        <select id="category_id" name="category_id" class="form-select">
-                            <option value="">— nincs —</option>
-                            {% for c in categories %}
-                                <option value="{{ c.id }}" {{ product and product.category_id == c.id ? 'selected' : '' }}>{{ c.name }}</option>
+
+                {# --- Paraméterek --- #}
+                <div class="cx-card mb-3">
+                    <div class="cx-card__header"><h2>Termékparaméterek</h2></div>
+                    <div class="cx-card__body">
+                        <div id="attr-rows">
+                            {% for attr in product.attributes|default([]) %}
+                                <div class="row g-2 mb-2 attr-row">
+                                    <div class="col-md-5"><input type="text" name="attr_name[]" class="form-control form-control-sm" placeholder="Paraméter neve" value="{{ attr.attr_name }}"></div>
+                                    <div class="col-md-6"><input type="text" name="attr_value[]" class="form-control form-control-sm" placeholder="Érték" value="{{ attr.attr_value }}"></div>
+                                    <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger attr-remove"><i class="bi bi-x-lg"></i></button></div>
+                                </div>
                             {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="price" class="form-label">Ár (Ft)</label>
-                        <input type="number" step="0.01" id="price" name="price" class="form-control" value="{{ product.price|default(0) }}">
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="attr-add"><i class="bi bi-plus-lg me-1"></i>Paraméter hozzáadása</button>
+                        <template id="attr-template">
+                            <div class="row g-2 mb-2 attr-row">
+                                <div class="col-md-5"><input type="text" name="attr_name[]" class="form-control form-control-sm" placeholder="Paraméter neve"></div>
+                                <div class="col-md-6"><input type="text" name="attr_value[]" class="form-control form-control-sm" placeholder="Érték"></div>
+                                <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger attr-remove"><i class="bi bi-x-lg"></i></button></div>
+                            </div>
+                        </template>
                     </div>
                 </div>
-                <div class="form-check mb-4">
-                    <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {{ (product is null or product.is_active) ? 'checked' : '' }}>
-                    <label for="is_active" class="form-check-label">Aktív</label>
+
+                {# --- Kapcsolódó / helyettesítő termékek --- #}
+                <div class="cx-card mb-3">
+                    <div class="cx-card__header"><h2>Kapcsolódó és helyettesítő termékek</h2></div>
+                    <div class="cx-card__body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="related_ids" class="form-label">Kapcsolódó termékek</label>
+                                <select id="related_ids" name="related_ids[]" class="form-select" multiple size="6">
+                                    {% for p in all_products %}
+                                        {% if not product or p.id != product.id %}
+                                            <option value="{{ p.id }}" {{ product and p.id in product.related_ids ? 'selected' : '' }}>{{ p.sku }} — {{ p.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Ctrl/Cmd + kattintás a többszörös kijelöléshez.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="substitute_ids" class="form-label">Helyettesítő termékek</label>
+                                <select id="substitute_ids" name="substitute_ids[]" class="form-select" multiple size="6">
+                                    {% for p in all_products %}
+                                        {% if not product or p.id != product.id %}
+                                            <option value="{{ p.id }}" {{ product and p.id in product.substitute_ids ? 'selected' : '' }}>{{ p.sku }} — {{ p.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Mentés</button>
-                <a href="{{ base_url }}/products" class="btn btn-outline-secondary">Mégse</a>
-            </form>
+
+                {# --- Képek --- #}
+                <div class="cx-card mb-3">
+                    <div class="cx-card__header"><h2>Képek</h2></div>
+                    <div class="cx-card__body">
+                        {% if product and product.images %}
+                            <div class="d-flex flex-wrap gap-3 mb-3">
+                                {% for img in product.images %}
+                                    <div class="cx-product-thumb {{ img.is_primary ? 'is-primary' : '' }}">
+                                        <img src="{{ img.path starts with 'http' ? img.path : base_url ~ '/' ~ img.path }}" alt="">
+                                        <div class="cx-product-thumb__actions">
+                                            {% if not img.is_primary %}
+                                                <button type="submit" form="img-primary-{{ img.id }}" class="btn btn-sm btn-light" title="Elsődleges"><i class="bi bi-star"></i></button>
+                                            {% else %}
+                                                <span class="badge text-bg-primary">Elsődleges</span>
+                                            {% endif %}
+                                            <button type="submit" form="img-del-{{ img.id }}" class="btn btn-sm btn-danger" title="Törlés" onclick="return confirm('Törlöd a képet?');"><i class="bi bi-trash"></i></button>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label for="images" class="form-label">Kép feltöltése <span class="text-muted small">(több is)</span></label>
+                                <input type="file" id="images" name="images[]" class="form-control" accept="image/*" multiple>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="image_url" class="form-label">Kép URL-ből</label>
+                                <input type="url" id="image_url" name="image_url" class="form-control" placeholder="https://…">
+                            </div>
+                        </div>
+                        {% if not product %}
+                            <div class="form-text">A termék mentése után tudsz több képet is kezelni (elsődleges beállítás, törlés).</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {# --- Oldalsáv: besorolás, árazás, méretek, státusz --- #}
+            <div class="col-lg-4">
+                <div class="cx-card mb-3">
+                    <div class="cx-card__header"><h2>Besorolás</h2></div>
+                    <div class="cx-card__body">
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">Elsődleges kategória</label>
+                            <select id="category_id" name="category_id" class="form-select">
+                                <option value="">— nincs —</option>
+                                {% for c in categories %}
+                                    <option value="{{ c.id }}" {{ product and product.category_id == c.id ? 'selected' : '' }}>{{ category_paths[c.id] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-1">
+                            <label for="category_ids" class="form-label">További kategóriák</label>
+                            <select id="category_ids" name="category_ids[]" class="form-select" multiple size="6">
+                                {% for c in categories %}
+                                    <option value="{{ c.id }}" {{ product and c.id in product.category_ids ? 'selected' : '' }}>{{ category_paths[c.id] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cx-card mb-3">
+                    <div class="cx-card__header"><h2>Árazás és készlet</h2></div>
+                    <div class="cx-card__body">
+                        <div class="row">
+                            <div class="col-8 mb-3">
+                                <label for="price" class="form-label">Nettó ár (Ft)</label>
+                                <input type="number" step="0.01" id="price" name="price" class="form-control" value="{{ product.price|default(0) }}">
+                            </div>
+                            <div class="col-4 mb-3">
+                                <label for="vat_rate" class="form-label">ÁFA %</label>
+                                <input type="number" step="0.01" id="vat_rate" name="vat_rate" class="form-control" value="{{ product.vat_rate|default(27) }}">
+                            </div>
+                        </div>
+                        {% if product %}
+                            <div class="alert alert-secondary d-flex justify-content-between align-items-center py-2 mb-3">
+                                <span class="small">Jelenlegi készlet (összes raktár)</span>
+                                <span class="fw-bold">{{ product.stock_qty|number_format(0, ',', ' ') }} {{ product.unit }}</span>
+                            </div>
+                        {% endif %}
+                        <div class="mb-1">
+                            <label for="min_stock" class="form-label">Minimális készlet <span class="text-muted small">(riasztás)</span></label>
+                            <input type="number" step="0.001" min="0" id="min_stock" name="min_stock" class="form-control" value="{{ product.min_stock|default(0) }}">
+                        </div>
+                        {% if not product %}
+                            <hr>
+                            <div class="mb-2">
+                                <label for="opening_stock" class="form-label">Nyitókészlet <span class="text-muted small">(opcionális)</span></label>
+                                <input type="number" step="0.001" min="0" id="opening_stock" name="opening_stock" class="form-control">
+                            </div>
+                            <div class="mb-1">
+                                <label for="opening_warehouse_id" class="form-label">Nyitókészlet raktára</label>
+                                <select id="opening_warehouse_id" name="opening_warehouse_id" class="form-select">
+                                    <option value="">— válassz —</option>
+                                    {% for w in warehouses %}
+                                        <option value="{{ w.id }}">{{ w.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="cx-card mb-3">
+                    <div class="cx-card__header"><h2>Méretek</h2></div>
+                    <div class="cx-card__body">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="width_mm" class="form-label">Szélesség (mm)</label>
+                                <input type="number" min="0" id="width_mm" name="width_mm" class="form-control" value="{{ product.width_mm|default('') }}">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="height_mm" class="form-label">Magasság (mm)</label>
+                                <input type="number" min="0" id="height_mm" name="height_mm" class="form-control" value="{{ product.height_mm|default('') }}">
+                            </div>
+                            <div class="col-6 mb-1">
+                                <label for="depth_mm" class="form-label">Mélység (mm)</label>
+                                <input type="number" min="0" id="depth_mm" name="depth_mm" class="form-control" value="{{ product.depth_mm|default('') }}">
+                            </div>
+                            <div class="col-6 mb-1">
+                                <label for="weight_g" class="form-label">Tömeg (g)</label>
+                                <input type="number" min="0" id="weight_g" name="weight_g" class="form-control" value="{{ product.weight_g|default('') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cx-card mb-3">
+                    <div class="cx-card__header"><h2>Státusz</h2></div>
+                    <div class="cx-card__body">
+                        <div class="form-check form-switch mb-2">
+                            <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {{ (product is null or product.is_active) ? 'checked' : '' }}>
+                            <label for="is_active" class="form-check-label">Aktív</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input type="checkbox" id="is_webshop" name="is_webshop" class="form-check-input" {{ (product is null or product.is_webshop) ? 'checked' : '' }}>
+                            <label for="is_webshop" class="form-check-label">Webshopos termék</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+
+        <div class="d-flex gap-2 mb-4">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Mentés</button>
+            <a href="{{ base_url }}/products" class="btn btn-outline-secondary">Vissza a listához</a>
+        </div>
+    </form>
+
+    {# Külön kis formok a kép-műveletekhez (a fő űrlapon kívül, hogy ne ütközzenek) #}
+    {% if product %}
+        {% for img in product.images %}
+            <form id="img-del-{{ img.id }}" method="post" action="{{ base_url }}/products/{{ product.id }}/images/{{ img.id }}/delete"></form>
+            <form id="img-primary-{{ img.id }}" method="post" action="{{ base_url }}/products/{{ product.id }}/images/{{ img.id }}/primary"></form>
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        (function () {
+            const rows = document.getElementById('attr-rows');
+            const tpl = document.getElementById('attr-template');
+            document.getElementById('attr-add').addEventListener('click', () => {
+                rows.appendChild(tpl.content.firstElementChild.cloneNode(true));
+            });
+            rows.addEventListener('click', (e) => {
+                if (e.target.closest('.attr-remove')) e.target.closest('.attr-row').remove();
+            });
+        })();
+    </script>
 {% endblock %}

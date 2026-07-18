@@ -80,6 +80,9 @@ $router->post('/profile', fn() => (new ProfileController())->update());
 $router->get('/products/export', fn() => (new ProductController())->export());
 $router->get('/partners/export', fn() => (new PartnerController())->export());
 
+$router->post('/products/{id}/images/{imageId}/delete', fn($id, $imageId) => (new ProductController())->deleteImage((int) $id, (int) $imageId));
+$router->post('/products/{id}/images/{imageId}/primary', fn($id, $imageId) => (new ProductController())->setPrimaryImage((int) $id, (int) $imageId));
+
 registerCrud($router, '/users', UserController::class);
 registerCrud($router, '/categories', CategoryController::class);
 registerCrud($router, '/products', ProductController::class);

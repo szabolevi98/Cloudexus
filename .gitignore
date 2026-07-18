@@ -9,3 +9,5 @@
 Thumbs.db
 /var/sessions/*
 !/var/sessions/.gitkeep
+/web/assets/uploads/*
+!/web/assets/uploads/.gitkeep

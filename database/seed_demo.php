@@ -114,6 +114,7 @@ $skuCounter = 1;
 foreach ($catalog as $categoryName => $items) {
     $categoryIds[$categoryName] = $categoryModel->create(['name' => $categoryName, 'parent_id' => null]);
 
+    $units = ['db', 'doboz', 'csomag', 'szett', 'karton'];
     foreach ($items as [$name, $price]) {
         $sku = 'PRD-' . str_pad((string) $skuCounter++, 4, '0', STR_PAD_LEFT);
         $productId = $productModel->create([
@@ -121,12 +122,27 @@ foreach ($catalog as $categoryName => $items) {
             // EAN-13-szerű demo vonalkód (599 = magyar prefix)
             'barcode' => '599' . str_pad((string) rand(0, 9999999999), 10, '0', STR_PAD_LEFT),
             'name' => $name,
+            'short_description' => $name . ' — kiváló minőségű termék raktárról.',
+            'description' => "A(z) $name részletes leírása. Tartós, megbízható termék, amely megfelel a piaci elvárásoknak. "
+                . 'Ideális választás vállalati és lakossági felhasználásra egyaránt.',
             'category_id' => $categoryIds[$categoryName],
-            'unit' => 'db',
+            'unit' => $units[array_rand($units)],
             'price' => $price,
+            'vat_rate' => 27,
             // A termékek felénél riasztási szint is van, hogy az alacsony készlet widget éljen.
             'min_stock' => rand(0, 1) ? rand(50, 250) : 0,
+            'width_mm' => rand(50, 800),
+            'height_mm' => rand(50, 800),
+            'depth_mm' => rand(50, 600),
+            'weight_g' => rand(100, 20000),
             'is_active' => 1,
+            'is_webshop' => rand(1, 100) <= 85 ? 1 : 0,
+            'attr_name' => ['Gyártó', 'Garancia', 'Származási ország'],
+            'attr_value' => [
+                ['Bosch', 'Makita', 'Samsung', 'Generic', 'Xiaomi'][array_rand([0, 1, 2, 3, 4])],
+                [12, 24, 36][array_rand([0, 1, 2])] . ' hónap',
+                ['Magyarország', 'Németország', 'Kína', 'Lengyelország'][array_rand([0, 1, 2, 3])],
+            ],
         ]);
         $products[] = ['id' => $productId, 'price' => $price];
         $productIdsByParent[$categoryName][] = $productId;

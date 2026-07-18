@@ -1,18 +1,72 @@
 .cx-table thead th {
     color: var(--cx-muted);
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     font-weight: 600;
     border-bottom-width: 1px;
-    padding: 12px 22px;
+    padding: 8px 16px;
+    white-space: nowrap;
 }
 
 .cx-table td {
-    padding: 14px 22px;
+    padding: 7px 16px;
     vertical-align: middle;
+    font-size: 0.9rem;
 }
 
 .cx-table tbody tr:hover {
     background: var(--cx-primary-soft);
+}
+
+/* Small square thumbnail in list rows */
+.cx-row-thumb {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    object-fit: cover;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cx-primary-soft);
+    color: var(--cx-muted);
+    border: 1px solid var(--cx-border);
+}
+
+.cx-row-thumb--empty {
+    font-size: 1rem;
+}
+
+/* Product image tiles on the edit form */
+.cx-product-thumb {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: var(--cx-radius-sm);
+    overflow: hidden;
+    border: 2px solid var(--cx-border);
+    background: var(--cx-primary-soft);
+}
+
+.cx-product-thumb.is-primary {
+    border-color: var(--cx-primary);
+}
+
+.cx-product-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cx-product-thumb__actions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.55), transparent);
 }
