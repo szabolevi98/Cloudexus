@@ -123,10 +123,24 @@ Cloudexus/
 
 ## 🗺️ Roadmap
 
-A teljes funkciótérkép a [FEATURES.md](FEATURES.md)-ben él. A következő nagyobb lépcsők:
+A teljes funkciótérkép a [FEATURES.md](FEATURES.md)-ben él.
 
-- [ ] Vonalkód gyűjtő (kézi leolvasós készletrögzítés)
-- [ ] Leltározás modul
+**Kész:**
+
+- [x] Bejelentkezés, szerepkör-alapú jogosultság, felhasználó- és profilkezelés
+- [x] Törzsadatok: termékek (vonalkóddal, minimum készlettel), kategóriák, partnerek
+- [x] Készletkezelés: bevét, kiadás, raktárközi átadás, raktárkészlet-áttekintés
+- [x] Vonalkód gyűjtő (kézi leolvasós tömeges készletrögzítés)
+- [x] Leltározás készletkorrekcióval
+- [x] Értékesítés: vevői rendelés → számlázás, nyomtatható számla
+- [x] Beszerzés: szállítói rendelés → bejövő számla automatikus bevéttel
+- [x] Pénztár: bizonylatok, számla-kiegyenlítés, pénzkészlet
+- [x] Vezérlőpult: forgalmi grafikon, kintlevőség/kötelezettség, top kategóriák, alacsony készlet
+- [x] Keresés, szűrők, lapozás, CSV export a listákban
+- [x] CSRF-védelem, cégadat-beállítások
+
+**Következő lépcsők:**
+
 - [ ] Tárhely / polc szintű helykódok
 - [ ] CRM alapok: ügyfélkapcsolat-történet, teendők
 - [ ] Szállítólevelek és fuvarszervezés

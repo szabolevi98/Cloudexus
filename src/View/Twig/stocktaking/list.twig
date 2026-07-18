@@ -1,0 +1,54 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card">
+        <div class="cx-card__header">
+            <h2>Leltárak</h2>
+            <a href="{{ base_url }}/stocktaking/create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i>Új leltár
+            </a>
+        </div>
+        <div class="cx-card__body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 cx-table">
+                    <thead>
+                    <tr>
+                        <th>Azonosító</th>
+                        <th>Raktár</th>
+                        <th>Dátum</th>
+                        <th>Rögzítette</th>
+                        <th class="text-end">Tételek</th>
+                        <th class="text-end">Eltérések</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for s in stocktakings %}
+                        <tr>
+                            <td class="fw-medium">{{ s.stocktaking_number }}</td>
+                            <td>{{ s.warehouse_name }}</td>
+                            <td class="text-muted">{{ s.created_at }}</td>
+                            <td class="text-muted">{{ s.created_by_name ?: '—' }}</td>
+                            <td class="text-end">{{ s.item_count }}</td>
+                            <td class="text-end">
+                                {% if s.diff_count > 0 %}
+                                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">{{ s.diff_count }} eltérés</span>
+                                {% else %}
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">pontos</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ base_url }}/stocktaking/{{ s.id }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="7" class="text-center text-muted py-4">Még nem volt leltár.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

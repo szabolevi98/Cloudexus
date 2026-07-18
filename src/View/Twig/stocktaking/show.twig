@@ -1,0 +1,55 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card">
+        <div class="cx-card__header">
+            <div>
+                <h2>{{ stocktaking.stocktaking_number }}</h2>
+                <div class="text-muted small">
+                    {{ stocktaking.warehouse_name }} · {{ stocktaking.created_at }}
+                    {% if stocktaking.created_by_name %} · {{ stocktaking.created_by_name }}{% endif %}
+                    {% if stocktaking.note %} · {{ stocktaking.note }}{% endif %}
+                </div>
+            </div>
+            <div>
+                {% if stocktaking.diff_count > 0 %}
+                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">{{ stocktaking.diff_count }} eltérés korrigálva</span>
+                {% else %}
+                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Nem volt eltérés</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="cx-card__body p-0">
+            <div class="table-responsive">
+                <table class="table cx-table align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>Cikkszám</th>
+                        <th>Megnevezés</th>
+                        <th class="text-end">Könyv szerint</th>
+                        <th class="text-end">Megszámolt</th>
+                        <th class="text-end">Eltérés</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in stocktaking.items %}
+                        <tr>
+                            <td class="fw-medium">{{ item.sku }}</td>
+                            <td>{{ item.product_name }}</td>
+                            <td class="text-end text-muted">{{ item.book_quantity|number_format(0, ',', ' ') }} {{ item.unit }}</td>
+                            <td class="text-end">{{ item.counted_quantity|number_format(0, ',', ' ') }} {{ item.unit }}</td>
+                            <td class="text-end fw-medium {{ item.diff == 0 ? 'text-muted' : (item.diff > 0 ? 'text-success' : 'text-danger') }}">
+                                {{ item.diff > 0 ? '+' : '' }}{{ item.diff|number_format(0, ',', ' ') }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <a href="{{ base_url }}/stocktaking" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Vissza a listához
+    </a>
+{% endblock %}

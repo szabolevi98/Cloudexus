@@ -1,0 +1,134 @@
+<?php
+
+namespace Cloudexus\Model\Core;
+
+use Cloudexus\Core\DatabaseConnection;
+
+class StocktakingModel
+{
+    public function all(): array
+    {
+        return DatabaseConnection::get()->query(
+            'SELECT s.*, w.name AS warehouse_name, u.full_name AS created_by_name
+             FROM stocktakings s
+             JOIN warehouses w ON w.id = s.warehouse_id
+             LEFT JOIN users u ON u.id = s.created_by
+             ORDER BY s.created_at DESC, s.id DESC'
+        )->fetchAll();
+    }
+
+    public function findById(int $id): ?array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT s.*, w.name AS warehouse_name, u.full_name AS created_by_name
+             FROM stocktakings s
+             JOIN warehouses w ON w.id = s.warehouse_id
+             LEFT JOIN users u ON u.id = s.created_by
+             WHERE s.id = :id LIMIT 1'
+        );
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+
+        if (!$row) {
+            return null;
+        }
+
+        $itemStmt = DatabaseConnection::get()->prepare(
+            'SELECT si.*, p.sku, p.name AS product_name, p.unit
+             FROM stocktaking_items si
+             JOIN products p ON p.id = si.product_id
+             WHERE si.stocktaking_id = :id
+             ORDER BY p.name ASC'
+        );
+        $itemStmt->execute(['id' => $id]);
+        $row['items'] = $itemStmt->fetchAll();
+
+        return $row;
+    }
+
+    public function nextNumber(): string
+    {
+        $year = date('Y');
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT COUNT(*) FROM stocktakings WHERE stocktaking_number LIKE :pattern'
+        );
+        $stmt->execute(['pattern' => "LELT-$year-%"]);
+        $count = (int) $stmt->fetchColumn() + 1;
+
+        return sprintf('LELT-%s-%04d', $year, $count);
+    }
+
+    /**
+     * Books a stocktaking: records the header + all counted items, and for every
+     * product whose counted quantity differs from the book quantity, posts a
+     * correction stock movement so the book stock matches the physical count.
+     *
+     * @param array $items List of ['product_id', 'book_quantity', 'counted_quantity'].
+     */
+    public function book(int $warehouseId, string $note, array $items, ?int $userId): int
+    {
+        $pdo = DatabaseConnection::get();
+        $pdo->beginTransaction();
+
+        try {
+            $number = $this->nextNumber();
+            $diffCount = 0;
+
+            $stmt = $pdo->prepare(
+                'INSERT INTO stocktakings (stocktaking_number, warehouse_id, note, item_count, diff_count, created_by, created_at)
+                 VALUES (:number, :warehouse_id, :note, :item_count, 0, :created_by, NOW())'
+            );
+            $stmt->execute([
+                'number' => $number,
+                'warehouse_id' => $warehouseId,
+                'note' => $note ?: null,
+                'item_count' => count($items),
+                'created_by' => $userId,
+            ]);
+            $stocktakingId = (int) $pdo->lastInsertId();
+
+            $itemStmt = $pdo->prepare(
+                'INSERT INTO stocktaking_items (stocktaking_id, product_id, book_quantity, counted_quantity, diff)
+                 VALUES (:stocktaking_id, :product_id, :book, :counted, :diff)'
+            );
+            $moveStmt = $pdo->prepare(
+                'INSERT INTO stock_movements (warehouse_id, product_id, type, quantity, note, created_by, created_at)
+                 VALUES (:warehouse_id, :product_id, :type, :quantity, :note, :created_by, NOW())'
+            );
+
+            foreach ($items as $item) {
+                $diff = $item['counted_quantity'] - $item['book_quantity'];
+
+                $itemStmt->execute([
+                    'stocktaking_id' => $stocktakingId,
+                    'product_id' => $item['product_id'],
+                    'book' => $item['book_quantity'],
+                    'counted' => $item['counted_quantity'],
+                    'diff' => $diff,
+                ]);
+
+                if (abs($diff) > 0.0001) {
+                    $diffCount++;
+                    $moveStmt->execute([
+                        'warehouse_id' => $warehouseId,
+                        'product_id' => $item['product_id'],
+                        'type' => $diff > 0 ? 'in' : 'out',
+                        'quantity' => abs($diff),
+                        'note' => 'Leltár korrekció: ' . $number,
+                        'created_by' => $userId,
+                    ]);
+                }
+            }
+
+            $pdo->prepare('UPDATE stocktakings SET diff_count = :d WHERE id = :id')
+                ->execute(['d' => $diffCount, 'id' => $stocktakingId]);
+
+            $pdo->commit();
+
+            return $stocktakingId;
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+}

@@ -180,6 +180,28 @@ class StockMovementModel
         return $stmt->fetchAll();
     }
 
+    /**
+     * Book stock of every active product in one warehouse (products with no
+     * movement show 0), for the stocktaking sheet.
+     */
+    public function stockSheet(int $warehouseId): array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT p.id AS product_id, p.sku, p.name AS product_name, p.unit,
+                    COALESCE(m.qty, 0) AS book_quantity
+             FROM products p
+             LEFT JOIN (
+                 SELECT product_id, SUM(CASE WHEN type = 'in' THEN quantity ELSE -quantity END) AS qty
+                 FROM stock_movements WHERE warehouse_id = :wid GROUP BY product_id
+             ) m ON m.product_id = p.id
+             WHERE p.is_active = 1
+             ORDER BY p.name ASC"
+        );
+        $stmt->execute(['wid' => $warehouseId]);
+
+        return $stmt->fetchAll();
+    }
+
     public function totalQuantityForProduct(int $productId): float
     {
         $stmt = DatabaseConnection::get()->prepare(

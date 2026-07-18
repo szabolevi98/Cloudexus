@@ -13,6 +13,7 @@ use Cloudexus\Controller\ProfileController;
 use Cloudexus\Controller\PurchaseOrderController;
 use Cloudexus\Controller\SettingsController;
 use Cloudexus\Controller\StockController;
+use Cloudexus\Controller\StocktakingController;
 use Cloudexus\Controller\UserController;
 use Cloudexus\Controller\WarehouseController;
 use Cloudexus\Core\Config;
@@ -97,6 +98,11 @@ $router->post('/stock/transfer', fn() => (new StockController())->transferCreate
 $router->get('/stock/barcode', fn() => (new StockController())->barcodeForm());
 $router->get('/stock/barcode/lookup', fn() => (new StockController())->barcodeLookup());
 $router->post('/stock/barcode', fn() => (new StockController())->barcodeSubmit());
+
+$router->get('/stocktaking', fn() => (new StocktakingController())->list());
+$router->get('/stocktaking/create', fn() => (new StocktakingController())->createForm());
+$router->post('/stocktaking/create', fn() => (new StocktakingController())->create());
+$router->get('/stocktaking/{id}', fn($id) => (new StocktakingController())->show((int) $id));
 
 $router->get('/orders', fn() => (new OrderController())->list());
 $router->get('/orders/create', fn() => (new OrderController())->createForm());
