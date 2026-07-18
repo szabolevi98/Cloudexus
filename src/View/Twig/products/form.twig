@@ -36,7 +36,7 @@
                         </div>
                         <div class="mb-1">
                             <label for="description" class="form-label">Hosszú leírás</label>
-                            <textarea id="description" name="description" class="form-control" rows="5">{{ product.description|default('') }}</textarea>
+                            <textarea id="description" name="description" class="tinymce-editor form-control" rows="8">{{ product.description|default('') }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -245,7 +245,23 @@
         {% endfor %}
     {% endif %}
 
+    <script src="{{ base_url }}/assets/vendor/tinymce/tinymce.min.js"></script>
     <script>
+        (function () {
+            if (typeof tinymce === 'undefined') return;
+            tinymce.init({
+                selector: '#description',
+                base_url: '{{ base_url }}/assets/vendor/tinymce',
+                suffix: '.min',
+                height: 320,
+                menubar: false,
+                branding: false,
+                plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste help wordcount',
+                toolbar: 'undo redo | styleselect | bold italic | bullist numlist outdent indent | link image table | removeformat code fullscreen',
+                content_style: 'body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}',
+            });
+        })();
+
         (function () {
             const rows = document.getElementById('attr-rows');
             const tpl = document.getElementById('attr-template');
