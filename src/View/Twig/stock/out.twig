@@ -19,6 +19,12 @@
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label for="location_id" class="form-label">Tárhely <span class="text-muted small">(opcionális)</span></label>
+                            <select id="location_id" name="location_id" class="form-select">
+                                <option value="">— tárhely nélkül —</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label for="product_id" class="form-label">Termék</label>
                             <select id="product_id" name="product_id" class="form-select" required>
                                 <option value="">Válassz terméket…</option>
@@ -75,6 +81,7 @@
                             <tr>
                                 <th>Dátum</th>
                                 <th>Raktár</th>
+                                <th>Tárhely</th>
                                 <th>Termék</th>
                                 <th class="text-end">Mennyiség</th>
                                 <th>Rögzítette</th>
@@ -85,12 +92,13 @@
                                 <tr>
                                     <td class="text-muted">{{ m.created_at }}</td>
                                     <td>{{ m.warehouse_name }}</td>
+                                    <td class="text-muted">{{ m.location_code ?: '—' }}</td>
                                     <td>{{ m.sku }} — {{ m.product_name }}</td>
                                     <td class="text-end text-danger fw-medium">-{{ m.quantity|number_format(0, ',', ' ') }} {{ m.unit }}</td>
                                     <td class="text-muted">{{ m.created_by_name ?: '—' }}</td>
                                 </tr>
                             {% else %}
-                                <tr><td colspan="5" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő kiadás.</td></tr>
+                                <tr><td colspan="6" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő kiadás.</td></tr>
                             {% endfor %}
                             </tbody>
                         </table>
@@ -100,4 +108,23 @@
             </div>
         </div>
     </div>
+
+    <script>
+        (function () {
+            const locs = {{ locations|json_encode|raw }};
+            const wh = document.getElementById('warehouse_id');
+            const loc = document.getElementById('location_id');
+            function fill() {
+                const w = parseInt(wh.value, 10);
+                loc.innerHTML = '<option value="">— tárhely nélkül —</option>';
+                locs.filter(l => l.warehouse_id == w).forEach(l => {
+                    const o = document.createElement('option');
+                    o.value = l.id; o.textContent = l.code;
+                    loc.appendChild(o);
+                });
+            }
+            wh.addEventListener('change', fill);
+            fill();
+        })();
+    </script>
 {% endblock %}

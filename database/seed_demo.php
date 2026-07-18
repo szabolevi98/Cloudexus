@@ -261,6 +261,7 @@ $locationStmt = $pdo->prepare(
     'INSERT INTO warehouse_locations (warehouse_id, code, name, is_active, created_at) VALUES (:wid, :code, :name, 1, NOW())'
 );
 $locationCount = 0;
+$locationsByWarehouse = []; // whId => [locationId, ...]
 foreach ($warehouseIds as $whId) {
     foreach (['A', 'B', 'C'] as $row) {
         foreach (range(1, 3) as $rack) {
@@ -271,12 +272,19 @@ foreach ($warehouseIds as $whId) {
                     'code' => $code,
                     'name' => sprintf('%s sor, %d. állvány, %d. polc', $row, $rack, $shelf),
                 ]);
+                $locationsByWarehouse[$whId][] = (int) $pdo->lastInsertId();
                 $locationCount++;
             }
         }
     }
 }
 echo "$locationCount warehouse locations.\n";
+
+// Egy adott raktár véletlen tárhelye (a mozgások polcra könyveléséhez).
+$randomLocation = function (int $whId) use ($locationsByWarehouse): ?int {
+    $list = $locationsByWarehouse[$whId] ?? [];
+    return $list ? $list[array_rand($list)] : null;
+};
 
 // ---------------------------------------------------------------------------
 // Opening stock + random stock movements (last 60 days)
@@ -291,6 +299,7 @@ foreach ($products as $product) {
     $openingQty = rand(40, 300);
     $stockModel->create([
         'warehouse_id' => $warehouseIds[0],
+        'location_id' => $randomLocation($warehouseIds[0]),
         'product_id' => $product['id'],
         'type' => 'in',
         'quantity' => $openingQty,
@@ -316,6 +325,7 @@ foreach ($products as $product) {
 
         $stockModel->create([
             'warehouse_id' => $warehouseId,
+            'location_id' => $randomLocation($warehouseId),
             'product_id' => $product['id'],
             'type' => $type,
             'quantity' => $qty,

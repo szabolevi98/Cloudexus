@@ -45,6 +45,8 @@
                         <th>Raktár</th>
                         <th>Helykód</th>
                         <th>Megnevezés</th>
+                        <th class="text-end">Készlet</th>
+                        <th class="text-end">Termékféle</th>
                         <th>Állapot</th>
                         <th class="text-end">Műveletek</th>
                     </tr>
@@ -53,8 +55,12 @@
                     {% for l in locations %}
                         <tr>
                             <td class="text-muted">{{ l.warehouse_name }}</td>
-                            <td class="fw-medium text-nowrap">{{ l.code }}</td>
+                            <td class="fw-medium text-nowrap">
+                                <a href="{{ base_url }}/stock?location_id={{ l.id }}" class="text-decoration-none">{{ l.code }}</a>
+                            </td>
                             <td>{{ l.name ?: '—' }}</td>
+                            <td class="text-end">{{ l.stock_qty|number_format(0, ',', ' ') }}</td>
+                            <td class="text-end text-muted">{{ l.product_count }}</td>
                             <td>
                                 {% if l.is_active %}
                                     <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>
@@ -70,7 +76,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="5" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő tárhely.</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő tárhely.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

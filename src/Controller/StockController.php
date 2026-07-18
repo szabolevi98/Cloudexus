@@ -4,6 +4,7 @@ namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Auth;
 use Cloudexus\Core\Paginator;
+use Cloudexus\Model\Core\LocationModel;
 use Cloudexus\Model\Core\ProductModel;
 use Cloudexus\Model\Core\StockMovementModel;
 use Cloudexus\Model\Core\WarehouseModel;
@@ -13,6 +14,7 @@ class StockController extends BaseController
     private StockMovementModel $movements;
     private WarehouseModel $warehouses;
     private ProductModel $products;
+    private LocationModel $locations;
 
     public function __construct()
     {
@@ -20,6 +22,7 @@ class StockController extends BaseController
         $this->movements = new StockMovementModel();
         $this->warehouses = new WarehouseModel();
         $this->products = new ProductModel();
+        $this->locations = new LocationModel();
     }
 
     public function overview(): void
@@ -29,6 +32,7 @@ class StockController extends BaseController
         $filters = [
             'q' => trim($_GET['q'] ?? ''),
             'warehouse_id' => (int) ($_GET['warehouse_id'] ?? 0),
+            'location_id' => (int) ($_GET['location_id'] ?? 0),
         ];
         $pager = new Paginator(25);
 
@@ -39,6 +43,7 @@ class StockController extends BaseController
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
             'warehouses' => $this->warehouses->activeList(),
+            'locations' => $this->locations->activeWithWarehouse(),
         ]);
     }
 
@@ -56,6 +61,7 @@ class StockController extends BaseController
             'filters' => $filters,
             'warehouses' => $this->warehouses->activeList(),
             'products' => $this->products->all(),
+            'locations' => $this->locations->activeWithWarehouse(),
         ]);
     }
 
@@ -79,6 +85,7 @@ class StockController extends BaseController
             'filters' => $filters,
             'warehouses' => $this->warehouses->activeList(),
             'products' => $this->products->all(),
+            'locations' => $this->locations->activeWithWarehouse(),
         ]);
     }
 
@@ -97,6 +104,7 @@ class StockController extends BaseController
         $this->render('stock/transfer.twig', [
             'warehouses' => $this->warehouses->activeList(),
             'products' => $this->products->all(),
+            'locations' => $this->locations->activeWithWarehouse(),
             'transfers' => $this->movements->recentTransfers(30),
         ]);
     }
@@ -136,7 +144,9 @@ class StockController extends BaseController
             $productId,
             $quantity,
             'Raktárközi átadás: ' . ($from['name'] ?? $fromId) . ' → ' . ($to['name'] ?? $toId) . ($note !== '' ? ' — ' . $note : ''),
-            Auth::id()
+            Auth::id(),
+            (int) ($_POST['from_location_id'] ?? 0) ?: null,
+            (int) ($_POST['to_location_id'] ?? 0) ?: null
         );
 
         $this->flashSuccess('Raktárközi átadás rögzítve.');
@@ -151,6 +161,7 @@ class StockController extends BaseController
         $this->pageTitle = 'Vonalkód gyűjtő';
         $this->render('stock/barcode.twig', [
             'warehouses' => $this->warehouses->activeList(),
+            'locations' => $this->locations->activeWithWarehouse(),
         ]);
     }
 
@@ -209,9 +220,11 @@ class StockController extends BaseController
             }
         }
 
+        $locationId = (int) ($_POST['location_id'] ?? 0) ?: null;
         foreach ($items as $productId => $quantity) {
             $this->movements->create([
                 'warehouse_id' => $warehouseId,
+                'location_id' => $locationId,
                 'product_id' => $productId,
                 'type' => $direction,
                 'quantity' => $quantity,
@@ -261,6 +274,7 @@ class StockController extends BaseController
 
         $this->movements->create([
             'warehouse_id' => $warehouseId,
+            'location_id' => (int) ($_POST['location_id'] ?? 0) ?: null,
             'product_id' => $productId,
             'type' => $type,
             'quantity' => $quantity,

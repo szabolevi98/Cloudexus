@@ -35,9 +35,17 @@ class LocationModel
         $pager->clamp();
 
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT l.*, w.name AS warehouse_name
+            "SELECT l.*, w.name AS warehouse_name,
+                    COALESCE(s.qty, 0) AS stock_qty,
+                    COALESCE(s.product_count, 0) AS product_count
              FROM warehouse_locations l
              JOIN warehouses w ON w.id = l.warehouse_id
+             LEFT JOIN (
+                 SELECT location_id,
+                        SUM(CASE WHEN type = 'in' THEN quantity ELSE -quantity END) AS qty,
+                        COUNT(DISTINCT product_id) AS product_count
+                 FROM stock_movements WHERE location_id IS NOT NULL GROUP BY location_id
+             ) s ON s.location_id = l.id
              $whereSql
              ORDER BY w.name ASC, l.code ASC
              LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
@@ -52,6 +60,18 @@ class LocationModel
         $stmt = DatabaseConnection::get()->prepare('SELECT * FROM warehouse_locations WHERE id = :id LIMIT 1');
         $stmt->execute(['id' => $id]);
         return $stmt->fetch() ?: null;
+    }
+
+    /** All active locations with their warehouse, for warehouse-filtered pickers. */
+    public function activeWithWarehouse(): array
+    {
+        return DatabaseConnection::get()->query(
+            'SELECT l.id, l.code, l.warehouse_id, w.name AS warehouse_name
+             FROM warehouse_locations l
+             JOIN warehouses w ON w.id = l.warehouse_id
+             WHERE l.is_active = 1
+             ORDER BY w.name ASC, l.code ASC'
+        )->fetchAll();
     }
 
     public function codeExists(int $warehouseId, string $code, ?int $excludeId = null): bool

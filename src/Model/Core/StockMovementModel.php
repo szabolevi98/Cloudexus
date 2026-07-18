@@ -44,10 +44,12 @@ class StockMovementModel
         $pager->clamp();
 
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT m.*, p.sku, p.name AS product_name, p.unit, w.name AS warehouse_name, u.full_name AS created_by_name
+            "SELECT m.*, p.sku, p.name AS product_name, p.unit, w.name AS warehouse_name,
+                    l.code AS location_code, u.full_name AS created_by_name
              FROM stock_movements m
              JOIN products p ON p.id = m.product_id
              JOIN warehouses w ON w.id = m.warehouse_id
+             LEFT JOIN warehouse_locations l ON l.id = m.location_id
              LEFT JOIN users u ON u.id = m.created_by
              $whereSql
              ORDER BY m.created_at DESC, m.id DESC
@@ -59,16 +61,18 @@ class StockMovementModel
     }
 
     /**
-     * @param array $data Accepts an optional 'created_at' (Y-m-d H:i:s) to backdate the movement, e.g. for seeding demo data.
+     * @param array $data Accepts an optional 'location_id' (warehouse shelf) and
+     *                    'created_at' (Y-m-d H:i:s) to backdate the movement.
      */
     public function create(array $data): int
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'INSERT INTO stock_movements (warehouse_id, product_id, type, quantity, note, created_by, created_at)
-             VALUES (:warehouse_id, :product_id, :type, :quantity, :note, :created_by, :created_at)'
+            'INSERT INTO stock_movements (warehouse_id, location_id, product_id, type, quantity, note, created_by, created_at)
+             VALUES (:warehouse_id, :location_id, :product_id, :type, :quantity, :note, :created_by, :created_at)'
         );
         $stmt->execute([
             'warehouse_id' => $data['warehouse_id'],
+            'location_id' => !empty($data['location_id']) ? (int) $data['location_id'] : null,
             'product_id' => $data['product_id'],
             'type' => $data['type'],
             'quantity' => $data['quantity'],
@@ -81,20 +85,21 @@ class StockMovementModel
     }
 
     /** Books a warehouse-to-warehouse transfer as an out + in movement pair, atomically. */
-    public function transfer(int $fromWarehouseId, int $toWarehouseId, int $productId, float $quantity, string $note, ?int $userId): void
+    public function transfer(int $fromWarehouseId, int $toWarehouseId, int $productId, float $quantity, string $note, ?int $userId, ?int $fromLocationId = null, ?int $toLocationId = null): void
     {
         $pdo = DatabaseConnection::get();
         $pdo->beginTransaction();
 
         try {
             $stmt = $pdo->prepare(
-                'INSERT INTO stock_movements (warehouse_id, product_id, type, quantity, note, created_by, created_at)
-                 VALUES (:warehouse_id, :product_id, :type, :quantity, :note, :created_by, NOW())'
+                'INSERT INTO stock_movements (warehouse_id, location_id, product_id, type, quantity, note, created_by, created_at)
+                 VALUES (:warehouse_id, :location_id, :product_id, :type, :quantity, :note, :created_by, NOW())'
             );
 
-            foreach ([['out', $fromWarehouseId], ['in', $toWarehouseId]] as [$type, $warehouseId]) {
+            foreach ([['out', $fromWarehouseId, $fromLocationId], ['in', $toWarehouseId, $toLocationId]] as [$type, $warehouseId, $locationId]) {
                 $stmt->execute([
                     'warehouse_id' => $warehouseId,
+                    'location_id' => $locationId ?: null,
                     'product_id' => $productId,
                     'type' => $type,
                     'quantity' => $quantity,
@@ -114,10 +119,12 @@ class StockMovementModel
     public function recentTransfers(int $limit = 30): array
     {
         return DatabaseConnection::get()->query(
-            "SELECT m.*, p.sku, p.name AS product_name, p.unit, w.name AS warehouse_name, u.full_name AS created_by_name
+            "SELECT m.*, p.sku, p.name AS product_name, p.unit, w.name AS warehouse_name,
+                    l.code AS location_code, u.full_name AS created_by_name
              FROM stock_movements m
              JOIN products p ON p.id = m.product_id
              JOIN warehouses w ON w.id = m.warehouse_id
+             LEFT JOIN warehouse_locations l ON l.id = m.location_id
              LEFT JOIN users u ON u.id = m.created_by
              WHERE m.note LIKE 'Raktárközi átadás%'
              ORDER BY m.created_at DESC, m.id DESC
@@ -155,16 +162,25 @@ class StockMovementModel
             $params['q2'] = '%' . $filters['q'] . '%';
         }
 
+        if (!empty($filters['location_id'])) {
+            $where[] = 'm.location_id = :location_id';
+            $params['location_id'] = (int) $filters['location_id'];
+        }
+
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
+        // Raktár + tárhely + termék bontásban mutatja a készletet, hogy látszódjon,
+        // melyik polcon mennyi van (a tárhely nélküli mozgások "—" alatt gyűlnek).
         $baseSql = "SELECT w.id AS warehouse_id, w.name AS warehouse_name,
+                           l.id AS location_id, l.code AS location_code,
                            p.id AS product_id, p.sku, p.name AS product_name, p.unit,
                            SUM(CASE WHEN m.type = 'in' THEN m.quantity ELSE -m.quantity END) AS quantity
                     FROM stock_movements m
                     JOIN warehouses w ON w.id = m.warehouse_id
                     JOIN products p ON p.id = m.product_id
+                    LEFT JOIN warehouse_locations l ON l.id = m.location_id
                     $whereSql
-                    GROUP BY w.id, p.id
+                    GROUP BY w.id, l.id, p.id
                     HAVING quantity != 0";
 
         $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM ($baseSql) t");
@@ -173,7 +189,7 @@ class StockMovementModel
         $pager->clamp();
 
         $stmt = DatabaseConnection::get()->prepare(
-            "$baseSql ORDER BY warehouse_name ASC, product_name ASC LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+            "$baseSql ORDER BY warehouse_name ASC, location_code ASC, product_name ASC LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
         );
         $stmt->execute($params);
 

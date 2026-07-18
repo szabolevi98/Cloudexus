@@ -14,10 +14,19 @@
                     </div>
                     <div class="col-sm-3 col-lg-2">
                         <label class="form-label small text-muted mb-1">Raktár</label>
-                        <select name="warehouse_id" class="form-select form-select-sm">
+                        <select name="warehouse_id" id="ov-warehouse" class="form-select form-select-sm">
                             <option value="">Mind</option>
                             {% for w in warehouses %}
                                 <option value="{{ w.id }}" {{ filters.warehouse_id == w.id ? 'selected' : '' }}>{{ w.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-3 col-lg-2">
+                        <label class="form-label small text-muted mb-1">Tárhely</label>
+                        <select name="location_id" id="ov-location" class="form-select form-select-sm">
+                            <option value="">Mind</option>
+                            {% for l in locations %}
+                                <option value="{{ l.id }}" data-warehouse="{{ l.warehouse_id }}" {{ filters.location_id == l.id ? 'selected' : '' }}>{{ l.code }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -32,6 +41,7 @@
                     <thead>
                     <tr>
                         <th>Raktár</th>
+                        <th>Tárhely</th>
                         <th>Cikkszám</th>
                         <th>Megnevezés</th>
                         <th class="text-end">Mennyiség</th>
@@ -41,6 +51,7 @@
                     {% for row in rows %}
                         <tr>
                             <td>{{ row.warehouse_name }}</td>
+                            <td class="text-muted">{{ row.location_code ?: '—' }}</td>
                             <td class="fw-medium">{{ row.sku }}</td>
                             <td>{{ row.product_name }}</td>
                             <td class="text-end">
@@ -50,7 +61,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="4" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő készlet.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő készlet.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>
@@ -58,4 +69,22 @@
             {% include 'common/pagination.twig' %}
         </div>
     </div>
+
+    <script>
+        (function () {
+            const wh = document.getElementById('ov-warehouse');
+            const loc = document.getElementById('ov-location');
+            function filter() {
+                const w = wh.value;
+                Array.from(loc.options).forEach(o => {
+                    if (!o.value) return;
+                    const show = !w || o.dataset.warehouse === w;
+                    o.hidden = !show;
+                    if (!show && o.selected) loc.value = '';
+                });
+            }
+            wh.addEventListener('change', filter);
+            filter();
+        })();
+    </script>
 {% endblock %}

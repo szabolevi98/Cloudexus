@@ -19,6 +19,12 @@
                         </select>
                     </div>
                     <div class="col-md-4">
+                        <label for="location_id" class="form-label">Tárhely <span class="text-muted small">(opcionális)</span></label>
+                        <select id="location_id" name="location_id" class="form-select">
+                            <option value="">— tárhely nélkül —</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label d-block">Irány</label>
                         <div class="btn-group" role="group">
                             <input type="radio" class="btn-check" name="direction" id="dir-in" value="in" checked>
@@ -62,6 +68,23 @@
     </div>
 
     <script>
+        (function () {
+            const locs = {{ locations|json_encode|raw }};
+            const wh = document.getElementById('warehouse_id');
+            const loc = document.getElementById('location_id');
+            function fill() {
+                const w = parseInt(wh.value, 10);
+                loc.innerHTML = '<option value="">— tárhely nélkül —</option>';
+                locs.filter(l => l.warehouse_id == w).forEach(l => {
+                    const o = document.createElement('option');
+                    o.value = l.id; o.textContent = l.code;
+                    loc.appendChild(o);
+                });
+            }
+            wh.addEventListener('change', fill);
+            fill();
+        })();
+
         (function () {
             const input = document.getElementById('scan-input');
             const body = document.getElementById('scan-body');
