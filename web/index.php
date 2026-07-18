@@ -11,6 +11,7 @@ use Cloudexus\Controller\PartnerController;
 use Cloudexus\Controller\ProductController;
 use Cloudexus\Controller\ProfileController;
 use Cloudexus\Controller\PurchaseOrderController;
+use Cloudexus\Controller\SettingsController;
 use Cloudexus\Controller\StockController;
 use Cloudexus\Controller\UserController;
 use Cloudexus\Controller\WarehouseController;
@@ -24,9 +25,21 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 Config::load(dirname(__DIR__) . '/config/config.ini');
 date_default_timezone_set(Config::get('app.timezone', 'Europe/Budapest'));
 
+// Never leak PHP notices/warnings into responses (they would corrupt JSON,
+// CSV downloads and redirects). Everything is logged to var/log instead.
+ini_set('display_errors', '0');
+ini_set('html_errors', '0');
+error_reporting(E_ALL);
+
 set_error_handler(function (int $level, string $message, string $file, int $line): bool {
     \Cloudexus\Core\Logger::error($message, ['file' => $file, 'line' => $line]);
-    return false;
+    return true;
+});
+
+set_exception_handler(function (\Throwable $e): void {
+    \Cloudexus\Core\Logger::error('Uncaught: ' . $e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+    http_response_code(500);
+    echo 'Váratlan hiba történt. Kérjük, próbáld újra később.';
 });
 
 Session::start();
@@ -62,11 +75,17 @@ $router->get('/dashboard', fn() => (new DashboardController())->show());
 $router->get('/profile', fn() => (new ProfileController())->show());
 $router->post('/profile', fn() => (new ProfileController())->update());
 
+$router->get('/products/export', fn() => (new ProductController())->export());
+$router->get('/partners/export', fn() => (new PartnerController())->export());
+
 registerCrud($router, '/users', UserController::class);
 registerCrud($router, '/categories', CategoryController::class);
 registerCrud($router, '/products', ProductController::class);
 registerCrud($router, '/partners', PartnerController::class);
 registerCrud($router, '/warehouses', WarehouseController::class);
+
+$router->get('/settings/company', fn() => (new SettingsController())->company());
+$router->post('/settings/company', fn() => (new SettingsController())->companyUpdate());
 
 $router->get('/stock', fn() => (new StockController())->overview());
 $router->get('/stock/in', fn() => (new StockController())->inList());
@@ -87,6 +106,7 @@ $router->post('/orders/{id}/cancel', fn($id) => (new OrderController())->cancel(
 $router->post('/orders/{id}/delete', fn($id) => (new OrderController())->delete((int) $id));
 
 $router->get('/invoices', fn() => (new InvoiceController())->list());
+$router->get('/invoices/export', fn() => (new InvoiceController())->export());
 $router->get('/invoices/create', fn() => (new InvoiceController())->createForm());
 $router->post('/invoices/create', fn() => (new InvoiceController())->create());
 $router->get('/invoices/{id}', fn($id) => (new InvoiceController())->show((int) $id));

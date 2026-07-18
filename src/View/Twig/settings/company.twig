@@ -1,0 +1,43 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card" style="max-width: 640px;">
+        <div class="cx-card__header">
+            <h2>Cégadatok</h2>
+        </div>
+        <div class="cx-card__body">
+            <p class="text-muted small mb-4">Ezek az adatok jelennek meg a kiállított számlák eladó rovatában.</p>
+            <form method="post" action="{{ base_url }}/settings/company">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Cégnév</label>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ company.name }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="address" class="form-label">Cím</label>
+                    <input type="text" id="address" name="address" class="form-control" value="{{ company.address }}">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="tax_number" class="form-label">Adószám</label>
+                        <input type="text" id="tax_number" name="tax_number" class="form-control" value="{{ company.tax_number }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="bank_account" class="form-label">Bankszámlaszám</label>
+                        <input type="text" id="bank_account" name="bank_account" class="form-control" value="{{ company.bank_account }}">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input type="email" id="email" name="email" class="form-control" value="{{ company.email }}">
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label for="phone" class="form-label">Telefon</label>
+                        <input type="text" id="phone" name="phone" class="form-control" value="{{ company.phone }}">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Mentés</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

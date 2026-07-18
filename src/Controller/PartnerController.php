@@ -34,6 +34,30 @@ class PartnerController extends BaseController
         ]);
     }
 
+    public function export(): void
+    {
+        $this->requireAuth();
+
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'type' => $_GET['type'] ?? '',
+            'status' => $_GET['status'] ?? '',
+        ];
+        $pager = new \Cloudexus\Core\Paginator(1000000);
+        $rows = $this->partners->paginate($filters, $pager);
+
+        $typeLabels = ['customer' => 'vevő', 'supplier' => 'szállító', 'both' => 'vevő+szállító'];
+
+        \Cloudexus\Core\CsvExporter::download(
+            'partnerek',
+            ['Név', 'Típus', 'Adószám', 'E-mail', 'Telefon', 'Cím', 'Aktív'],
+            array_map(fn($p) => [
+                $p['name'], $typeLabels[$p['type']] ?? $p['type'], $p['tax_number'] ?? '',
+                $p['email'] ?? '', $p['phone'] ?? '', $p['address'] ?? '', $p['is_active'] ? 'igen' : 'nem',
+            ], $rows)
+        );
+    }
+
     public function createForm(): void
     {
         $this->requireAuth();

@@ -54,6 +54,32 @@ class InvoiceController extends BaseController
         ]);
     }
 
+    public function export(): void
+    {
+        $this->requireAuth();
+
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'partner_id' => (int) ($_GET['partner_id'] ?? 0),
+            'status' => $_GET['status'] ?? '',
+            'date_from' => $_GET['date_from'] ?? '',
+            'date_to' => $_GET['date_to'] ?? '',
+        ];
+        $pager = new Paginator(1000000);
+        $rows = $this->invoices->paginate($filters, $pager);
+
+        $statusLabels = ['unpaid' => 'fizetésre vár', 'paid' => 'kifizetve', 'cancelled' => 'stornózva'];
+
+        \Cloudexus\Core\CsvExporter::download(
+            'szamlak',
+            ['Számlaszám', 'Partner', 'Kiállítás', 'Fizetési határidő', 'Állapot', 'Végösszeg'],
+            array_map(fn($i) => [
+                $i['invoice_number'], $i['partner_name'], $i['issue_date'], $i['due_date'],
+                $statusLabels[$i['status']] ?? $i['status'], $i['total_amount'],
+            ], $rows)
+        );
+    }
+
     public function createForm(): void
     {
         $this->requireAuth();
@@ -134,7 +160,7 @@ class InvoiceController extends BaseController
 
         $this->render('invoices/print.twig', [
             'invoice' => $invoice,
-            'company' => \Cloudexus\Core\Config::get('company', []),
+            'company' => (new \Cloudexus\Model\Core\SettingModel())->company(),
         ]);
     }
 

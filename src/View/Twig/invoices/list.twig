@@ -4,9 +4,14 @@
     <div class="cx-card">
         <div class="cx-card__header">
             <h2>Számlák</h2>
-            <a href="{{ base_url }}/invoices/create" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg me-1"></i>Új számla
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ base_url }}/invoices/export?{{ filters|url_encode }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-download me-1"></i>CSV export
+                </a>
+                <a href="{{ base_url }}/invoices/create" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i>Új számla
+                </a>
+            </div>
         </div>
         <div class="cx-card__body p-0">
             <form method="get" class="p-3 border-bottom">

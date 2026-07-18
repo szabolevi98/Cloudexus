@@ -38,6 +38,28 @@ class ProductController extends BaseController
         ]);
     }
 
+    public function export(): void
+    {
+        $this->requireAuth();
+
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'category_id' => (int) ($_GET['category_id'] ?? 0),
+            'status' => $_GET['status'] ?? '',
+        ];
+        $pager = new \Cloudexus\Core\Paginator(1000000);
+        $rows = $this->products->paginate($filters, $pager);
+
+        \Cloudexus\Core\CsvExporter::download(
+            'termekek',
+            ['Cikkszám', 'Vonalkód', 'Megnevezés', 'Kategória', 'Egység', 'Ár', 'Készlet', 'Min. készlet', 'Aktív'],
+            array_map(fn($p) => [
+                $p['sku'], $p['barcode'] ?? '', $p['name'], $p['category_name'] ?? '',
+                $p['unit'], $p['price'], $p['stock_qty'], $p['min_stock'], $p['is_active'] ? 'igen' : 'nem',
+            ], $rows)
+        );
+    }
+
     public function createForm(): void
     {
         $this->requireAuth();
