@@ -36,6 +36,7 @@ function randDate(int $daysAgoMax, int $daysAgoMin = 0): string
 echo "Truncating business tables...\n";
 $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 foreach ([
+    'todos', 'stocktaking_items', 'stocktakings',
     'cash_vouchers', 'incoming_invoice_items', 'incoming_invoices',
     'purchase_order_items', 'purchase_orders', 'invoice_items', 'invoices',
     'order_items', 'orders', 'stock_movements', 'products', 'categories',
@@ -414,5 +415,31 @@ for ($i = 0; $i < 15; $i++) {
         'created_by' => null,
     ]);
 }
+
+// ---------------------------------------------------------------------------
+// Teendők (CRM todos)
+// ---------------------------------------------------------------------------
+echo "Seeding todos...\n";
+
+$todoModel = new \Cloudexus\Model\Crm\TodoModel();
+$todoTitles = [
+    'Ajánlat visszaküldése', 'Szállítói egyeztetés', 'Lejárt számla behajtása',
+    'Raktár átrendezése', 'Új termékek felvitele', 'Havi zárás előkészítése',
+    'Vevő visszahívása', 'Árlista frissítése', 'Leltár egyeztetés', 'Csomagolóanyag rendelés',
+];
+
+foreach ($todoTitles as $i => $title) {
+    $pdo->prepare(
+        'INSERT INTO todos (title, is_done, due_date, partner_id, created_at)
+         VALUES (:title, :done, :due, :partner, NOW())'
+    )->execute([
+        'title' => $title,
+        'done' => $i % 4 === 0 ? 1 : 0,
+        'due' => rand(0, 1) ? date('Y-m-d', strtotime('+' . rand(-3, 14) . ' days')) : null,
+        'partner' => rand(0, 1) ? $partners['customer'][array_rand($partners['customer'])] : null,
+    ]);
+}
+
+echo count($todoTitles) . " todos.\n";
 
 echo "\nDone. Demo data ready.\n";

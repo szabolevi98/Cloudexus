@@ -78,6 +78,11 @@
                 <i class="bi bi-cash-coin"></i><span>Pénztárbizonylat</span>
             </a>
 
+            <div class="cx-nav__group-label">CRM</div>
+            <a class="cx-nav__link {{ active_menu == 'todos' ? 'is-active' : '' }}" href="{{ base_url }}/todos">
+                <i class="bi bi-check2-square"></i><span>Teendők</span>
+            </a>
+
             {% if auth_is_admin %}
                 <div class="cx-nav__group-label">Beállítások</div>
                 <a class="cx-nav__link {{ active_menu == 'users' ? 'is-active' : '' }}" href="{{ base_url }}/users">

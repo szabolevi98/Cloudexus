@@ -31,6 +31,7 @@ class DashboardController extends BaseController
             'top_categories_max' => $topCategories ? max(array_column($topCategories, 'value')) : 0,
             'recent_invoices' => $invoices->recent(6),
             'low_stock' => (new ProductModel())->lowStock(8),
+            'open_todos' => (new \Cloudexus\Model\Crm\TodoModel())->openForDashboard(6),
             'today' => date('Y-m-d'),
         ]);
     }

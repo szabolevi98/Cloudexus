@@ -14,6 +14,7 @@ use Cloudexus\Controller\PurchaseOrderController;
 use Cloudexus\Controller\SettingsController;
 use Cloudexus\Controller\StockController;
 use Cloudexus\Controller\StocktakingController;
+use Cloudexus\Controller\TodoController;
 use Cloudexus\Controller\UserController;
 use Cloudexus\Controller\WarehouseController;
 use Cloudexus\Core\Config;
@@ -103,6 +104,11 @@ $router->get('/stocktaking', fn() => (new StocktakingController())->list());
 $router->get('/stocktaking/create', fn() => (new StocktakingController())->createForm());
 $router->post('/stocktaking/create', fn() => (new StocktakingController())->create());
 $router->get('/stocktaking/{id}', fn($id) => (new StocktakingController())->show((int) $id));
+
+$router->get('/todos', fn() => (new TodoController())->list());
+$router->post('/todos/create', fn() => (new TodoController())->create());
+$router->post('/todos/{id}/toggle', fn($id) => (new TodoController())->toggle((int) $id));
+$router->post('/todos/{id}/delete', fn($id) => (new TodoController())->delete((int) $id));
 
 $router->get('/orders', fn() => (new OrderController())->list());
 $router->get('/orders/create', fn() => (new OrderController())->createForm());

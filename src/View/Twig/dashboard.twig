@@ -83,6 +83,31 @@
                     {% endfor %}
                 </div>
             </div>
+            <div class="cx-card">
+                <div class="cx-card__header">
+                    <h2>Teendők</h2>
+                    <a href="{{ base_url }}/todos" class="btn btn-sm btn-outline-secondary">Összes</a>
+                </div>
+                <div class="cx-card__body p-0">
+                    {% for todo in open_todos %}
+                        <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+                            <i class="bi bi-circle text-muted"></i>
+                            <div class="flex-grow-1">
+                                <div class="small fw-medium">{{ todo.title }}</div>
+                                {% if todo.partner_name %}<div class="text-muted" style="font-size:.75rem;">{{ todo.partner_name }}</div>{% endif %}
+                            </div>
+                            {% if todo.due_date %}
+                                <span class="small {{ todo.due_date < today ? 'text-danger fw-medium' : 'text-muted' }}">{{ todo.due_date }}</span>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-check2-circle fs-1 d-block mb-2"></i>
+                            Nincs nyitott teendő.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </div>
 

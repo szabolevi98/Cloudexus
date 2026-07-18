@@ -135,14 +135,15 @@ A teljes funkciótérkép a [FEATURES.md](FEATURES.md)-ben él.
 - [x] Értékesítés: vevői rendelés → számlázás, nyomtatható számla
 - [x] Beszerzés: szállítói rendelés → bejövő számla automatikus bevéttel
 - [x] Pénztár: bizonylatok, számla-kiegyenlítés, pénzkészlet
-- [x] Vezérlőpult: forgalmi grafikon, kintlevőség/kötelezettség, top kategóriák, alacsony készlet
+- [x] CRM: teendők (feladatlista határidővel, partnerhez/felelőshöz kötve)
+- [x] Vezérlőpult: forgalmi grafikon, kintlevőség/kötelezettség, top kategóriák, alacsony készlet, teendők
 - [x] Keresés, szűrők, lapozás, CSV export a listákban
 - [x] CSRF-védelem, cégadat-beállítások
 
 **Következő lépcsők:**
 
 - [ ] Tárhely / polc szintű helykódok
-- [ ] CRM alapok: ügyfélkapcsolat-történet, teendők
+- [ ] CRM bővítés: ügyfélkapcsolat-történet, hívás/e-mail napló
 - [ ] Szállítólevelek és fuvarszervezés
 - [ ] NAV Online Számla adatszolgáltatás
 - [ ] Futárszolgálat-integrációk (GLS, MPL, Foxpost, …)
