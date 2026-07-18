@@ -1,0 +1,63 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="cx-card">
+                <div class="cx-card__header"><h2>Új egység</h2></div>
+                <div class="cx-card__body">
+                    <form method="post" action="{{ base_url }}/units/create">
+                        <div class="mb-3">
+                            <label for="code" class="form-label">Kód</label>
+                            <input type="text" id="code" name="code" class="form-control" placeholder="pl. db" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Név</label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="pl. darab" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sort_order" class="form-label">Sorrend</label>
+                            <input type="number" id="sort_order" name="sort_order" class="form-control" value="0">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>Hozzáadás</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="cx-card">
+                <div class="cx-card__header">
+                    <h2>Mennyiségi egységek</h2>
+                    <span class="text-muted small">{{ units|length }} db</span>
+                </div>
+                <div class="cx-card__body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 cx-table">
+                            <thead><tr><th style="width:120px;">Kód</th><th>Név</th><th style="width:90px;">Sorrend</th><th class="text-end">Műveletek</th></tr></thead>
+                            <tbody>
+                            {% for u in units %}
+                                <tr>
+                                    <td><input type="text" name="code" form="unit-{{ u.id }}" class="form-control form-control-sm" value="{{ u.code }}"></td>
+                                    <td><input type="text" name="name" form="unit-{{ u.id }}" class="form-control form-control-sm" value="{{ u.name }}"></td>
+                                    <td><input type="number" name="sort_order" form="unit-{{ u.id }}" class="form-control form-control-sm" value="{{ u.sort_order }}"></td>
+                                    <td class="text-end text-nowrap">
+                                        <button type="submit" form="unit-{{ u.id }}" class="btn btn-sm btn-outline-primary">Mentés</button>
+                                        <button type="submit" form="unit-del-{{ u.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Biztosan törlöd?');"><i class="bi bi-trash"></i></button>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="4" class="text-center text-muted py-4">Még nincs egység.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for u in units %}
+        <form id="unit-{{ u.id }}" method="post" action="{{ base_url }}/units/{{ u.id }}"></form>
+        <form id="unit-del-{{ u.id }}" method="post" action="{{ base_url }}/units/{{ u.id }}/delete"></form>
+    {% endfor %}
+{% endblock %}

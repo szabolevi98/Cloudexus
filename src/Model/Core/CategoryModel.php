@@ -97,6 +97,41 @@ class CategoryModel
         return $paths;
     }
 
+    /** Select2 AJAX search: categories by name, text = full breadcrumb path. */
+    public function search(string $q, int $page = 1, int $perPage = 20): array
+    {
+        $paths = $this->paths();
+        $offset = max(0, ($page - 1) * $perPage);
+        $like = '%' . mb_strtolower($q) . '%';
+
+        $matches = [];
+        foreach ($paths as $id => $path) {
+            if ($q === '' || str_contains(mb_strtolower($path), trim($like, '%'))) {
+                $matches[] = ['id' => (int) $id, 'text' => $path];
+            }
+        }
+        usort($matches, fn($a, $b) => strcmp($a['text'], $b['text']));
+
+        $slice = array_slice($matches, $offset, $perPage);
+        return [
+            'results' => array_values($slice),
+            'more' => count($matches) > $offset + $perPage,
+        ];
+    }
+
+    public function labelsForIds(array $ids): array
+    {
+        $paths = $this->paths();
+        $out = [];
+        foreach ($ids as $id) {
+            $id = (int) $id;
+            if (isset($paths[$id])) {
+                $out[] = ['id' => $id, 'text' => $paths[$id]];
+            }
+        }
+        return $out;
+    }
+
     public function findById(int $id): ?array
     {
         $stmt = DatabaseConnection::get()->prepare('SELECT * FROM categories WHERE id = :id LIMIT 1');

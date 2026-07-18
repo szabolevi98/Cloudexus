@@ -66,12 +66,18 @@
                             <tbody>
                             {% for todo in todos %}
                                 <tr>
-                                    <td style="width:44px;">
+                                    <td style="width:120px;">
                                         <form method="post" action="{{ base_url }}/todos/{{ todo.id }}/toggle">
                                             <input type="hidden" name="return" value="/todos?{{ filters|url_encode }}">
-                                            <button type="submit" class="btn btn-sm {{ todo.is_done ? 'btn-success' : 'btn-outline-secondary' }}" title="Kész/nyitott">
-                                                <i class="bi {{ todo.is_done ? 'bi-check-lg' : 'bi-circle' }}"></i>
-                                            </button>
+                                            {% if todo.is_done %}
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Visszaállítás nyitottra">
+                                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Újranyit
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="btn btn-sm btn-success" title="Késznek jelölés">
+                                                    <i class="bi bi-check-lg me-1"></i>Kész
+                                                </button>
+                                            {% endif %}
                                         </form>
                                     </td>
                                     <td>

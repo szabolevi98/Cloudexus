@@ -1,0 +1,54 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="cx-card">
+                <div class="cx-card__header"><h2>Új paraméternév</h2></div>
+                <div class="cx-card__body">
+                    <form method="post" action="{{ base_url }}/parameter-names/create">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Név</label>
+                            <input type="text" id="name" name="name" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>Hozzáadás</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="cx-card">
+                <div class="cx-card__header">
+                    <h2>Paraméternevek</h2>
+                    <span class="text-muted small">{{ names|length }} db</span>
+                </div>
+                <div class="cx-card__body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 cx-table">
+                            <thead><tr><th>Név</th><th class="text-end">Műveletek</th></tr></thead>
+                            <tbody>
+                            {% for n in names %}
+                                <tr>
+                                    <td>
+                                        <form method="post" action="{{ base_url }}/parameter-names/{{ n.id }}" class="d-flex gap-2" style="max-width:400px;">
+                                            <input type="text" name="name" class="form-control form-control-sm" value="{{ n.name }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Mentés</button>
+                                        </form>
+                                    </td>
+                                    <td class="text-end">
+                                        <form method="post" action="{{ base_url }}/parameter-names/{{ n.id }}/delete" class="d-inline" onsubmit="return confirm('Biztosan törlöd?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="2" class="text-center text-muted py-4">Még nincs paraméternév.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

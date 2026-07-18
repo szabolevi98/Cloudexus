@@ -71,6 +71,12 @@ class ProductController extends BaseController
         );
     }
 
+    public function search(): void
+    {
+        $this->requireAuth();
+        $this->json($this->products->search(trim($_GET['q'] ?? ''), (int) ($_GET['page'] ?? 1)));
+    }
+
     public function createForm(): void
     {
         $this->requireAuth();
@@ -182,24 +188,29 @@ class ProductController extends BaseController
     {
         return [
             'product' => $product,
-            'categories' => $this->categories->all(),
-            'category_paths' => $this->categories->paths(),
             'units' => $this->units->all(),
-            'all_products' => $this->products->activeSelectList(),
             'warehouses' => (new WarehouseModel())->activeList(),
+            // Előre kijelölt Select2 opciók (id + felirat) szerkesztéskor
+            'category_options' => $product ? $this->categories->labelsForIds($product['category_ids']) : [],
+            'related_options' => $product ? $this->products->labelsForIds($product['related_ids']) : [],
+            'substitute_options' => $product ? $this->products->labelsForIds($product['substitute_ids']) : [],
         ];
     }
 
     private function collectInput(): array
     {
+        // Nincs külön elsődleges kategória: a kiválasztott kategóriák elseje lesz
+        // az elsődleges (category_id), a többi a kapcsolótáblába kerül.
+        $categoryIds = array_values(array_filter(array_map('intval', $_POST['category_ids'] ?? [])));
+
         return [
             'sku' => trim($_POST['sku'] ?? ''),
             'barcode' => trim($_POST['barcode'] ?? ''),
             'name' => trim($_POST['name'] ?? ''),
             'short_description' => trim($_POST['short_description'] ?? ''),
             'description' => trim($_POST['description'] ?? ''),
-            'category_id' => (int) ($_POST['category_id'] ?? 0),
-            'category_ids' => $_POST['category_ids'] ?? [],
+            'category_id' => $categoryIds[0] ?? 0,
+            'category_ids' => $categoryIds,
             'unit' => trim($_POST['unit'] ?? 'db'),
             'price' => (float) str_replace(',', '.', $_POST['price'] ?? '0'),
             'vat_rate' => (float) str_replace(',', '.', $_POST['vat_rate'] ?? '27'),

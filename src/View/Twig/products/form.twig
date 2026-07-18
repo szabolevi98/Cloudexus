@@ -19,7 +19,7 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label for="unit" class="form-label">Mennyiségi egység</label>
-                                <select id="unit" name="unit" class="form-select">
+                                <select id="unit" name="unit" class="form-select cx-select2">
                                     {% for u in units %}
                                         <option value="{{ u.code }}" {{ (product.unit|default('db')) == u.code ? 'selected' : '' }}>{{ u.name }} ({{ u.code }})</option>
                                     {% endfor %}
@@ -48,7 +48,11 @@
                         <div id="attr-rows">
                             {% for attr in product.attributes|default([]) %}
                                 <div class="row g-2 mb-2 attr-row">
-                                    <div class="col-md-5"><input type="text" name="attr_name[]" class="form-control form-control-sm" placeholder="Paraméter neve" value="{{ attr.attr_name }}"></div>
+                                    <div class="col-md-5">
+                                        <select name="attr_name[]" class="form-select form-select-sm cx-ajax-select" data-url="{{ base_url }}/param-names/search" data-placeholder="Paraméter neve">
+                                            <option value="{{ attr.attr_name }}" selected>{{ attr.attr_name }}</option>
+                                        </select>
+                                    </div>
                                     <div class="col-md-6"><input type="text" name="attr_value[]" class="form-control form-control-sm" placeholder="Érték" value="{{ attr.attr_value }}"></div>
                                     <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger attr-remove"><i class="bi bi-x-lg"></i></button></div>
                                 </div>
@@ -57,7 +61,9 @@
                         <button type="button" class="btn btn-sm btn-outline-primary" id="attr-add"><i class="bi bi-plus-lg me-1"></i>Paraméter hozzáadása</button>
                         <template id="attr-template">
                             <div class="row g-2 mb-2 attr-row">
-                                <div class="col-md-5"><input type="text" name="attr_name[]" class="form-control form-control-sm" placeholder="Paraméter neve"></div>
+                                <div class="col-md-5">
+                                    <select name="attr_name[]" class="form-select form-select-sm cx-ajax-select" data-url="{{ base_url }}/param-names/search" data-placeholder="Paraméter neve"></select>
+                                </div>
                                 <div class="col-md-6"><input type="text" name="attr_value[]" class="form-control form-control-sm" placeholder="Érték"></div>
                                 <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger attr-remove"><i class="bi bi-x-lg"></i></button></div>
                             </div>
@@ -72,22 +78,17 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="related_ids" class="form-label">Kapcsolódó termékek</label>
-                                <select id="related_ids" name="related_ids[]" class="form-select" multiple size="6">
-                                    {% for p in all_products %}
-                                        {% if not product or p.id != product.id %}
-                                            <option value="{{ p.id }}" {{ product and p.id in product.related_ids ? 'selected' : '' }}>{{ p.sku }} — {{ p.name }}</option>
-                                        {% endif %}
+                                <select id="related_ids" name="related_ids[]" class="form-select cx-ajax-select" data-url="{{ base_url }}/products/search" data-placeholder="Termék keresése…" multiple>
+                                    {% for opt in related_options %}
+                                        <option value="{{ opt.id }}" selected>{{ opt.text }}</option>
                                     {% endfor %}
                                 </select>
-                                <div class="form-text">Ctrl/Cmd + kattintás a többszörös kijelöléshez.</div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="substitute_ids" class="form-label">Helyettesítő termékek</label>
-                                <select id="substitute_ids" name="substitute_ids[]" class="form-select" multiple size="6">
-                                    {% for p in all_products %}
-                                        {% if not product or p.id != product.id %}
-                                            <option value="{{ p.id }}" {{ product and p.id in product.substitute_ids ? 'selected' : '' }}>{{ p.sku }} — {{ p.name }}</option>
-                                        {% endif %}
+                                <select id="substitute_ids" name="substitute_ids[]" class="form-select cx-ajax-select" data-url="{{ base_url }}/products/search" data-placeholder="Termék keresése…" multiple>
+                                    {% for opt in substitute_options %}
+                                        <option value="{{ opt.id }}" selected>{{ opt.text }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -138,23 +139,13 @@
                 <div class="cx-card mb-3">
                     <div class="cx-card__header"><h2>Besorolás</h2></div>
                     <div class="cx-card__body">
-                        <div class="mb-3">
-                            <label for="category_id" class="form-label">Elsődleges kategória</label>
-                            <select id="category_id" name="category_id" class="form-select">
-                                <option value="">— nincs —</option>
-                                {% for c in categories %}
-                                    <option value="{{ c.id }}" {{ product and product.category_id == c.id ? 'selected' : '' }}>{{ category_paths[c.id] }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-1">
-                            <label for="category_ids" class="form-label">További kategóriák</label>
-                            <select id="category_ids" name="category_ids[]" class="form-select" multiple size="6">
-                                {% for c in categories %}
-                                    <option value="{{ c.id }}" {{ product and c.id in product.category_ids ? 'selected' : '' }}>{{ category_paths[c.id] }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                        <label for="category_ids" class="form-label">Kategóriák</label>
+                        <select id="category_ids" name="category_ids[]" class="form-select cx-ajax-select" data-url="{{ base_url }}/categories/search" data-placeholder="Kategória keresése…" multiple>
+                            {% for opt in category_options %}
+                                <option value="{{ opt.id }}" selected>{{ opt.text }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Egy termék több kategóriába is besorolható.</div>
                     </div>
                 </div>
 
@@ -259,7 +250,9 @@
             const rows = document.getElementById('attr-rows');
             const tpl = document.getElementById('attr-template');
             document.getElementById('attr-add').addEventListener('click', () => {
-                rows.appendChild(tpl.content.firstElementChild.cloneNode(true));
+                const row = tpl.content.firstElementChild.cloneNode(true);
+                rows.appendChild(row);
+                if (window.cxInitSelect2) window.cxInitSelect2(row);
             });
             rows.addEventListener('click', (e) => {
                 if (e.target.closest('.attr-remove')) e.target.closest('.attr-row').remove();

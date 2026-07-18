@@ -32,6 +32,49 @@ class ProductModel
             ->fetchAll();
     }
 
+    /** Select2 AJAX search: active products by sku/name/barcode, paginated. */
+    public function search(string $q, int $page = 1, int $perPage = 20): array
+    {
+        $offset = max(0, ($page - 1) * $perPage);
+        $like = '%' . $q . '%';
+
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT id, sku, name FROM products
+             WHERE is_active = 1 AND (sku LIKE :q1 OR name LIKE :q2 OR barcode LIKE :q3)
+             ORDER BY name ASC LIMIT :lim OFFSET :off'
+        );
+        $stmt->bindValue('q1', $like);
+        $stmt->bindValue('q2', $like);
+        $stmt->bindValue('q3', $like);
+        $stmt->bindValue('lim', $perPage + 1, \PDO::PARAM_INT);
+        $stmt->bindValue('off', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll();
+
+        $more = count($rows) > $perPage;
+        $rows = array_slice($rows, 0, $perPage);
+
+        return [
+            'results' => array_map(fn($r) => ['id' => (int) $r['id'], 'text' => $r['sku'] . ' — ' . $r['name']], $rows),
+            'more' => $more,
+        ];
+    }
+
+    /** Resolves ids to {id,text} pairs, to preselect Select2 options on edit. */
+    public function labelsForIds(array $ids): array
+    {
+        $ids = array_values(array_filter(array_map('intval', $ids)));
+        if (!$ids) {
+            return [];
+        }
+        $in = implode(',', $ids);
+        $rows = DatabaseConnection::get()->query(
+            "SELECT id, sku, name FROM products WHERE id IN ($in)"
+        )->fetchAll();
+
+        return array_map(fn($r) => ['id' => (int) $r['id'], 'text' => $r['sku'] . ' — ' . $r['name']], $rows);
+    }
+
     public function count(): int
     {
         return (int) DatabaseConnection::get()->query('SELECT COUNT(*) FROM products')->fetchColumn();

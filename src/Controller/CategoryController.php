@@ -31,6 +31,12 @@ class CategoryController extends BaseController
         ]);
     }
 
+    public function search(): void
+    {
+        $this->requireAuth();
+        $this->json($this->categories->search(trim($_GET['q'] ?? ''), (int) ($_GET['page'] ?? 1)));
+    }
+
     public function createForm(): void
     {
         $this->requireAuth();

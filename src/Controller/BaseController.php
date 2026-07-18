@@ -47,6 +47,13 @@ abstract class BaseController
         exit;
     }
 
+    protected function json(array $data): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     protected function flashSuccess(string $message): void
     {
         Session::flash('success', $message);

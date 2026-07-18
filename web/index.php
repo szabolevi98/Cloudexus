@@ -9,10 +9,12 @@ use Cloudexus\Controller\LocationController;
 use Cloudexus\Controller\LoginController;
 use Cloudexus\Controller\OrderController;
 use Cloudexus\Controller\PartnerController;
+use Cloudexus\Controller\ParameterNameController;
 use Cloudexus\Controller\ProductController;
 use Cloudexus\Controller\ProfileController;
 use Cloudexus\Controller\PurchaseOrderController;
 use Cloudexus\Controller\SettingsController;
+use Cloudexus\Controller\UnitController;
 use Cloudexus\Controller\StockController;
 use Cloudexus\Controller\StocktakingController;
 use Cloudexus\Controller\TodoController;
@@ -79,7 +81,10 @@ $router->get('/profile', fn() => (new ProfileController())->show());
 $router->post('/profile', fn() => (new ProfileController())->update());
 
 $router->get('/products/export', fn() => (new ProductController())->export());
+$router->get('/products/search', fn() => (new ProductController())->search());
 $router->get('/partners/export', fn() => (new PartnerController())->export());
+$router->get('/categories/search', fn() => (new CategoryController())->search());
+$router->get('/param-names/search', fn() => (new ParameterNameController())->search());
 
 $router->post('/products/{id}/images/{imageId}/delete', fn($id, $imageId) => (new ProductController())->deleteImage((int) $id, (int) $imageId));
 $router->post('/products/{id}/images/{imageId}/primary', fn($id, $imageId) => (new ProductController())->setPrimaryImage((int) $id, (int) $imageId));
@@ -96,6 +101,16 @@ registerCrud($router, '/locations', LocationController::class);
 
 $router->get('/settings/company', fn() => (new SettingsController())->company());
 $router->post('/settings/company', fn() => (new SettingsController())->companyUpdate());
+
+$router->get('/parameter-names', fn() => (new ParameterNameController())->list());
+$router->post('/parameter-names/create', fn() => (new ParameterNameController())->create());
+$router->post('/parameter-names/{id}', fn($id) => (new ParameterNameController())->update((int) $id));
+$router->post('/parameter-names/{id}/delete', fn($id) => (new ParameterNameController())->delete((int) $id));
+
+$router->get('/units', fn() => (new UnitController())->list());
+$router->post('/units/create', fn() => (new UnitController())->create());
+$router->post('/units/{id}', fn($id) => (new UnitController())->update((int) $id));
+$router->post('/units/{id}/delete', fn($id) => (new UnitController())->delete((int) $id));
 
 $router->get('/stock', fn() => (new StockController())->overview());
 $router->get('/stock/in', fn() => (new StockController())->inList());
