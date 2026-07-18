@@ -1,0 +1,53 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card">
+        <div class="cx-card__header">
+            <h2>Raktárak és telephelyek</h2>
+            <a href="{{ base_url }}/warehouses/create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i>Új raktár
+            </a>
+        </div>
+        <div class="cx-card__body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 cx-table">
+                    <thead>
+                    <tr>
+                        <th>Név</th>
+                        <th>Cím</th>
+                        <th>Állapot</th>
+                        <th class="text-end">Műveletek</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for warehouse in warehouses %}
+                        <tr>
+                            <td class="fw-medium">{{ warehouse.name }}</td>
+                            <td class="text-muted">{{ warehouse.address ?: '—' }}</td>
+                            <td>
+                                {% if warehouse.is_active %}
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>
+                                {% else %}
+                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Inaktív</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ base_url }}/warehouses/{{ warehouse.id }}/edit" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" action="{{ base_url }}/warehouses/{{ warehouse.id }}/delete" class="d-inline" onsubmit="return confirm('Biztosan törlöd?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="text-center text-muted py-4">Még nincs raktár.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

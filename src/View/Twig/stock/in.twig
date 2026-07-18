@@ -1,0 +1,81 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="cx-card">
+                <div class="cx-card__header">
+                    <h2>Új bevét</h2>
+                </div>
+                <div class="cx-card__body">
+                    <form method="post" action="{{ base_url }}/stock/in/create">
+                        <div class="mb-3">
+                            <label for="warehouse_id" class="form-label">Raktár</label>
+                            <select id="warehouse_id" name="warehouse_id" class="form-select" required>
+                                <option value="">Válassz raktárat…</option>
+                                {% for w in warehouses %}
+                                    <option value="{{ w.id }}">{{ w.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="product_id" class="form-label">Termék</label>
+                            <select id="product_id" name="product_id" class="form-select" required>
+                                <option value="">Válassz terméket…</option>
+                                {% for p in products %}
+                                    <option value="{{ p.id }}">{{ p.sku }} — {{ p.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Mennyiség</label>
+                            <input type="number" step="0.001" min="0" id="quantity" name="quantity" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="note" class="form-label">Megjegyzés</label>
+                            <input type="text" id="note" name="note" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-box-arrow-in-down me-1"></i>Bevét rögzítése
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="cx-card">
+                <div class="cx-card__header">
+                    <h2>Legutóbbi bevétek</h2>
+                </div>
+                <div class="cx-card__body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 cx-table">
+                            <thead>
+                            <tr>
+                                <th>Dátum</th>
+                                <th>Raktár</th>
+                                <th>Termék</th>
+                                <th class="text-end">Mennyiség</th>
+                                <th>Rögzítette</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for m in movements %}
+                                <tr>
+                                    <td class="text-muted">{{ m.created_at }}</td>
+                                    <td>{{ m.warehouse_name }}</td>
+                                    <td>{{ m.sku }} — {{ m.product_name }}</td>
+                                    <td class="text-end text-success fw-medium">+{{ m.quantity|number_format(0, ',', ' ') }} {{ m.unit }}</td>
+                                    <td class="text-muted">{{ m.created_by_name ?: '—' }}</td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="5" class="text-center text-muted py-4">Még nincs bevét rögzítve.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

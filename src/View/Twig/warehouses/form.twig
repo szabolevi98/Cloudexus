@@ -1,0 +1,27 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card" style="max-width: 480px;">
+        <div class="cx-card__header">
+            <h2>{{ warehouse ? 'Raktár szerkesztése' : 'Új raktár' }}</h2>
+        </div>
+        <div class="cx-card__body">
+            <form method="post" action="{{ base_url }}/warehouses{{ warehouse ? '/' ~ warehouse.id : '/create' }}">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Név</label>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ warehouse.name|default('') }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="address" class="form-label">Cím</label>
+                    <input type="text" id="address" name="address" class="form-control" value="{{ warehouse.address|default('') }}">
+                </div>
+                <div class="form-check mb-4">
+                    <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {{ (warehouse is null or warehouse.is_active) ? 'checked' : '' }}>
+                    <label for="is_active" class="form-check-label">Aktív</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Mentés</button>
+                <a href="{{ base_url }}/warehouses" class="btn btn-outline-secondary">Mégse</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card">
+        <div class="cx-card__header">
+            <h2>Raktárkészlet</h2>
+        </div>
+        <div class="cx-card__body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 cx-table">
+                    <thead>
+                    <tr>
+                        <th>Raktár</th>
+                        <th>Cikkszám</th>
+                        <th>Megnevezés</th>
+                        <th class="text-end">Mennyiség</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <td>{{ row.warehouse_name }}</td>
+                            <td class="fw-medium">{{ row.sku }}</td>
+                            <td>{{ row.product_name }}</td>
+                            <td class="text-end">
+                                <span class="badge rounded-pill {{ row.quantity < 0 ? 'text-bg-danger-subtle text-danger-emphasis' : 'text-bg-success-subtle text-success-emphasis' }}">
+                                    {{ row.quantity|number_format(0, ',', ' ') }} {{ row.unit }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="text-center text-muted py-4">Még nincs készletmozgás.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -5,7 +5,9 @@ use Cloudexus\Controller\DashboardController;
 use Cloudexus\Controller\LoginController;
 use Cloudexus\Controller\PartnerController;
 use Cloudexus\Controller\ProductController;
+use Cloudexus\Controller\StockController;
 use Cloudexus\Controller\UserController;
+use Cloudexus\Controller\WarehouseController;
 use Cloudexus\Core\Config;
 use Cloudexus\Core\Router;
 use Cloudexus\Core\Session;
@@ -49,5 +51,12 @@ registerCrud($router, '/users', UserController::class);
 registerCrud($router, '/categories', CategoryController::class);
 registerCrud($router, '/products', ProductController::class);
 registerCrud($router, '/partners', PartnerController::class);
+registerCrud($router, '/warehouses', WarehouseController::class);
+
+$router->get('/stock', fn() => (new StockController())->overview());
+$router->get('/stock/in', fn() => (new StockController())->inList());
+$router->post('/stock/in/create', fn() => (new StockController())->inCreate());
+$router->get('/stock/out', fn() => (new StockController())->outList());
+$router->post('/stock/out/create', fn() => (new StockController())->outCreate());
 
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
