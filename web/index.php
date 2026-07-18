@@ -1,5 +1,6 @@
 <?php
 
+use Cloudexus\Controller\CashVoucherController;
 use Cloudexus\Controller\CategoryController;
 use Cloudexus\Controller\DashboardController;
 use Cloudexus\Controller\IncomingInvoiceController;
@@ -92,5 +93,10 @@ $router->get('/incoming-invoices/{id}', fn($id) => (new IncomingInvoiceControlle
 $router->post('/incoming-invoices/{id}/mark-paid', fn($id) => (new IncomingInvoiceController())->markPaid((int) $id));
 $router->post('/incoming-invoices/{id}/cancel', fn($id) => (new IncomingInvoiceController())->cancel((int) $id));
 $router->post('/incoming-invoices/{id}/delete', fn($id) => (new IncomingInvoiceController())->delete((int) $id));
+
+$router->get('/cash', fn() => (new CashVoucherController())->list());
+$router->get('/cash/create', fn() => (new CashVoucherController())->createForm());
+$router->post('/cash/create', fn() => (new CashVoucherController())->create());
+$router->post('/cash/{id}/delete', fn($id) => (new CashVoucherController())->delete((int) $id));
 
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);

@@ -1,0 +1,86 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card" style="max-width: 560px;">
+        <div class="cx-card__header">
+            <h2>Új pénztárbizonylat</h2>
+        </div>
+        <div class="cx-card__body">
+            <form method="post" action="{{ base_url }}/cash/create">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Bizonylatszám</label>
+                        <input type="text" name="voucher_number" class="form-control" value="{{ voucher_number }}" readonly>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="type" class="form-label">Típus</label>
+                        <select id="type" name="type" class="form-select">
+                            <option value="bevetel">Bevétel</option>
+                            <option value="kiadas">Kiadás</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="amount" class="form-label">Összeg (Ft)</label>
+                        <input type="number" step="0.01" min="0.01" id="amount" name="amount" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Dátum</label>
+                        <input type="date" name="voucher_date" class="form-control" value="{{ "now"|date("Y-m-d") }}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="partner_id" class="form-label">Partner <span class="text-muted small">(opcionális)</span></label>
+                    <select id="partner_id" name="partner_id" class="form-select">
+                        <option value="">— nincs —</option>
+                        {% for p in partners %}
+                            <option value="{{ p.id }}">{{ p.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3" id="invoice-field">
+                    <label for="invoice_id" class="form-label">Kiegyenlítendő kimenő számla <span class="text-muted small">(opcionális)</span></label>
+                    <select id="invoice_id" name="invoice_id" class="form-select">
+                        <option value="">— nincs —</option>
+                        {% for i in unpaid_invoices %}
+                            <option value="{{ i.id }}">{{ i.invoice_number }} — {{ i.partner_name }} ({{ i.total_amount|number_format(0, ',', ' ') }} Ft)</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Ha kiválasztod, a számla automatikusan kifizetve jelölődik.</div>
+                </div>
+                <div class="mb-4 d-none" id="incoming-invoice-field">
+                    <label for="incoming_invoice_id" class="form-label">Kiegyenlítendő bejövő számla <span class="text-muted small">(opcionális)</span></label>
+                    <select id="incoming_invoice_id" name="incoming_invoice_id" class="form-select">
+                        <option value="">— nincs —</option>
+                        {% for i in unpaid_incoming_invoices %}
+                            <option value="{{ i.id }}">{{ i.invoice_number }} — {{ i.partner_name }} ({{ i.total_amount|number_format(0, ',', ' ') }} Ft)</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Ha kiválasztod, a számla automatikusan kifizetve jelölődik.</div>
+                </div>
+                <div class="mb-4">
+                    <label for="note" class="form-label">Megjegyzés</label>
+                    <input type="text" id="note" name="note" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary">Mentés</button>
+                <a href="{{ base_url }}/cash" class="btn btn-outline-secondary">Mégse</a>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const typeSelect = document.getElementById('type');
+        const invoiceField = document.getElementById('invoice-field');
+        const incomingField = document.getElementById('incoming-invoice-field');
+
+        function syncFields() {
+            const isIncome = typeSelect.value === 'bevetel';
+            invoiceField.classList.toggle('d-none', !isIncome);
+            incomingField.classList.toggle('d-none', isIncome);
+        }
+
+        typeSelect.addEventListener('change', syncFields);
+        syncFields();
+    </script>
+{% endblock %}

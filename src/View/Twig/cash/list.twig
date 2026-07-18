@@ -1,0 +1,70 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="row g-3 mb-1">
+        <div class="col-sm-6 col-lg-3">
+            <div class="cx-stat {{ balance >= 0 ? 'cx-stat--success' : 'cx-stat--danger' }}">
+                <div class="cx-stat__icon"><i class="bi bi-cash-stack"></i></div>
+                <div>
+                    <div class="cx-stat__label">Aktuális pénzkészlet</div>
+                    <div class="cx-stat__value">{{ balance|number_format(0, ',', ' ') }} Ft</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cx-card">
+        <div class="cx-card__header">
+            <h2>Pénztárbizonylatok</h2>
+            <a href="{{ base_url }}/cash/create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i>Új bizonylat
+            </a>
+        </div>
+        <div class="cx-card__body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 cx-table">
+                    <thead>
+                    <tr>
+                        <th>Bizonylatszám</th>
+                        <th>Típus</th>
+                        <th>Partner</th>
+                        <th>Kapcsolódó számla</th>
+                        <th>Dátum</th>
+                        <th class="text-end">Összeg</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for v in vouchers %}
+                        <tr>
+                            <td class="fw-medium">{{ v.voucher_number }}</td>
+                            <td>
+                                {% if v.type == 'bevetel' %}
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Bevétel</span>
+                                {% else %}
+                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Kiadás</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ v.partner_name ?: '—' }}</td>
+                            <td class="text-muted">{{ v.sales_invoice_number ?: v.incoming_invoice_number ?: '—' }}</td>
+                            <td class="text-muted">{{ v.voucher_date }}</td>
+                            <td class="text-end {{ v.type == 'bevetel' ? 'text-success' : 'text-danger' }} fw-medium">
+                                {{ v.type == 'bevetel' ? '+' : '-' }}{{ v.amount|number_format(0, ',', ' ') }} Ft
+                            </td>
+                            <td class="text-end">
+                                <form method="post" action="{{ base_url }}/cash/{{ v.id }}/delete" onsubmit="return confirm('Biztosan törlöd?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="7" class="text-center text-muted py-4">Még nincs pénztárbizonylat.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

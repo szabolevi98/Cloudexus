@@ -126,6 +126,17 @@ class InvoiceModel
         DatabaseConnection::get()->prepare('DELETE FROM invoices WHERE id = :id')->execute(['id' => $id]);
     }
 
+    public function unpaidList(): array
+    {
+        return DatabaseConnection::get()->query(
+            "SELECT i.*, p.name AS partner_name
+             FROM invoices i
+             JOIN partners p ON p.id = i.partner_id
+             WHERE i.status = 'unpaid'
+             ORDER BY i.due_date ASC"
+        )->fetchAll();
+    }
+
     public function outstandingTotal(): float
     {
         return (float) DatabaseConnection::get()
