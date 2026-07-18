@@ -1,8 +1,8 @@
 # ☁️ Cloudexus
 
-**Felhő alapú ügyviteli rendszer nagy raktárkészlettel dolgozó vállalkozások számára.**
+**Felhő alapú, moduláris ügyviteli és vállalatirányítási rendszer.**
 
-Online számlázás, vonalkód-központú készlet- és raktárkezelés, beszerzés és pénztár — egyetlen letisztult, modern felületen. A Cloudexus az *1 telepítés = 1 cég* modellt követi: minden vállalat saját, elkülönített példányt futtat, a felhasználók pedig ugyanazon cég munkatársai.
+A Cloudexus egy helyen kezeli a teljes kereskedelmi folyamatot: részletes terméktörzs és partnerkezelés, több raktáras készlet- és raktárkezelés vonalkódos rögzítéssel, raktárközi átadással és leltározással, vevői rendeléstől a számlázásig, beszerzéstől a bejövő számláig, pénztár és számlakiegyenlítés, valamint CRM teendők és ügyfélkapcsolat-történet. Mindezt egy letisztult, valós idejű vezérlőpult, keresők, szűrők és riportok fogják össze — kifejezetten nagy raktárkészlettel dolgozó, aktív kereskedelmi tevékenységet folytató vállalkozásokra szabva.
 
 ![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?logo=php&logoColor=white)
 ![MariaDB](https://img.shields.io/badge/MariaDB-11.4-003545?logo=mariadb&logoColor=white)
@@ -56,6 +56,12 @@ Online számlázás, vonalkód-központú készlet- és raktárkezelés, beszerz
 - Saját profil és jelszóváltás
 - CSRF-védelem minden űrlapon, HttpOnly + SameSite session süti
 - Magyar nyelvű felület
+
+---
+
+## 🏢 Működési modell
+
+A Cloudexus az *1 telepítés = 1 cég* modellt követi: minden vállalat a saját, elkülönített példányát futtatja, a felhasználók pedig ugyanazon cég munkatársai. Így nincs bérlők közti adatmegosztás, és a rendszer teljesen az adott vállalat igényeire hangolható.
 
 ---
 
