@@ -142,10 +142,12 @@ A teljes funkciótérkép a [FEATURES.md](FEATURES.md)-ben él.
 - [x] Keresés, szűrők, lapozás, CSV export a listákban
 - [x] CSRF-védelem, cégadat-beállítások
 
+- [x] Részletes terméktörzs: rövid/hosszú leírás, képek (feltöltés + URL), paraméterek, több kategória, kapcsolódó/helyettesítő termékek, méretek, nettó ár + ÁFA, webshop jelölő
+- [x] Tárhely / polc szintű helykódok
+- [x] CRM: ügyfélkapcsolat-történet (hívás/e-mail/találkozó napló)
+
 **Következő lépcsők:**
 
-- [ ] Tárhely / polc szintű helykódok
-- [ ] CRM bővítés: ügyfélkapcsolat-történet, hívás/e-mail napló
 - [ ] Szállítólevelek és fuvarszervezés
 - [ ] NAV Online Számla adatszolgáltatás
 - [ ] Futárszolgálat-integrációk (GLS, MPL, Foxpost, …)

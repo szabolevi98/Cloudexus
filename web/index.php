@@ -88,6 +88,9 @@ registerCrud($router, '/users', UserController::class);
 registerCrud($router, '/categories', CategoryController::class);
 registerCrud($router, '/products', ProductController::class);
 registerCrud($router, '/partners', PartnerController::class);
+$router->get('/partners/{id}', fn($id) => (new PartnerController())->show((int) $id));
+$router->post('/partners/{id}/activities', fn($id) => (new PartnerController())->addActivity((int) $id));
+$router->post('/partners/{id}/activities/{aid}/delete', fn($id, $aid) => (new PartnerController())->deleteActivity((int) $id, (int) $aid));
 registerCrud($router, '/warehouses', WarehouseController::class);
 registerCrud($router, '/locations', LocationController::class);
 

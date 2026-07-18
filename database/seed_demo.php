@@ -37,7 +37,7 @@ function randDate(int $daysAgoMax, int $daysAgoMin = 0): string
 echo "Truncating business tables...\n";
 $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 foreach ([
-    'todos', 'warehouse_locations', 'stocktaking_items', 'stocktakings',
+    'partner_activities', 'todos', 'warehouse_locations', 'stocktaking_items', 'stocktakings',
     'cash_vouchers', 'incoming_invoice_items', 'incoming_invoices',
     'purchase_order_items', 'purchase_orders', 'invoice_items', 'invoices',
     'order_items', 'orders', 'stock_movements', 'products', 'categories',
@@ -553,5 +553,35 @@ foreach ($todoTitles as $i => $title) {
 }
 
 echo count($todoTitles) . " todos.\n";
+
+// ---------------------------------------------------------------------------
+// Partner kapcsolattörténet (CRM aktivitások)
+// ---------------------------------------------------------------------------
+echo "Seeding partner activities...\n";
+
+$activityTypes = ['call', 'email', 'meeting', 'note', 'offer'];
+$activitySubjects = [
+    'Ajánlatkérés egyeztetése', 'Visszahívás a rendelésről', 'Árajánlat kiküldve',
+    'Szerződés megbeszélés', 'Reklamáció kezelése', 'Fizetési emlékeztető',
+    'Új termékek bemutatása', 'Szállítási időpont egyeztetés', 'Éves keretszerződés',
+];
+$activityCount = 0;
+$activityStmt = $pdo->prepare(
+    'INSERT INTO partner_activities (partner_id, type, subject, note, activity_date, created_by, created_at)
+     VALUES (:pid, :type, :subject, :note, :adate, NULL, NOW())'
+);
+foreach (array_unique($partners['customer']) as $partnerId) {
+    for ($k = 0; $k < rand(2, 6); $k++) {
+        $activityStmt->execute([
+            'pid' => $partnerId,
+            'type' => $activityTypes[array_rand($activityTypes)],
+            'subject' => $activitySubjects[array_rand($activitySubjects)],
+            'note' => 'Rövid feljegyzés a kapcsolatfelvételről és a megbeszélt teendőkről.',
+            'adate' => date('Y-m-d H:i:s', strtotime('-' . rand(0, 60) . ' days -' . rand(0, 23) . ' hours')),
+        ]);
+        $activityCount++;
+    }
+}
+echo "$activityCount partner activities.\n";
 
 echo "\nDone. Demo data ready.\n";

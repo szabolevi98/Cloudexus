@@ -1,0 +1,107 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    {% set typeLabels = {'call': 'Hívás', 'email': 'E-mail', 'meeting': 'Találkozó', 'note': 'Jegyzet', 'offer': 'Ajánlat'} %}
+    {% set typeIcons = {'call': 'bi-telephone', 'email': 'bi-envelope', 'meeting': 'bi-people', 'note': 'bi-sticky', 'offer': 'bi-file-earmark-text'} %}
+
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="cx-card mb-3">
+                <div class="cx-card__header">
+                    <h2>{{ partner.name }}</h2>
+                    <a href="{{ base_url }}/partners/{{ partner.id }}/edit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                </div>
+                <div class="cx-card__body">
+                    <div class="mb-2">
+                        {% if partner.type == 'customer' %}
+                            <span class="badge rounded-pill text-bg-primary">Vevő</span>
+                        {% elseif partner.type == 'supplier' %}
+                            <span class="badge rounded-pill text-bg-secondary">Szállító</span>
+                        {% else %}
+                            <span class="badge rounded-pill text-bg-info">Vevő + Szállító</span>
+                        {% endif %}
+                        {% if partner.is_active %}
+                            <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>
+                        {% else %}
+                            <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Inaktív</span>
+                        {% endif %}
+                    </div>
+                    <dl class="row mb-0 small">
+                        <dt class="col-4 text-muted fw-normal">Adószám</dt><dd class="col-8">{{ partner.tax_number ?: '—' }}</dd>
+                        <dt class="col-4 text-muted fw-normal">E-mail</dt><dd class="col-8">{{ partner.email ?: '—' }}</dd>
+                        <dt class="col-4 text-muted fw-normal">Telefon</dt><dd class="col-8">{{ partner.phone ?: '—' }}</dd>
+                        <dt class="col-4 text-muted fw-normal">Cím</dt><dd class="col-8">{{ partner.address ?: '—' }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="cx-card mb-3">
+                <div class="cx-card__header"><h2>Új bejegyzés</h2></div>
+                <div class="cx-card__body">
+                    <form method="post" action="{{ base_url }}/partners/{{ partner.id }}/activities">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="type" class="form-label">Típus</label>
+                                <select id="type" name="type" class="form-select">
+                                    {% for key, label in typeLabels %}
+                                        <option value="{{ key }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="activity_date" class="form-label">Időpont</label>
+                                <input type="datetime-local" id="activity_date" name="activity_date" class="form-control" value="{{ "now"|date("Y-m-d\\TH:i") }}">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Tárgy</label>
+                            <input type="text" id="subject" name="subject" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="note" class="form-label">Megjegyzés</label>
+                            <textarea id="note" name="note" class="form-control" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>Hozzáadás</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="cx-card mb-3">
+                <div class="cx-card__header">
+                    <h2>Kapcsolattörténet</h2>
+                    <span class="text-muted small">{{ activities|length }} bejegyzés</span>
+                </div>
+                <div class="cx-card__body">
+                    {% for a in activities %}
+                        <div class="d-flex gap-3 pb-3 mb-3 {{ not loop.last ? 'border-bottom' : '' }}">
+                            <div class="cx-timeline-icon"><i class="bi {{ typeIcons[a.type] }}"></i></div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="badge rounded-pill text-bg-light border me-1">{{ typeLabels[a.type] }}</span>
+                                        <span class="fw-medium">{{ a.subject }}</span>
+                                    </div>
+                                    <div class="text-nowrap">
+                                        <span class="text-muted small me-2">{{ a.activity_date }}</span>
+                                        <form method="post" action="{{ base_url }}/partners/{{ partner.id }}/activities/{{ a.id }}/delete" class="d-inline" onsubmit="return confirm('Törlöd a bejegyzést?');">
+                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% if a.note %}<div class="text-muted small mt-1">{{ a.note|nl2br }}</div>{% endif %}
+                                {% if a.created_by_name %}<div class="text-muted mt-1" style="font-size:.75rem;">Rögzítette: {{ a.created_by_name }}</div>{% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
+                            Még nincs kapcsolattörténet ehhez a partnerhez.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

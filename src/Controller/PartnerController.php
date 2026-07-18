@@ -2,17 +2,77 @@
 
 namespace Cloudexus\Controller;
 
+use Cloudexus\Core\Auth;
 use Cloudexus\Model\Core\PartnerModel;
+use Cloudexus\Model\Crm\PartnerActivityModel;
 
 class PartnerController extends BaseController
 {
     private PartnerModel $partners;
+    private PartnerActivityModel $activities;
 
     public function __construct()
     {
         parent::__construct();
         $this->partners = new PartnerModel();
+        $this->activities = new PartnerActivityModel();
         $this->activeMenu = 'partners';
+    }
+
+    public function show(int $id): void
+    {
+        $this->requireAuth();
+
+        $partner = $this->partners->findById($id);
+        if (!$partner) {
+            $this->redirect('/partners');
+        }
+
+        $this->pageTitle = $partner['name'];
+        $this->render('partners/show.twig', [
+            'partner' => $partner,
+            'activities' => $this->activities->forPartner($id),
+        ]);
+    }
+
+    public function addActivity(int $id): void
+    {
+        $this->requireAuth();
+
+        if (!$this->partners->findById($id)) {
+            $this->redirect('/partners');
+        }
+
+        $subject = trim($_POST['subject'] ?? '');
+        if ($subject === '') {
+            $this->flashError('A tárgy megadása kötelező.');
+            $this->redirect('/partners/' . $id);
+        }
+
+        $this->activities->create([
+            'partner_id' => $id,
+            'type' => in_array($_POST['type'] ?? '', ['call', 'email', 'meeting', 'note', 'offer'], true) ? $_POST['type'] : 'note',
+            'subject' => $subject,
+            'note' => trim($_POST['note'] ?? ''),
+            'activity_date' => ($_POST['activity_date'] ?? '') !== '' ? str_replace('T', ' ', $_POST['activity_date']) . ':00' : date('Y-m-d H:i:s'),
+            'created_by' => Auth::id(),
+        ]);
+
+        $this->flashSuccess('Bejegyzés hozzáadva.');
+        $this->redirect('/partners/' . $id);
+    }
+
+    public function deleteActivity(int $id, int $activityId): void
+    {
+        $this->requireAuth();
+
+        $activity = $this->activities->findById($activityId);
+        if ($activity && (int) $activity['partner_id'] === $id) {
+            $this->activities->delete($activityId);
+            $this->flashSuccess('Bejegyzés törölve.');
+        }
+
+        $this->redirect('/partners/' . $id);
     }
 
     public function list(): void

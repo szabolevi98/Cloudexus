@@ -59,7 +59,7 @@
                     <tbody>
                     {% for partner in partners %}
                         <tr>
-                            <td class="fw-medium">{{ partner.name }}</td>
+                            <td class="fw-medium"><a href="{{ base_url }}/partners/{{ partner.id }}" class="text-decoration-none">{{ partner.name }}</a></td>
                             <td>
                                 {% if partner.type == 'customer' %}
                                     <span class="badge rounded-pill text-bg-primary">Vevő</span>
