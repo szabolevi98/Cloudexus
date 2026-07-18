@@ -5,6 +5,7 @@ use Cloudexus\Controller\CategoryController;
 use Cloudexus\Controller\DashboardController;
 use Cloudexus\Controller\IncomingInvoiceController;
 use Cloudexus\Controller\InvoiceController;
+use Cloudexus\Controller\LocationController;
 use Cloudexus\Controller\LoginController;
 use Cloudexus\Controller\OrderController;
 use Cloudexus\Controller\PartnerController;
@@ -88,6 +89,7 @@ registerCrud($router, '/categories', CategoryController::class);
 registerCrud($router, '/products', ProductController::class);
 registerCrud($router, '/partners', PartnerController::class);
 registerCrud($router, '/warehouses', WarehouseController::class);
+registerCrud($router, '/locations', LocationController::class);
 
 $router->get('/settings/company', fn() => (new SettingsController())->company());
 $router->post('/settings/company', fn() => (new SettingsController())->companyUpdate());

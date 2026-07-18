@@ -1,0 +1,37 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card" style="max-width: 520px;">
+        <div class="cx-card__header">
+            <h2>{{ location ? 'Tárhely szerkesztése' : 'Új tárhely' }}</h2>
+        </div>
+        <div class="cx-card__body">
+            <form method="post" action="{{ base_url }}/locations{{ location ? '/' ~ location.id : '/create' }}">
+                <div class="mb-3">
+                    <label for="warehouse_id" class="form-label">Raktár</label>
+                    <select id="warehouse_id" name="warehouse_id" class="form-select" required>
+                        <option value="">Válassz raktárat…</option>
+                        {% for w in warehouses %}
+                            <option value="{{ w.id }}" {{ location and location.warehouse_id == w.id ? 'selected' : '' }}>{{ w.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="code" class="form-label">Helykód</label>
+                    <input type="text" id="code" name="code" class="form-control" placeholder="pl. A-01-03" value="{{ location.code|default('') }}" required>
+                    <div class="form-text">Egyedi a raktáron belül. Pl. sor-állvány-polc: <code>A-01-03</code>.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="name" class="form-label">Megnevezés <span class="text-muted small">(opcionális)</span></label>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ location.name|default('') }}">
+                </div>
+                <div class="form-check form-switch mb-4">
+                    <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {{ (location is null or location.is_active) ? 'checked' : '' }}>
+                    <label for="is_active" class="form-check-label">Aktív</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Mentés</button>
+                <a href="{{ base_url }}/locations" class="btn btn-outline-secondary">Mégse</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

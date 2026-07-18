@@ -37,7 +37,7 @@ function randDate(int $daysAgoMax, int $daysAgoMin = 0): string
 echo "Truncating business tables...\n";
 $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 foreach ([
-    'todos', 'stocktaking_items', 'stocktakings',
+    'todos', 'warehouse_locations', 'stocktaking_items', 'stocktakings',
     'cash_vouchers', 'incoming_invoice_items', 'incoming_invoices',
     'purchase_order_items', 'purchase_orders', 'invoice_items', 'invoices',
     'order_items', 'orders', 'stock_movements', 'products', 'categories',
@@ -255,6 +255,28 @@ foreach ([
 ] as [$name, $address]) {
     $warehouseIds[] = $warehouseModel->create(['name' => $name, 'address' => $address, 'is_active' => 1]);
 }
+
+// Tárhelyek / polcok raktáranként (sor A-C, állvány 1-3, polc 1-4)
+$locationStmt = $pdo->prepare(
+    'INSERT INTO warehouse_locations (warehouse_id, code, name, is_active, created_at) VALUES (:wid, :code, :name, 1, NOW())'
+);
+$locationCount = 0;
+foreach ($warehouseIds as $whId) {
+    foreach (['A', 'B', 'C'] as $row) {
+        foreach (range(1, 3) as $rack) {
+            foreach (range(1, 4) as $shelf) {
+                $code = sprintf('%s-%02d-%02d', $row, $rack, $shelf);
+                $locationStmt->execute([
+                    'wid' => $whId,
+                    'code' => $code,
+                    'name' => sprintf('%s sor, %d. állvány, %d. polc', $row, $rack, $shelf),
+                ]);
+                $locationCount++;
+            }
+        }
+    }
+}
+echo "$locationCount warehouse locations.\n";
 
 // ---------------------------------------------------------------------------
 // Opening stock + random stock movements (last 60 days)
