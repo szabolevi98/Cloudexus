@@ -1,0 +1,25 @@
+.cx-user-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--cx-primary-soft);
+    border: none;
+    border-radius: 999px;
+    padding: 6px 14px 6px 6px;
+    color: var(--cx-text);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.cx-user-pill__avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--cx-primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+}

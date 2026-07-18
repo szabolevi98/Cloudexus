@@ -1,45 +1,65 @@
 {% extends 'common/layout.twig' %}
 
 {% block content %}
-    <h1>Felhasználók</h1>
-
-    {% if success %}
-        <p class="alert alert--success">{{ success }}</p>
-    {% endif %}
-
-    <a href="{{ base_url }}/users/create" class="btn btn--primary">+ Új felhasználó</a>
-
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Felhasználónév</th>
-            <th>Név</th>
-            <th>E-mail</th>
-            <th>Szerepkör</th>
-            <th>Aktív</th>
-            <th>Utolsó belépés</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for user in users %}
-            <tr>
-                <td>{{ user.username }}</td>
-                <td>{{ user.full_name }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.role }}</td>
-                <td>{{ user.is_active ? 'Igen' : 'Nem' }}</td>
-                <td>{{ user.last_login_at ?: '—' }}</td>
-                <td>
-                    <a href="{{ base_url }}/users/{{ user.id }}/edit">Szerkesztés</a>
-                    {% if user.id != auth_user_id %}
-                        <form method="post" action="{{ base_url }}/users/{{ user.id }}/delete" style="display:inline" onsubmit="return confirm('Biztosan törlöd?');">
-                            <button type="submit" class="link-button">Törlés</button>
-                        </form>
-                    {% endif %}
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="cx-card">
+        <div class="cx-card__header">
+            <h2>Felhasználók</h2>
+            <a href="{{ base_url }}/users/create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i>Új felhasználó
+            </a>
+        </div>
+        <div class="cx-card__body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 cx-table">
+                    <thead>
+                    <tr>
+                        <th>Felhasználónév</th>
+                        <th>Név</th>
+                        <th>E-mail</th>
+                        <th>Szerepkör</th>
+                        <th>Állapot</th>
+                        <th>Utolsó belépés</th>
+                        <th class="text-end">Műveletek</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td class="fw-medium">{{ user.username }}</td>
+                            <td>{{ user.full_name }}</td>
+                            <td class="text-muted">{{ user.email }}</td>
+                            <td>
+                                {% if user.role == 'admin' %}
+                                    <span class="badge rounded-pill text-bg-primary">Admin</span>
+                                {% else %}
+                                    <span class="badge rounded-pill text-bg-secondary">Felhasználó</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>
+                                {% else %}
+                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Inaktív</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted">{{ user.last_login_at ?: '—' }}</td>
+                            <td class="text-end">
+                                <a href="{{ base_url }}/users/{{ user.id }}/edit" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% if user.id != auth_user_id %}
+                                    <form method="post" action="{{ base_url }}/users/{{ user.id }}/delete" class="d-inline" onsubmit="return confirm('Biztosan törlöd ezt a felhasználót?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}

@@ -8,6 +8,8 @@ class DashboardController extends BaseController
     {
         $this->requireAuth();
 
+        $this->activeMenu = 'dashboard';
+        $this->pageTitle = 'Vezérlőpult';
         $this->render('dashboard.twig');
     }
 }

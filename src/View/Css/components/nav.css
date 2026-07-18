@@ -1,0 +1,41 @@
+.cx-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cx-nav__group-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(183, 188, 224, 0.55);
+    padding: 16px 10px 6px;
+}
+
+.cx-nav__link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    border-radius: var(--cx-radius-sm);
+    color: var(--cx-sidebar-text);
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cx-nav__link i {
+    font-size: 1.05rem;
+    width: 20px;
+    text-align: center;
+}
+
+.cx-nav__link:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--cx-sidebar-text-active);
+}
+
+.cx-nav__link.is-active {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--cx-sidebar-text-active);
+}

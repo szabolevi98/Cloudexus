@@ -1,17 +1,68 @@
 {% extends 'common/layout.twig' %}
 
 {% block content %}
-    <h1>Vezérlőpult</h1>
-    <p>Üdv, {{ auth_user_name }}!</p>
-
-    <div class="card-grid">
-        <div class="card">
-            <h2>Kintlevőség</h2>
-            <p class="card__value">0 Ft</p>
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="cx-stat cx-stat--primary">
+                <div class="cx-stat__icon"><i class="bi bi-cart-check"></i></div>
+                <div>
+                    <div class="cx-stat__label">Vevői rendelés</div>
+                    <div class="cx-stat__value">0 Ft</div>
+                </div>
+            </div>
         </div>
-        <div class="card">
-            <h2>Kötelezettség</h2>
-            <p class="card__value">0 Ft</p>
+        <div class="col-sm-6 col-lg-3">
+            <div class="cx-stat cx-stat--warning">
+                <div class="cx-stat__icon"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <div class="cx-stat__label">Kintlevőség</div>
+                    <div class="cx-stat__value">0 Ft</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="cx-stat cx-stat--danger">
+                <div class="cx-stat__icon"><i class="bi bi-exclamation-circle"></i></div>
+                <div>
+                    <div class="cx-stat__label">Kötelezettség</div>
+                    <div class="cx-stat__value">0 Ft</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="cx-stat cx-stat--success">
+                <div class="cx-stat__icon"><i class="bi bi-box-seam"></i></div>
+                <div>
+                    <div class="cx-stat__label">Termékek</div>
+                    <div class="cx-stat__value">{{ product_count|default(0) }} db</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="cx-card">
+                <div class="cx-card__header">
+                    <h2>Vevői rendelések</h2>
+                    <span class="text-muted small">Elmúlt 10 nap</span>
+                </div>
+                <div class="cx-card__body text-center text-muted py-5">
+                    <i class="bi bi-graph-up fs-1 d-block mb-2"></i>
+                    Még nincs elég adat a grafikonhoz.
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="cx-card">
+                <div class="cx-card__header">
+                    <h2>Teendők</h2>
+                </div>
+                <div class="cx-card__body text-center text-muted py-5">
+                    <i class="bi bi-check2-square fs-1 d-block mb-2"></i>
+                    Nincs elmaradt teendőd.
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

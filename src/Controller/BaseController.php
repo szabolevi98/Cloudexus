@@ -4,12 +4,15 @@ namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Auth;
 use Cloudexus\Core\Config;
+use Cloudexus\Core\Session;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
 abstract class BaseController
 {
     protected Environment $twig;
+    protected string $activeMenu = '';
+    protected string $pageTitle = '';
 
     public function __construct()
     {
@@ -21,11 +24,19 @@ abstract class BaseController
 
     protected function render(string $template, array $data = []): void
     {
+        $flashes = array_filter([
+            'success' => Session::flash('success'),
+            'error' => Session::flash('error'),
+        ]);
+
         echo $this->twig->render($template, array_merge([
             'auth_user_id' => Auth::id(),
-            'auth_user_name' => Auth::check() ? \Cloudexus\Core\Session::get('user_name') : null,
+            'auth_user_name' => Auth::check() ? Session::get('user_name') : null,
             'auth_is_admin' => Auth::isAdmin(),
             'base_url' => Config::get('app.base_url'),
+            'active_menu' => $this->activeMenu,
+            'page_title' => $this->pageTitle,
+            'flashes' => $flashes,
         ], $data));
     }
 
@@ -33,6 +44,16 @@ abstract class BaseController
     {
         header('Location: ' . Config::get('app.base_url') . $path);
         exit;
+    }
+
+    protected function flashSuccess(string $message): void
+    {
+        Session::flash('success', $message);
+    }
+
+    protected function flashError(string $message): void
+    {
+        Session::flash('error', $message);
     }
 
     protected function requireAuth(): void

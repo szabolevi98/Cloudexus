@@ -1,43 +1,44 @@
 {% extends 'common/layout.twig' %}
 
 {% block content %}
-    <h1>{{ user ? 'Felhasználó szerkesztése' : 'Új felhasználó' }}</h1>
-
-    {% if errors %}
-        <p class="alert alert--error">{{ errors }}</p>
-    {% endif %}
-
-    <form method="post" action="{{ base_url }}/users{{ user ? '/' ~ user.id : '/create' }}" class="form">
-        <div class="form__row">
-            <label for="username">Felhasználónév</label>
-            <input type="text" id="username" name="username" value="{{ user.username|default('') }}" required>
+    <div class="cx-card" style="max-width: 560px;">
+        <div class="cx-card__header">
+            <h2>{{ user ? 'Felhasználó szerkesztése' : 'Új felhasználó' }}</h2>
         </div>
-        <div class="form__row">
-            <label for="email">E-mail</label>
-            <input type="email" id="email" name="email" value="{{ user.email|default('') }}" required>
+        <div class="cx-card__body">
+            <form method="post" action="{{ base_url }}/users{{ user ? '/' ~ user.id : '/create' }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Felhasználónév</label>
+                    <input type="text" id="username" name="username" class="form-control" value="{{ user.username|default('') }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">E-mail</label>
+                    <input type="email" id="email" name="email" class="form-control" value="{{ user.email|default('') }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="full_name" class="form-label">Teljes név</label>
+                    <input type="text" id="full_name" name="full_name" class="form-control" value="{{ user.full_name|default('') }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">
+                        Jelszó {% if user %}<span class="text-muted small">(üresen hagyva nem változik)</span>{% endif %}
+                    </label>
+                    <input type="password" id="password" name="password" class="form-control" {{ user ? '' : 'required' }}>
+                </div>
+                <div class="mb-3">
+                    <label for="role" class="form-label">Szerepkör</label>
+                    <select id="role" name="role" class="form-select">
+                        <option value="user" {{ user.role == 'user' ? 'selected' : '' }}>Felhasználó</option>
+                        <option value="admin" {{ user.role == 'admin' ? 'selected' : '' }}>Admin</option>
+                    </select>
+                </div>
+                <div class="form-check mb-4">
+                    <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {{ (user is null or user.is_active) ? 'checked' : '' }}>
+                    <label for="is_active" class="form-check-label">Aktív</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Mentés</button>
+                <a href="{{ base_url }}/users" class="btn btn-outline-secondary">Mégse</a>
+            </form>
         </div>
-        <div class="form__row">
-            <label for="full_name">Teljes név</label>
-            <input type="text" id="full_name" name="full_name" value="{{ user.full_name|default('') }}" required>
-        </div>
-        <div class="form__row">
-            <label for="password">Jelszó {{ user ? '(üresen hagyva nem változik)' : '' }}</label>
-            <input type="password" id="password" name="password" {{ user ? '' : 'required' }}>
-        </div>
-        <div class="form__row">
-            <label for="role">Szerepkör</label>
-            <select id="role" name="role">
-                <option value="user" {{ user.role == 'user' ? 'selected' : '' }}>Felhasználó</option>
-                <option value="admin" {{ user.role == 'admin' ? 'selected' : '' }}>Admin</option>
-            </select>
-        </div>
-        <div class="form__row form__row--checkbox">
-            <label>
-                <input type="checkbox" name="is_active" {{ (user is null or user.is_active) ? 'checked' : '' }}>
-                Aktív
-            </label>
-        </div>
-        <button type="submit" class="btn btn--primary">Mentés</button>
-        <a href="{{ base_url }}/users" class="btn">Mégse</a>
-    </form>
+    </div>
 {% endblock %}

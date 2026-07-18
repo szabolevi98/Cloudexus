@@ -3,7 +3,6 @@
 namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Auth;
-use Cloudexus\Core\Session;
 use Cloudexus\Model\Account\UserModel;
 
 class UserController extends BaseController
@@ -14,15 +13,16 @@ class UserController extends BaseController
     {
         parent::__construct();
         $this->users = new UserModel();
+        $this->activeMenu = 'users';
     }
 
     public function list(): void
     {
         $this->requireAdmin();
 
+        $this->pageTitle = 'Felhasználók';
         $this->render('users/list.twig', [
             'users' => $this->users->all(),
-            'success' => Session::flash('user_success'),
         ]);
     }
 
@@ -30,10 +30,8 @@ class UserController extends BaseController
     {
         $this->requireAdmin();
 
-        $this->render('users/form.twig', [
-            'user' => null,
-            'errors' => Session::flash('user_errors'),
-        ]);
+        $this->pageTitle = 'Új felhasználó';
+        $this->render('users/form.twig', ['user' => null]);
     }
 
     public function create(): void
@@ -44,12 +42,12 @@ class UserController extends BaseController
         $errors = $this->validate($data, null);
 
         if ($errors) {
-            Session::flash('user_errors', implode(' ', $errors));
+            $this->flashError(implode(' ', $errors));
             $this->redirect('/users/create');
         }
 
         $this->users->create($data);
-        Session::flash('user_success', 'Felhasználó létrehozva.');
+        $this->flashSuccess('Felhasználó létrehozva.');
         $this->redirect('/users');
     }
 
@@ -62,10 +60,8 @@ class UserController extends BaseController
             $this->redirect('/users');
         }
 
-        $this->render('users/form.twig', [
-            'user' => $user,
-            'errors' => Session::flash('user_errors'),
-        ]);
+        $this->pageTitle = 'Felhasználó szerkesztése';
+        $this->render('users/form.twig', ['user' => $user]);
     }
 
     public function update(int $id): void
@@ -76,12 +72,12 @@ class UserController extends BaseController
         $errors = $this->validate($data, $id);
 
         if ($errors) {
-            Session::flash('user_errors', implode(' ', $errors));
+            $this->flashError(implode(' ', $errors));
             $this->redirect('/users/' . $id . '/edit');
         }
 
         $this->users->update($id, $data);
-        Session::flash('user_success', 'Felhasználó frissítve.');
+        $this->flashSuccess('Felhasználó frissítve.');
         $this->redirect('/users');
     }
 
@@ -90,12 +86,12 @@ class UserController extends BaseController
         $this->requireAdmin();
 
         if ($id === Auth::id()) {
-            Session::flash('user_success', 'Saját fiókodat nem törölheted.');
+            $this->flashError('Saját fiókodat nem törölheted.');
             $this->redirect('/users');
         }
 
         $this->users->delete($id);
-        Session::flash('user_success', 'Felhasználó törölve.');
+        $this->flashSuccess('Felhasználó törölve.');
         $this->redirect('/users');
     }
 
