@@ -10,6 +10,8 @@ Online számlázás, vonalkód-központú készlet- és raktárkezelés, beszerz
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?logo=bootstrap&logoColor=white)
 ![Status](https://img.shields.io/badge/St%C3%A1tusz-akt%C3%ADv%20fejleszt%C3%A9s-blue)
 
+![Cloudexus vezérlőpult](Cloudexus.png)
+
 ---
 
 ## ✨ Fő funkciók
