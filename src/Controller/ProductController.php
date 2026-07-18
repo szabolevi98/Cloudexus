@@ -112,10 +112,12 @@ class ProductController extends BaseController
     {
         return [
             'sku' => trim($_POST['sku'] ?? ''),
+            'barcode' => trim($_POST['barcode'] ?? ''),
             'name' => trim($_POST['name'] ?? ''),
             'category_id' => $_POST['category_id'] ?? null,
             'unit' => trim($_POST['unit'] ?? 'db'),
             'price' => (float) str_replace(',', '.', $_POST['price'] ?? '0'),
+            'min_stock' => (float) str_replace(',', '.', $_POST['min_stock'] ?? '0'),
             'is_active' => isset($_POST['is_active']) ? 1 : 0,
         ];
     }

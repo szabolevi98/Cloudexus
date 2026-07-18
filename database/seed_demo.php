@@ -115,10 +115,14 @@ foreach ($catalog as $categoryName => $items) {
         $sku = 'PRD-' . str_pad((string) $skuCounter++, 4, '0', STR_PAD_LEFT);
         $productId = $productModel->create([
             'sku' => $sku,
+            // EAN-13-szerű demo vonalkód (599 = magyar prefix)
+            'barcode' => '599' . str_pad((string) rand(0, 9999999999), 10, '0', STR_PAD_LEFT),
             'name' => $name,
             'category_id' => $categoryIds[$categoryName],
             'unit' => 'db',
             'price' => $price,
+            // A termékek felénél riasztási szint is van, hogy az alacsony készlet widget éljen.
+            'min_stock' => rand(0, 1) ? rand(50, 250) : 0,
             'is_active' => 1,
         ]);
         $products[] = ['id' => $productId, 'price' => $price];

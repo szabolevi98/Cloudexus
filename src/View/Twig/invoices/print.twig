@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ invoice.invoice_number }} — Számla</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            color: #1c2333;
+            margin: 0;
+            background: #f2f4fb;
+        }
+        .sheet {
+            max-width: 800px;
+            margin: 24px auto;
+            background: #fff;
+            padding: 48px;
+            box-shadow: 0 8px 24px rgba(29, 33, 70, 0.08);
+        }
+        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+        .doc-header h1 { font-size: 1.6rem; margin: 0 0 4px; color: #4f5bd5; }
+        .doc-header .number { font-size: 1.05rem; font-weight: 600; }
+        .parties { display: flex; gap: 32px; margin-bottom: 32px; }
+        .party { flex: 1; }
+        .party h2 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: #7c8494; margin: 0 0 6px; }
+        .party .name { font-weight: 700; margin-bottom: 2px; }
+        .party div { font-size: 0.9rem; line-height: 1.45; }
+        .meta { display: flex; gap: 24px; margin-bottom: 28px; font-size: 0.9rem; }
+        .meta div span { display: block; color: #7c8494; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #7c8494; border-bottom: 2px solid #e7e9f2; padding: 8px 10px; }
+        td { padding: 10px; border-bottom: 1px solid #e7e9f2; font-size: 0.92rem; }
+        .num { text-align: right; }
+        tfoot td { font-weight: 700; font-size: 1.05rem; border-bottom: none; border-top: 2px solid #1c2333; }
+        .footer { margin-top: 40px; font-size: 0.8rem; color: #7c8494; text-align: center; }
+        .toolbar { max-width: 800px; margin: 16px auto 0; display: flex; gap: 8px; }
+        .toolbar a, .toolbar button {
+            font: inherit; padding: 8px 18px; border-radius: 8px; cursor: pointer; text-decoration: none;
+            border: 1px solid #e7e9f2; background: #fff; color: #1c2333;
+        }
+        .toolbar button.primary { background: #4f5bd5; border-color: #4f5bd5; color: #fff; }
+        @media print {
+            body { background: #fff; }
+            .sheet { box-shadow: none; margin: 0; max-width: none; padding: 24px; }
+            .toolbar { display: none; }
+        }
+    </style>
+</head>
+<body>
+<div class="toolbar">
+    <button type="button" class="primary" onclick="window.print()">🖨 Nyomtatás</button>
+    <a href="{{ base_url }}/invoices/{{ invoice.id }}">« Vissza a számlához</a>
+</div>
+
+<div class="sheet">
+    <div class="doc-header">
+        <div>
+            <h1>SZÁMLA</h1>
+            <div class="number">{{ invoice.invoice_number }}</div>
+        </div>
+        <div style="text-align:right">
+            {% if invoice.status == 'paid' %}
+                <div style="color:#1fa971;font-weight:700;">KIFIZETVE</div>
+            {% elseif invoice.status == 'cancelled' %}
+                <div style="color:#e0526a;font-weight:700;">STORNÓZVA</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="parties">
+        <div class="party">
+            <h2>Eladó</h2>
+            <div class="name">{{ company.name|default('—') }}</div>
+            <div>{{ company.address|default('') }}</div>
+            <div>Adószám: {{ company.tax_number|default('—') }}</div>
+            {% if company.bank_account is defined and company.bank_account %}
+                <div>Bankszámla: {{ company.bank_account }}</div>
+            {% endif %}
+        </div>
+        <div class="party">
+            <h2>Vevő</h2>
+            <div class="name">{{ invoice.partner_name }}</div>
+            <div>{{ invoice.address|default('') }}</div>
+            {% if invoice.tax_number %}
+                <div>Adószám: {{ invoice.tax_number }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="meta">
+        <div><span>Kiállítás dátuma</span>{{ invoice.issue_date }}</div>
+        <div><span>Fizetési határidő</span>{{ invoice.due_date }}</div>
+        <div><span>Fizetési mód</span>Átutalás</div>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Cikkszám</th>
+            <th>Megnevezés</th>
+            <th class="num">Mennyiség</th>
+            <th class="num">Egységár</th>
+            <th class="num">Összesen</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in invoice.items %}
+            <tr>
+                <td>{{ item.sku }}</td>
+                <td>{{ item.product_name }}</td>
+                <td class="num">{{ item.quantity|number_format(0, ',', ' ') }} {{ item.unit }}</td>
+                <td class="num">{{ item.unit_price|number_format(0, ',', ' ') }} Ft</td>
+                <td class="num">{{ item.line_total|number_format(0, ',', ' ') }} Ft</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="4" class="num">Fizetendő összesen</td>
+            <td class="num">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>
+        </tr>
+        </tfoot>
+    </table>
+
+    <div class="footer">
+        A számlát a Cloudexus ügyviteli rendszer állította ki. · {{ "now"|date("Y-m-d H:i") }}
+    </div>
+</div>
+</body>
+</html>

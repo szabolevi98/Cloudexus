@@ -74,6 +74,9 @@
         <a href="{{ base_url }}/invoices" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Vissza a listához
         </a>
+        <a href="{{ base_url }}/invoices/{{ invoice.id }}/print" target="_blank" class="btn btn-outline-secondary">
+            <i class="bi bi-printer me-1"></i>Nyomtatás
+        </a>
         {% if invoice.status == 'unpaid' %}
             <form method="post" action="{{ base_url }}/invoices/{{ invoice.id }}/mark-paid">
                 <button type="submit" class="btn btn-success">

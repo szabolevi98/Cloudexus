@@ -30,6 +30,7 @@ class DashboardController extends BaseController
             'top_categories' => $topCategories,
             'top_categories_max' => $topCategories ? max(array_column($topCategories, 'value')) : 0,
             'recent_invoices' => $invoices->recent(6),
+            'low_stock' => (new ProductModel())->lowStock(8),
             'today' => date('Y-m-d'),
         ]);
     }

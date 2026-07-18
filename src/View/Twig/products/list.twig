@@ -58,7 +58,14 @@
                             <td>{{ product.name }}</td>
                             <td class="text-muted">{{ product.category_name ?: '—' }}</td>
                             <td class="text-end">
-                                <span class="badge rounded-pill {{ product.stock_qty <= 0 ? 'text-bg-danger-subtle text-danger-emphasis' : 'text-bg-success-subtle text-success-emphasis' }}">
+                                {% if product.stock_qty <= 0 %}
+                                    {% set stockClass = 'text-bg-danger-subtle text-danger-emphasis' %}
+                                {% elseif product.min_stock > 0 and product.stock_qty < product.min_stock %}
+                                    {% set stockClass = 'text-bg-warning-subtle text-warning-emphasis' %}
+                                {% else %}
+                                    {% set stockClass = 'text-bg-success-subtle text-success-emphasis' %}
+                                {% endif %}
+                                <span class="badge rounded-pill {{ stockClass }}" {% if product.min_stock > 0 %}title="Minimum: {{ product.min_stock|number_format(0, ',', ' ') }}"{% endif %}>
                                     {{ product.stock_qty|number_format(0, ',', ' ') }} {{ product.unit }}
                                 </span>
                             </td>

@@ -75,6 +75,9 @@ $router->get('/stock/out', fn() => (new StockController())->outList());
 $router->post('/stock/out/create', fn() => (new StockController())->outCreate());
 $router->get('/stock/transfer', fn() => (new StockController())->transferForm());
 $router->post('/stock/transfer', fn() => (new StockController())->transferCreate());
+$router->get('/stock/barcode', fn() => (new StockController())->barcodeForm());
+$router->get('/stock/barcode/lookup', fn() => (new StockController())->barcodeLookup());
+$router->post('/stock/barcode', fn() => (new StockController())->barcodeSubmit());
 
 $router->get('/orders', fn() => (new OrderController())->list());
 $router->get('/orders/create', fn() => (new OrderController())->createForm());
@@ -87,6 +90,7 @@ $router->get('/invoices', fn() => (new InvoiceController())->list());
 $router->get('/invoices/create', fn() => (new InvoiceController())->createForm());
 $router->post('/invoices/create', fn() => (new InvoiceController())->create());
 $router->get('/invoices/{id}', fn($id) => (new InvoiceController())->show((int) $id));
+$router->get('/invoices/{id}/print', fn($id) => (new InvoiceController())->printView((int) $id));
 $router->post('/invoices/{id}/mark-paid', fn($id) => (new InvoiceController())->markPaid((int) $id));
 $router->post('/invoices/{id}/cancel', fn($id) => (new InvoiceController())->cancel((int) $id));
 $router->post('/invoices/{id}/delete', fn($id) => (new InvoiceController())->delete((int) $id));

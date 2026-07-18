@@ -17,6 +17,14 @@ timezone = "Europe/Budapest"
 name = cloudexus_session
 lifetime = 7200
 
+[company]
+name = "Mintacég Kft."
+address = "1111 Budapest, Példa utca 1."
+tax_number = "12345678-2-42"
+bank_account = "11111111-22222222-33333333"
+email = "info@mintaceg.hu"
+phone = "+36 1 234 5678"
+
 [mail]
 host =
 port = 587

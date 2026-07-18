@@ -1,0 +1,140 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="cx-card" style="max-width: 860px;">
+        <div class="cx-card__header">
+            <h2><i class="bi bi-upc-scan me-2"></i>Vonalkód gyűjtő</h2>
+            <span class="text-muted small">Olvasd be a tételeket, majd könyveld egyben</span>
+        </div>
+        <div class="cx-card__body">
+            <form method="post" action="{{ base_url }}/stock/barcode" id="barcode-form">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="warehouse_id" class="form-label">Raktár</label>
+                        <select id="warehouse_id" name="warehouse_id" class="form-select" required>
+                            <option value="">Válassz raktárat…</option>
+                            {% for w in warehouses %}
+                                <option value="{{ w.id }}">{{ w.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label d-block">Irány</label>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="direction" id="dir-in" value="in" checked>
+                            <label class="btn btn-outline-success" for="dir-in"><i class="bi bi-box-arrow-in-down me-1"></i>Bevét</label>
+                            <input type="radio" class="btn-check" name="direction" id="dir-out" value="out">
+                            <label class="btn btn-outline-danger" for="dir-out"><i class="bi bi-box-arrow-up me-1"></i>Kiadás</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="scan-input" class="form-label">Vonalkód / cikkszám</label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text"><i class="bi bi-upc"></i></span>
+                        <input type="text" id="scan-input" class="form-control" placeholder="Olvass be egy kódot, majd Enter…" autofocus autocomplete="off">
+                    </div>
+                    <div class="form-text" id="scan-feedback">Minden beolvasás +1 mennyiséget ad a tételhez.</div>
+                </div>
+
+                <div class="table-responsive mb-3">
+                    <table class="table cx-table align-middle" id="scan-table">
+                        <thead>
+                        <tr>
+                            <th>Cikkszám</th>
+                            <th>Megnevezés</th>
+                            <th style="width: 130px;">Mennyiség</th>
+                            <th style="width: 40px;"></th>
+                        </tr>
+                        </thead>
+                        <tbody id="scan-body">
+                        <tr id="scan-empty"><td colspan="4" class="text-center text-muted py-4">Még nincs beolvasott tétel.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="scan-submit" disabled>
+                    <i class="bi bi-check-lg me-1"></i>Tételek könyvelése
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const input = document.getElementById('scan-input');
+            const body = document.getElementById('scan-body');
+            const emptyRow = document.getElementById('scan-empty');
+            const feedback = document.getElementById('scan-feedback');
+            const submitBtn = document.getElementById('scan-submit');
+            const rows = new Map();
+
+            function syncState() {
+                emptyRow.style.display = rows.size ? 'none' : '';
+                submitBtn.disabled = rows.size === 0;
+            }
+
+            function addProduct(product) {
+                if (rows.has(product.id)) {
+                    const qtyInput = rows.get(product.id).querySelector('input[name="quantity[]"]');
+                    qtyInput.value = (parseFloat(qtyInput.value) || 0) + 1;
+                    return;
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="fw-medium">${product.sku}<input type="hidden" name="product_id[]" value="${product.id}"></td>
+                    <td>${product.name}</td>
+                    <td><input type="number" step="0.001" min="0.001" name="quantity[]" class="form-control form-control-sm" value="1"></td>
+                    <td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger scan-remove"><i class="bi bi-x-lg"></i></button></td>
+                `;
+                tr.querySelector('.scan-remove').addEventListener('click', () => {
+                    rows.delete(product.id);
+                    tr.remove();
+                    syncState();
+                    input.focus();
+                });
+                rows.set(product.id, tr);
+                body.appendChild(tr);
+                syncState();
+            }
+
+            input.addEventListener('keydown', async (e) => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+
+                const code = input.value.trim();
+                if (!code) return;
+
+                try {
+                    const res = await fetch('{{ base_url }}/stock/barcode/lookup?code=' + encodeURIComponent(code));
+                    const data = await res.json();
+
+                    if (data.found) {
+                        addProduct(data.product);
+                        feedback.textContent = '✓ ' + data.product.sku + ' — ' + data.product.name;
+                        feedback.className = 'form-text text-success';
+                    } else {
+                        feedback.textContent = '✗ Ismeretlen kód: ' + code;
+                        feedback.className = 'form-text text-danger';
+                    }
+                } catch {
+                    feedback.textContent = 'Hálózati hiba a kereséskor.';
+                    feedback.className = 'form-text text-danger';
+                }
+
+                input.value = '';
+                input.focus();
+            });
+
+            // Az Enter a beolvasó mezőben ne küldje el a formot más mezőkből sem véletlenül.
+            document.getElementById('barcode-form').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && e.target !== submitBtn && e.target.type !== 'submit') {
+                    if (e.target === input) return; // már kezelve
+                    e.preventDefault();
+                }
+            });
+        })();
+    </script>
+{% endblock %}

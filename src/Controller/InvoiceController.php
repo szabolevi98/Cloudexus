@@ -122,6 +122,22 @@ class InvoiceController extends BaseController
         $this->render('invoices/show.twig', ['invoice' => $invoice]);
     }
 
+    /** Printer-friendly invoice document. */
+    public function printView(int $id): void
+    {
+        $this->requireAuth();
+
+        $invoice = $this->invoices->findById($id);
+        if (!$invoice) {
+            $this->redirect('/invoices');
+        }
+
+        $this->render('invoices/print.twig', [
+            'invoice' => $invoice,
+            'company' => \Cloudexus\Core\Config::get('company', []),
+        ]);
+    }
+
     public function markPaid(int $id): void
     {
         $this->requireAuth();

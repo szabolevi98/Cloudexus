@@ -94,15 +94,17 @@ class ProductModel
     public function create(array $data): int
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'INSERT INTO products (sku, name, category_id, unit, price, is_active, created_at)
-             VALUES (:sku, :name, :category_id, :unit, :price, :is_active, NOW())'
+            'INSERT INTO products (sku, barcode, name, category_id, unit, price, min_stock, is_active, created_at)
+             VALUES (:sku, :barcode, :name, :category_id, :unit, :price, :min_stock, :is_active, NOW())'
         );
         $stmt->execute([
             'sku' => $data['sku'],
+            'barcode' => ($data['barcode'] ?? '') !== '' ? $data['barcode'] : null,
             'name' => $data['name'],
             'category_id' => $data['category_id'] ?: null,
             'unit' => $data['unit'],
             'price' => $data['price'],
+            'min_stock' => $data['min_stock'] ?? 0,
             'is_active' => $data['is_active'],
         ]);
 
@@ -112,19 +114,48 @@ class ProductModel
     public function update(int $id, array $data): void
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'UPDATE products SET sku = :sku, name = :name, category_id = :category_id,
-                unit = :unit, price = :price, is_active = :is_active, updated_at = NOW()
+            'UPDATE products SET sku = :sku, barcode = :barcode, name = :name, category_id = :category_id,
+                unit = :unit, price = :price, min_stock = :min_stock, is_active = :is_active, updated_at = NOW()
              WHERE id = :id'
         );
         $stmt->execute([
             'id' => $id,
             'sku' => $data['sku'],
+            'barcode' => ($data['barcode'] ?? '') !== '' ? $data['barcode'] : null,
             'name' => $data['name'],
             'category_id' => $data['category_id'] ?: null,
             'unit' => $data['unit'],
             'price' => $data['price'],
+            'min_stock' => $data['min_stock'] ?? 0,
             'is_active' => $data['is_active'],
         ]);
+    }
+
+    /** Looks up an active product by scanned barcode or SKU (for the vonalkód gyűjtő). */
+    public function findByCode(string $code): ?array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT * FROM products WHERE (barcode = :c1 OR sku = :c2) AND is_active = 1 LIMIT 1'
+        );
+        $stmt->execute(['c1' => $code, 'c2' => $code]);
+
+        return $stmt->fetch() ?: null;
+    }
+
+    /** Products whose total stock has fallen below their minimum stock level. */
+    public function lowStock(int $limit = 10): array
+    {
+        return DatabaseConnection::get()->query(
+            "SELECT p.id, p.sku, p.name, p.unit, p.min_stock, COALESCE(s.qty, 0) AS stock_qty
+             FROM products p
+             LEFT JOIN (
+                 SELECT product_id, SUM(CASE WHEN type = 'in' THEN quantity ELSE -quantity END) AS qty
+                 FROM stock_movements GROUP BY product_id
+             ) s ON s.product_id = p.id
+             WHERE p.is_active = 1 AND p.min_stock > 0 AND COALESCE(s.qty, 0) < p.min_stock
+             ORDER BY (COALESCE(s.qty, 0) / p.min_stock) ASC
+             LIMIT " . (int) $limit
+        )->fetchAll();
     }
 
     public function delete(int $id): void

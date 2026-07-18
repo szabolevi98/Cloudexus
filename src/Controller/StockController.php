@@ -143,6 +143,87 @@ class StockController extends BaseController
         $this->redirect('/stock/transfer');
     }
 
+    public function barcodeForm(): void
+    {
+        $this->requireAuth();
+
+        $this->activeMenu = 'stock-barcode';
+        $this->pageTitle = 'Vonalkód gyűjtő';
+        $this->render('stock/barcode.twig', [
+            'warehouses' => $this->warehouses->activeList(),
+        ]);
+    }
+
+    /** JSON lookup endpoint: resolves a scanned barcode or SKU to a product. */
+    public function barcodeLookup(): void
+    {
+        $this->requireAuth();
+
+        $code = trim($_GET['code'] ?? '');
+        $product = $code !== '' ? $this->products->findByCode($code) : null;
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($product
+            ? ['found' => true, 'product' => [
+                'id' => (int) $product['id'],
+                'sku' => $product['sku'],
+                'name' => $product['name'],
+                'unit' => $product['unit'],
+            ]]
+            : ['found' => false], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    /** Books all collected barcode rows as stock movements in one batch. */
+    public function barcodeSubmit(): void
+    {
+        $this->requireAuth();
+
+        $warehouseId = (int) ($_POST['warehouse_id'] ?? 0);
+        $direction = $_POST['direction'] === 'out' ? 'out' : 'in';
+        $productIds = $_POST['product_id'] ?? [];
+        $quantities = $_POST['quantity'] ?? [];
+
+        $items = [];
+        foreach ($productIds as $index => $productId) {
+            $productId = (int) $productId;
+            $quantity = (float) str_replace(',', '.', $quantities[$index] ?? '0');
+            if ($productId > 0 && $quantity > 0) {
+                $items[$productId] = ($items[$productId] ?? 0) + $quantity;
+            }
+        }
+
+        if ($warehouseId <= 0 || empty($items)) {
+            $this->flashError('Raktár és legalább egy beolvasott tétel szükséges.');
+            $this->redirect('/stock/barcode');
+        }
+
+        if ($direction === 'out') {
+            foreach ($items as $productId => $quantity) {
+                $available = $this->movements->availableQuantity($productId, $warehouseId);
+                if ($quantity > $available) {
+                    $product = $this->products->findById($productId);
+                    $this->flashError(sprintf('Nincs elég készlet: %s (elérhető %s, kért %s).', $product['sku'] ?? $productId, $available, $quantity));
+                    $this->redirect('/stock/barcode');
+                }
+            }
+        }
+
+        foreach ($items as $productId => $quantity) {
+            $this->movements->create([
+                'warehouse_id' => $warehouseId,
+                'product_id' => $productId,
+                'type' => $direction,
+                'quantity' => $quantity,
+                'note' => 'Vonalkód gyűjtő',
+                'created_by' => Auth::id(),
+            ]);
+        }
+
+        $this->flashSuccess(sprintf('%d tétel %s könyvelve a vonalkód gyűjtőből.', count($items), $direction === 'in' ? 'bevétként' : 'kiadásként'));
+        $this->redirect('/stock/barcode');
+    }
+
     /** @return array{0: array, 1: Paginator, 2: array} */
     private function movementListData(string $type): array
     {
