@@ -1,8 +1,8 @@
 {% extends 'common/layout.twig' %}
 
 {% block content %}
-    <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-lg-3">
+    <div class="row g-3 mb-3">
+        <div class="col-sm-6 col-xl-3">
             <div class="cx-stat cx-stat--primary">
                 <div class="cx-stat__icon"><i class="bi bi-cart-check"></i></div>
                 <div>
@@ -11,7 +11,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-xl-3">
             <div class="cx-stat cx-stat--warning">
                 <div class="cx-stat__icon"><i class="bi bi-hourglass-split"></i></div>
                 <div>
@@ -23,7 +23,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-xl-3">
             <div class="cx-stat cx-stat--danger">
                 <div class="cx-stat__icon"><i class="bi bi-exclamation-circle"></i></div>
                 <div>
@@ -46,20 +46,20 @@
         </div>
     </div>
 
-    <div class="row g-3">
+    <div class="row g-3 mb-3">
         <div class="col-lg-8">
-            <div class="cx-card">
+            <div class="cx-card h-100 mb-0">
                 <div class="cx-card__header">
                     <h2>Vevői rendelések</h2>
                     <span class="text-muted small">Elmúlt 10 nap</span>
                 </div>
                 <div class="cx-card__body">
-                    <canvas id="orders-chart" height="90"></canvas>
+                    <canvas id="orders-chart" height="110"></canvas>
                 </div>
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="cx-card">
+            <div class="cx-card h-100 mb-0">
                 <div class="cx-card__header">
                     <h2>Top kategóriák</h2>
                     <span class="text-muted small">30 nap</span>
@@ -83,21 +83,74 @@
                     {% endfor %}
                 </div>
             </div>
-            <div class="cx-card">
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-lg-8">
+            <div class="cx-card mb-0">
+                <div class="cx-card__header">
+                    <h2>Legutóbbi számlák</h2>
+                    <a href="{{ base_url }}/invoices" class="btn btn-sm btn-outline-secondary">Összes számla</a>
+                </div>
+                <div class="cx-card__body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 cx-table">
+                            <thead>
+                            <tr>
+                                <th>Számlaszám</th>
+                                <th>Partner</th>
+                                <th class="text-nowrap">Kiállítás</th>
+                                <th class="text-nowrap">Határidő</th>
+                                <th>Állapot</th>
+                                <th class="text-end">Összeg</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for invoice in recent_invoices %}
+                                <tr>
+                                    <td class="text-nowrap"><a href="{{ base_url }}/invoices/{{ invoice.id }}" class="fw-medium">{{ invoice.invoice_number }}</a></td>
+                                    <td>{{ invoice.partner_name }}</td>
+                                    <td class="text-muted text-nowrap">{{ invoice.issue_date }}</td>
+                                    <td class="text-muted text-nowrap">{{ invoice.due_date }}</td>
+                                    <td>
+                                        {% if invoice.status == 'unpaid' and invoice.due_date < today %}
+                                            <span class="badge rounded-pill text-bg-danger">Lejárt</span>
+                                        {% elseif invoice.status == 'unpaid' %}
+                                            <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">Fizetésre vár</span>
+                                        {% elseif invoice.status == 'paid' %}
+                                            <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Kifizetve</span>
+                                        {% else %}
+                                            <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Stornózva</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end text-nowrap">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="6" class="text-center text-muted py-4">Még nincs számla.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="cx-card mb-0">
                 <div class="cx-card__header">
                     <h2>Teendők</h2>
                     <a href="{{ base_url }}/todos" class="btn btn-sm btn-outline-secondary">Összes</a>
                 </div>
                 <div class="cx-card__body p-0">
                     {% for todo in open_todos %}
-                        <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+                        <div class="d-flex align-items-center gap-2 px-3 py-2 {{ not loop.last ? 'border-bottom' : '' }}">
                             <i class="bi bi-circle text-muted"></i>
                             <div class="flex-grow-1">
                                 <div class="small fw-medium">{{ todo.title }}</div>
                                 {% if todo.partner_name %}<div class="text-muted" style="font-size:.75rem;">{{ todo.partner_name }}</div>{% endif %}
                             </div>
                             {% if todo.due_date %}
-                                <span class="small {{ todo.due_date < today ? 'text-danger fw-medium' : 'text-muted' }}">{{ todo.due_date }}</span>
+                                <span class="small text-nowrap {{ todo.due_date < today ? 'text-danger fw-medium' : 'text-muted' }}">{{ todo.due_date }}</span>
                             {% endif %}
                         </div>
                     {% else %}
@@ -112,56 +165,8 @@
     </div>
 
     <div class="row g-3">
-        <div class="col-lg-7">
-    <div class="cx-card">
-        <div class="cx-card__header">
-            <h2>Legutóbbi számlák</h2>
-            <a href="{{ base_url }}/invoices" class="btn btn-sm btn-outline-secondary">Összes számla</a>
-        </div>
-        <div class="cx-card__body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 cx-table">
-                    <thead>
-                    <tr>
-                        <th>Számlaszám</th>
-                        <th>Partner</th>
-                        <th>Kiállítás</th>
-                        <th>Fizetési határidő</th>
-                        <th>Állapot</th>
-                        <th class="text-end">Összeg</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for invoice in recent_invoices %}
-                        <tr>
-                            <td><a href="{{ base_url }}/invoices/{{ invoice.id }}" class="fw-medium">{{ invoice.invoice_number }}</a></td>
-                            <td>{{ invoice.partner_name }}</td>
-                            <td class="text-muted">{{ invoice.issue_date }}</td>
-                            <td class="text-muted">{{ invoice.due_date }}</td>
-                            <td>
-                                {% if invoice.status == 'unpaid' and invoice.due_date < today %}
-                                    <span class="badge rounded-pill text-bg-danger">Lejárt</span>
-                                {% elseif invoice.status == 'unpaid' %}
-                                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">Fizetésre vár</span>
-                                {% elseif invoice.status == 'paid' %}
-                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Kifizetve</span>
-                                {% else %}
-                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Stornózva</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-end">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>
-                        </tr>
-                    {% else %}
-                        <tr><td colspan="6" class="text-center text-muted py-4">Még nincs számla.</td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-        </div>
-        <div class="col-lg-5">
-            <div class="cx-card">
+        <div class="col-12">
+            <div class="cx-card mb-0">
                 <div class="cx-card__header">
                     <h2>Alacsony készlet</h2>
                     <span class="text-muted small">minimum alatt</span>
@@ -171,27 +176,30 @@
                         <table class="table table-hover align-middle mb-0 cx-table">
                             <thead>
                             <tr>
-                                <th>Termék</th>
+                                <th>Cikkszám</th>
+                                <th>Megnevezés</th>
                                 <th class="text-end">Készlet</th>
                                 <th class="text-end">Minimum</th>
+                                <th></th>
                             </tr>
                             </thead>
                             <tbody>
                             {% for p in low_stock %}
                                 <tr>
-                                    <td>
-                                        <a href="{{ base_url }}/products?q={{ p.sku|url_encode }}" class="fw-medium">{{ p.sku }}</a>
-                                        <div class="text-muted small">{{ p.name }}</div>
-                                    </td>
+                                    <td class="fw-medium text-nowrap">{{ p.sku }}</td>
+                                    <td>{{ p.name }}</td>
                                     <td class="text-end">
                                         <span class="badge rounded-pill {{ p.stock_qty <= 0 ? 'text-bg-danger' : 'text-bg-warning-subtle text-warning-emphasis' }}">
                                             {{ p.stock_qty|number_format(0, ',', ' ') }} {{ p.unit }}
                                         </span>
                                     </td>
-                                    <td class="text-end text-muted">{{ p.min_stock|number_format(0, ',', ' ') }} {{ p.unit }}</td>
+                                    <td class="text-end text-muted text-nowrap">{{ p.min_stock|number_format(0, ',', ' ') }} {{ p.unit }}</td>
+                                    <td class="text-end">
+                                        <a href="{{ base_url }}/stock/in" class="btn btn-sm btn-outline-primary">Bevételezés</a>
+                                    </td>
                                 </tr>
                             {% else %}
-                                <tr><td colspan="3" class="text-center text-muted py-4"><i class="bi bi-check-circle me-1"></i>Minden készlet a minimum felett van.</td></tr>
+                                <tr><td colspan="5" class="text-center text-muted py-4"><i class="bi bi-check-circle me-1"></i>Minden készlet a minimum felett van.</td></tr>
                             {% endfor %}
                             </tbody>
                         </table>
