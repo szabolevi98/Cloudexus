@@ -2,6 +2,7 @@
 
 namespace Cloudexus\Controller;
 
+use Cloudexus\Core\Paginator;
 use Cloudexus\Model\Core\ParameterNameModel;
 
 class ParameterNameController extends BaseController
@@ -26,8 +27,15 @@ class ParameterNameController extends BaseController
     {
         $this->requireAdmin();
 
-        $this->pageTitle = 'Paraméternevek';
-        $this->render('parameter-names/list.twig', ['names' => $this->names->all()]);
+        $filters = ['q' => trim($_GET['q'] ?? '')];
+        $pager = new Paginator(30);
+
+        $this->pageTitle = 'Paraméterek';
+        $this->render('parameter-names/list.twig', [
+            'names' => $this->names->paginate($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
+        ]);
     }
 
     public function create(): void

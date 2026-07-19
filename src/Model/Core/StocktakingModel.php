@@ -3,6 +3,7 @@
 namespace Cloudexus\Model\Core;
 
 use Cloudexus\Core\DatabaseConnection;
+use Cloudexus\Core\Paginator;
 
 class StocktakingModel
 {
@@ -15,6 +16,42 @@ class StocktakingModel
              LEFT JOIN users u ON u.id = s.created_by
              ORDER BY s.created_at DESC, s.id DESC'
         )->fetchAll();
+    }
+
+    /** Filters: q (stocktaking_number), warehouse_id. */
+    public function paginate(array $filters, Paginator $pager): array
+    {
+        $where = [];
+        $params = [];
+
+        if ($filters['q'] !== '') {
+            $where[] = 's.stocktaking_number LIKE :q';
+            $params['q'] = '%' . $filters['q'] . '%';
+        }
+        if (!empty($filters['warehouse_id'])) {
+            $where[] = 's.warehouse_id = :wid';
+            $params['wid'] = (int) $filters['warehouse_id'];
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM stocktakings s $whereSql");
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT s.*, w.name AS warehouse_name, u.full_name AS created_by_name
+             FROM stocktakings s
+             JOIN warehouses w ON w.id = s.warehouse_id
+             LEFT JOIN users u ON u.id = s.created_by
+             $whereSql
+             ORDER BY s.created_at DESC, s.id DESC
+             LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
     }
 
     public function findById(int $id): ?array

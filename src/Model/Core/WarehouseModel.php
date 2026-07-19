@@ -3,12 +3,44 @@
 namespace Cloudexus\Model\Core;
 
 use Cloudexus\Core\DatabaseConnection;
+use Cloudexus\Core\Paginator;
 
 class WarehouseModel
 {
     public function all(): array
     {
         return DatabaseConnection::get()->query('SELECT * FROM warehouses ORDER BY name ASC')->fetchAll();
+    }
+
+    /** Filters: q (name/address), status. */
+    public function paginate(array $filters, Paginator $pager): array
+    {
+        $where = [];
+        $params = [];
+
+        if ($filters['q'] !== '') {
+            $where[] = '(name LIKE :q1 OR address LIKE :q2)';
+            $params['q1'] = '%' . $filters['q'] . '%';
+            $params['q2'] = '%' . $filters['q'] . '%';
+        }
+        if ($filters['status'] !== '') {
+            $where[] = 'is_active = :active';
+            $params['active'] = $filters['status'] === 'active' ? 1 : 0;
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM warehouses $whereSql");
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT * FROM warehouses $whereSql ORDER BY name ASC LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
     }
 
     public function activeList(): array

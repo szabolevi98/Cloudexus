@@ -296,12 +296,15 @@ echo count($partners['customer']) . " customer-capable, " . count($partners['sup
 echo "Seeding warehouses...\n";
 
 $warehouseIds = [];
+$warehouseNames = []; // whId => name
 foreach ([
     ['Központi raktár', 'Budapest, Raktár utca 1.'],
     ['Debreceni telephely', 'Debrecen, Logisztikai park 4.'],
     ['Szegedi raktár', 'Szeged, Ipari zóna 8.'],
 ] as [$name, $address]) {
-    $warehouseIds[] = $warehouseModel->create(['name' => $name, 'address' => $address, 'is_active' => 1]);
+    $whId = $warehouseModel->create(['name' => $name, 'address' => $address, 'is_active' => 1]);
+    $warehouseIds[] = $whId;
+    $warehouseNames[$whId] = $name;
 }
 
 // Tárhelyek / polcok raktáranként (sor A-C, állvány 1-3, polc 1-4)
@@ -388,6 +391,45 @@ foreach ($products as $product) {
 }
 
 echo "$movementCount stock movements booked.\n";
+
+// ---------------------------------------------------------------------------
+// Warehouse-to-warehouse transfers
+// ---------------------------------------------------------------------------
+echo "Seeding warehouse transfers...\n";
+
+$transferCount = 0;
+for ($i = 0; $i < 25; $i++) {
+    $product = $products[array_rand($products)];
+
+    // Csak olyan raktárból adunk át, ahol elég készlet van a termékből.
+    $candidates = array_values(array_filter($warehouseIds, fn($whId) => ($balances[$whId . '-' . $product['id']] ?? 0) > 20));
+    if (!$candidates) {
+        continue;
+    }
+    $fromId = $candidates[array_rand($candidates)];
+    $toCandidates = array_values(array_diff($warehouseIds, [$fromId]));
+    $toId = $toCandidates[array_rand($toCandidates)];
+
+    $qty = min($balances[$fromId . '-' . $product['id']], rand(5, 30));
+    $note = 'Raktárközi átadás: ' . $warehouseNames[$fromId] . ' → ' . $warehouseNames[$toId];
+
+    $stockModel->transfer(
+        $fromId,
+        $toId,
+        $product['id'],
+        $qty,
+        $note,
+        null,
+        $randomLocation($fromId),
+        $randomLocation($toId)
+    );
+
+    $balances[$fromId . '-' . $product['id']] -= $qty;
+    $balances[$toId . '-' . $product['id']] = ($balances[$toId . '-' . $product['id']] ?? 0) + $qty;
+    $transferCount++;
+}
+
+echo "$transferCount warehouse transfers booked.\n";
 
 // ---------------------------------------------------------------------------
 // Sales: orders + invoices (+ some paid via cash vouchers)

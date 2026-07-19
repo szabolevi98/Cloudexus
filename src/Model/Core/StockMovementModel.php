@@ -115,10 +115,43 @@ class StockMovementModel
         }
     }
 
-    /** Latest transfer movement legs (identified by their note prefix). */
-    public function recentTransfers(int $limit = 30): array
+    /**
+     * Filtered, paginated transfer movement legs (identified by their note prefix).
+     * Filters: warehouse_id, q (product sku/name), date_from, date_to.
+     */
+    public function paginateTransfers(array $filters, Paginator $pager): array
     {
-        return DatabaseConnection::get()->query(
+        $where = ["m.note LIKE 'Raktárközi átadás%'"];
+        $params = [];
+
+        if (!empty($filters['warehouse_id'])) {
+            $where[] = 'm.warehouse_id = :warehouse_id';
+            $params['warehouse_id'] = (int) $filters['warehouse_id'];
+        }
+        if ($filters['q'] !== '') {
+            $where[] = '(p.sku LIKE :q1 OR p.name LIKE :q2)';
+            $params['q1'] = '%' . $filters['q'] . '%';
+            $params['q2'] = '%' . $filters['q'] . '%';
+        }
+        if ($filters['date_from'] !== '') {
+            $where[] = 'm.created_at >= :date_from';
+            $params['date_from'] = $filters['date_from'] . ' 00:00:00';
+        }
+        if ($filters['date_to'] !== '') {
+            $where[] = 'm.created_at <= :date_to';
+            $params['date_to'] = $filters['date_to'] . ' 23:59:59';
+        }
+
+        $whereSql = 'WHERE ' . implode(' AND ', $where);
+
+        $count = DatabaseConnection::get()->prepare(
+            "SELECT COUNT(*) FROM stock_movements m JOIN products p ON p.id = m.product_id $whereSql"
+        );
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
             "SELECT m.*, p.sku, p.name AS product_name, p.unit, w.name AS warehouse_name,
                     l.code AS location_code, u.full_name AS created_by_name
              FROM stock_movements m
@@ -126,10 +159,13 @@ class StockMovementModel
              JOIN warehouses w ON w.id = m.warehouse_id
              LEFT JOIN warehouse_locations l ON l.id = m.location_id
              LEFT JOIN users u ON u.id = m.created_by
-             WHERE m.note LIKE 'Raktárközi átadás%'
+             $whereSql
              ORDER BY m.created_at DESC, m.id DESC
-             LIMIT " . (int) $limit
-        )->fetchAll();
+             LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
     }
 
     public function availableQuantity(int $productId, int $warehouseId): float

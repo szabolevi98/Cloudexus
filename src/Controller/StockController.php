@@ -99,13 +99,23 @@ class StockController extends BaseController
     {
         $this->requireAuth();
 
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'warehouse_id' => (int) ($_GET['warehouse_id'] ?? 0),
+            'date_from' => $_GET['date_from'] ?? '',
+            'date_to' => $_GET['date_to'] ?? '',
+        ];
+        $pager = new Paginator(20);
+
         $this->activeMenu = 'stock-transfer';
         $this->pageTitle = 'Raktárközi átadás';
         $this->render('stock/transfer.twig', [
             'warehouses' => $this->warehouses->activeList(),
             'products' => $this->products->all(),
             'locations' => $this->locations->activeWithWarehouse(),
-            'transfers' => $this->movements->recentTransfers(30),
+            'transfers' => $this->movements->paginateTransfers($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
         ]);
     }
 

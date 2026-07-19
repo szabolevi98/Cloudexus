@@ -3,6 +3,7 @@
 namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Auth;
+use Cloudexus\Core\Paginator;
 use Cloudexus\Model\Core\StockMovementModel;
 use Cloudexus\Model\Core\StocktakingModel;
 use Cloudexus\Model\Core\WarehouseModel;
@@ -26,9 +27,18 @@ class StocktakingController extends BaseController
     {
         $this->requireAuth();
 
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'warehouse_id' => (int) ($_GET['warehouse_id'] ?? 0),
+        ];
+        $pager = new Paginator(30);
+
         $this->pageTitle = 'Leltározás';
         $this->render('stocktaking/list.twig', [
-            'stocktakings' => $this->stocktakings->all(),
+            'stocktakings' => $this->stocktakings->paginate($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
+            'warehouses' => $this->warehouses->all(),
         ]);
     }
 

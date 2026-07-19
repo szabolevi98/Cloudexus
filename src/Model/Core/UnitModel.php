@@ -3,6 +3,7 @@
 namespace Cloudexus\Model\Core;
 
 use Cloudexus\Core\DatabaseConnection;
+use Cloudexus\Core\Paginator;
 
 class UnitModel
 {
@@ -11,6 +12,33 @@ class UnitModel
         return DatabaseConnection::get()
             ->query('SELECT * FROM units ORDER BY sort_order ASC, name ASC')
             ->fetchAll();
+    }
+
+    /** Filters: q (code/name). */
+    public function paginate(array $filters, Paginator $pager): array
+    {
+        $where = [];
+        $params = [];
+
+        if ($filters['q'] !== '') {
+            $where[] = '(code LIKE :q1 OR name LIKE :q2)';
+            $params['q1'] = '%' . $filters['q'] . '%';
+            $params['q2'] = '%' . $filters['q'] . '%';
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM units $whereSql");
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT * FROM units $whereSql ORDER BY sort_order ASC, name ASC LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
     }
 
     public function findById(int $id): ?array

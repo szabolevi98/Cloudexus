@@ -3,12 +3,39 @@
 namespace Cloudexus\Model\Core;
 
 use Cloudexus\Core\DatabaseConnection;
+use Cloudexus\Core\Paginator;
 
 class ParameterNameModel
 {
     public function all(): array
     {
         return DatabaseConnection::get()->query('SELECT * FROM parameter_names ORDER BY name ASC')->fetchAll();
+    }
+
+    /** Filters: q (name). */
+    public function paginate(array $filters, Paginator $pager): array
+    {
+        $where = [];
+        $params = [];
+
+        if ($filters['q'] !== '') {
+            $where[] = 'name LIKE :q';
+            $params['q'] = '%' . $filters['q'] . '%';
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM parameter_names $whereSql");
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT * FROM parameter_names $whereSql ORDER BY name ASC LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
     }
 
     public function findById(int $id): ?array

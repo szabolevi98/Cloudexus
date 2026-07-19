@@ -2,6 +2,7 @@
 
 namespace Cloudexus\Controller;
 
+use Cloudexus\Core\Paginator;
 use Cloudexus\Model\Core\WarehouseModel;
 
 class WarehouseController extends BaseController
@@ -19,9 +20,17 @@ class WarehouseController extends BaseController
     {
         $this->requireAuth();
 
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'status' => $_GET['status'] ?? '',
+        ];
+        $pager = new Paginator(30);
+
         $this->pageTitle = 'Raktárak és telephelyek';
         $this->render('warehouses/list.twig', [
-            'warehouses' => $this->warehouses->all(),
+            'warehouses' => $this->warehouses->paginate($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
         ]);
     }
 

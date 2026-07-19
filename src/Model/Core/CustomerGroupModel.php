@@ -3,6 +3,7 @@
 namespace Cloudexus\Model\Core;
 
 use Cloudexus\Core\DatabaseConnection;
+use Cloudexus\Core\Paginator;
 
 class CustomerGroupModel
 {
@@ -12,6 +13,36 @@ class CustomerGroupModel
             "SELECT g.*, (SELECT COUNT(*) FROM partners p WHERE p.customer_group_id = g.id) AS partner_count
              FROM customer_groups g ORDER BY g.name ASC"
         )->fetchAll();
+    }
+
+    /** Filters: q (name/description). */
+    public function paginate(array $filters, Paginator $pager): array
+    {
+        $where = [];
+        $params = [];
+
+        if ($filters['q'] !== '') {
+            $where[] = '(g.name LIKE :q1 OR g.description LIKE :q2)';
+            $params['q1'] = '%' . $filters['q'] . '%';
+            $params['q2'] = '%' . $filters['q'] . '%';
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM customer_groups g $whereSql");
+        $count->execute($params);
+        $pager->total = (int) $count->fetchColumn();
+        $pager->clamp();
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT g.*, (SELECT COUNT(*) FROM partners p WHERE p.customer_group_id = g.id) AS partner_count
+             FROM customer_groups g $whereSql
+             ORDER BY g.name ASC
+             LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+        );
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
     }
 
     public function findById(int $id): ?array

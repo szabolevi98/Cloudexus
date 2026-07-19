@@ -2,6 +2,7 @@
 
 namespace Cloudexus\Controller;
 
+use Cloudexus\Core\Paginator;
 use Cloudexus\Model\Core\UnitModel;
 
 class UnitController extends BaseController
@@ -19,8 +20,15 @@ class UnitController extends BaseController
     {
         $this->requireAdmin();
 
+        $filters = ['q' => trim($_GET['q'] ?? '')];
+        $pager = new Paginator(30);
+
         $this->pageTitle = 'Mennyiségi egységek';
-        $this->render('units/list.twig', ['units' => $this->units->all()]);
+        $this->render('units/list.twig', [
+            'units' => $this->units->paginate($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
+        ]);
     }
 
     public function create(): void

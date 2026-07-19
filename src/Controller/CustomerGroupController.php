@@ -2,6 +2,7 @@
 
 namespace Cloudexus\Controller;
 
+use Cloudexus\Core\Paginator;
 use Cloudexus\Model\Core\CustomerGroupModel;
 
 class CustomerGroupController extends BaseController
@@ -19,8 +20,15 @@ class CustomerGroupController extends BaseController
     {
         $this->requireAuth();
 
+        $filters = ['q' => trim($_GET['q'] ?? '')];
+        $pager = new Paginator(30);
+
         $this->pageTitle = 'Vevőcsoportok';
-        $this->render('customer-groups/list.twig', ['groups' => $this->groups->all()]);
+        $this->render('customer-groups/list.twig', [
+            'groups' => $this->groups->paginate($filters, $pager),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
+        ]);
     }
 
     public function create(): void
