@@ -48,13 +48,13 @@
 
     <div class="row g-3 mb-3">
         <div class="col-lg-8">
-            <div class="cx-card h-100 mb-0">
+            <div class="cx-card h-100 mb-0 d-flex flex-column">
                 <div class="cx-card__header">
                     <h2>Vevői rendelések</h2>
                     <span class="text-muted small">Elmúlt 10 nap</span>
                 </div>
-                <div class="cx-card__body">
-                    <canvas id="orders-chart" height="110"></canvas>
+                <div class="cx-card__body flex-grow-1" style="position: relative; min-height: 280px;">
+                    <canvas id="orders-chart"></canvas>
                 </div>
             </div>
         </div>
@@ -229,6 +229,8 @@
                 }]
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
                     y: { beginAtZero: true, ticks: { callback: (v) => new Intl.NumberFormat('hu-HU').format(v) } }
