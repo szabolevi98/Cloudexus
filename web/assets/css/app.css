@@ -280,6 +280,9 @@ a {
     border-radius: var(--cx-radius);
     box-shadow: var(--cx-shadow);
     margin-bottom: 24px;
+    /* Clip inner content (tables, pagination footers) to the card's rounded
+       corners so the last table row's bottom corners aren't square. */
+    overflow: hidden;
 }
 
 .cx-card__header {
