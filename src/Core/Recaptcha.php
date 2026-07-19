@@ -14,6 +14,10 @@ class Recaptcha
 
     public static function enabled(): bool
     {
+        if (!Config::get('recaptcha.enabled', false)) {
+            return false;
+        }
+
         return self::siteKey() !== '' && (string) Config::get('recaptcha.secret_key', '') !== '';
     }
 

@@ -35,6 +35,7 @@ from_address = "no-reply@cloudexus.local"
 from_name = "Cloudexus"
 
 [recaptcha]
+enabled = 0
 ; https://www.google.com/recaptcha/admin -> v3 site
 site_key =
 secret_key =
