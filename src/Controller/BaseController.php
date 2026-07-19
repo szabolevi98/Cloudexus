@@ -34,6 +34,7 @@ abstract class BaseController
             'auth_user_name' => Auth::check() ? Session::get('user_name') : null,
             'auth_is_admin' => Auth::isAdmin(),
             'base_url' => Config::get('app.base_url'),
+            'asset_version' => $this->assetVersion(),
             'csrf_token' => \Cloudexus\Core\Csrf::token(),
             'active_menu' => $this->activeMenu,
             'page_title' => $this->pageTitle,
@@ -45,6 +46,13 @@ abstract class BaseController
     {
         header('Location: ' . Config::get('app.base_url') . $path);
         exit;
+    }
+
+    /** Cache-busting token for static assets: the built CSS file's mtime. */
+    private function assetVersion(): string
+    {
+        $cssFile = dirname(__DIR__, 2) . '/web/assets/css/app.css';
+        return is_file($cssFile) ? (string) filemtime($cssFile) : '1';
     }
 
     protected function json(array $data): void
