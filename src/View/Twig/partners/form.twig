@@ -36,6 +36,15 @@
                     </div>
                 </div>
                 <div class="mb-3">
+                    <label for="customer_group_id" class="form-label">Vevőcsoport</label>
+                    <select id="customer_group_id" name="customer_group_id" class="form-select cx-select2">
+                        <option value="">Nincs</option>
+                        {% for g in customer_groups %}
+                            <option value="{{ g.id }}" {{ partner.customer_group_id == g.id ? 'selected' : '' }}>{{ g.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
                     <label for="address" class="form-label">Cím</label>
                     <input type="text" id="address" name="address" class="form-control" value="{{ partner.address|default('') }}">
                 </div>

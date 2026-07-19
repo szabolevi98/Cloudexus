@@ -2,6 +2,7 @@
 
 use Cloudexus\Controller\CashVoucherController;
 use Cloudexus\Controller\CategoryController;
+use Cloudexus\Controller\CustomerGroupController;
 use Cloudexus\Controller\DashboardController;
 use Cloudexus\Controller\IncomingInvoiceController;
 use Cloudexus\Controller\InvoiceController;
@@ -10,6 +11,7 @@ use Cloudexus\Controller\LoginController;
 use Cloudexus\Controller\OrderController;
 use Cloudexus\Controller\PartnerController;
 use Cloudexus\Controller\ParameterNameController;
+use Cloudexus\Controller\PricingController;
 use Cloudexus\Controller\ProductController;
 use Cloudexus\Controller\ProfileController;
 use Cloudexus\Controller\PurchaseOrderController;
@@ -85,6 +87,7 @@ $router->get('/products/search', fn() => (new ProductController())->search());
 $router->get('/partners/export', fn() => (new PartnerController())->export());
 $router->get('/categories/search', fn() => (new CategoryController())->search());
 $router->get('/param-names/search', fn() => (new ParameterNameController())->search());
+$router->get('/pricing/effective', fn() => (new PricingController())->effective());
 
 $router->post('/products/{id}/images/{imageId}/delete', fn($id, $imageId) => (new ProductController())->deleteImage((int) $id, (int) $imageId));
 $router->post('/products/{id}/images/{imageId}/primary', fn($id, $imageId) => (new ProductController())->setPrimaryImage((int) $id, (int) $imageId));
@@ -111,6 +114,11 @@ $router->get('/units', fn() => (new UnitController())->list());
 $router->post('/units/create', fn() => (new UnitController())->create());
 $router->post('/units/{id}', fn($id) => (new UnitController())->update((int) $id));
 $router->post('/units/{id}/delete', fn($id) => (new UnitController())->delete((int) $id));
+
+$router->get('/customer-groups', fn() => (new CustomerGroupController())->list());
+$router->post('/customer-groups/create', fn() => (new CustomerGroupController())->create());
+$router->post('/customer-groups/{id}', fn($id) => (new CustomerGroupController())->update((int) $id));
+$router->post('/customer-groups/{id}/delete', fn($id) => (new CustomerGroupController())->delete((int) $id));
 
 $router->get('/stock', fn() => (new StockController())->overview());
 $router->get('/stock/in', fn() => (new StockController())->inList());

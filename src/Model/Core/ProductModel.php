@@ -9,7 +9,7 @@ class ProductModel
     /** All product columns written by create()/update(). */
     private const FIELDS = [
         'sku', 'barcode', 'name', 'short_description', 'description',
-        'category_id', 'unit', 'price', 'vat_rate', 'min_stock',
+        'category_id', 'unit', 'price', 'sale_price', 'vat_rate', 'min_stock',
         'width_mm', 'height_mm', 'depth_mm', 'weight_g',
         'is_active', 'is_webshop',
     ];
@@ -101,8 +101,90 @@ class ProductModel
         $product['related_ids'] = $this->linkedIds($id, 'related');
         $product['substitute_ids'] = $this->linkedIds($id, 'substitute');
         $product['stock_qty'] = $this->currentStock($id);
+        $product['group_prices'] = $this->groupPrices($id);
 
         return $product;
+    }
+
+    /** All group prices for a product, keyed by customer_group_id. */
+    public function groupPrices(int $productId): array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT customer_group_id, price, sale_price FROM product_group_prices WHERE product_id = :id'
+        );
+        $stmt->execute(['id' => $productId]);
+
+        $rows = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $rows[(int) $row['customer_group_id']] = $row;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Saves the per-group prices for a product from parallel POST arrays
+     * (group_id[], group_price[], group_sale_price[]). Rows with an empty
+     * price are skipped (no override for that group).
+     */
+    public function saveGroupPrices(int $productId, array $groupIds, array $prices, array $salePrices): void
+    {
+        $pdo = DatabaseConnection::get();
+        $pdo->prepare('DELETE FROM product_group_prices WHERE product_id = :id')->execute(['id' => $productId]);
+
+        $stmt = $pdo->prepare(
+            'INSERT INTO product_group_prices (product_id, customer_group_id, price, sale_price)
+             VALUES (:product_id, :group_id, :price, :sale_price)'
+        );
+
+        foreach ($groupIds as $i => $groupId) {
+            $groupId = (int) $groupId;
+            $price = trim((string) ($prices[$i] ?? ''));
+            $salePrice = trim((string) ($salePrices[$i] ?? ''));
+
+            if ($groupId <= 0 || $price === '') {
+                continue;
+            }
+
+            $stmt->execute([
+                'product_id' => $productId,
+                'group_id' => $groupId,
+                'price' => (float) str_replace(',', '.', $price),
+                'sale_price' => $salePrice !== '' ? (float) str_replace(',', '.', $salePrice) : null,
+            ]);
+        }
+    }
+
+    /**
+     * The price to charge for a product to a given partner: group price (with
+     * its own optional sale price) if the partner's group has an override,
+     * otherwise the product's own price/sale price.
+     */
+    public function effectivePrice(int $productId, ?int $partnerId): array
+    {
+        $product = $this->findById($productId);
+        if (!$product) {
+            return ['price' => 0.0, 'is_sale' => false];
+        }
+
+        if ($partnerId) {
+            $stmt = DatabaseConnection::get()->prepare(
+                'SELECT gp.price, gp.sale_price
+                 FROM partners p
+                 JOIN product_group_prices gp ON gp.customer_group_id = p.customer_group_id AND gp.product_id = :product_id
+                 WHERE p.id = :partner_id LIMIT 1'
+            );
+            $stmt->execute(['product_id' => $productId, 'partner_id' => $partnerId]);
+            $group = $stmt->fetch();
+
+            if ($group) {
+                $price = $group['sale_price'] !== null ? (float) $group['sale_price'] : (float) $group['price'];
+                return ['price' => $price, 'is_sale' => $group['sale_price'] !== null];
+            }
+        }
+
+        $price = $product['sale_price'] !== null ? (float) $product['sale_price'] : (float) $product['price'];
+        return ['price' => $price, 'is_sale' => $product['sale_price'] !== null];
     }
 
     public function images(int $productId): array
@@ -339,6 +421,7 @@ class ProductModel
             'category_id' => $data['category_id'] ?: null,
             'unit' => $data['unit'],
             'price' => $data['price'],
+            'sale_price' => ($data['sale_price'] ?? '') !== '' ? $data['sale_price'] : null,
             'vat_rate' => $data['vat_rate'] ?? 27,
             'min_stock' => $data['min_stock'] ?? 0,
             'width_mm' => ($data['width_mm'] ?? '') !== '' ? (int) $data['width_mm'] : null,
@@ -385,6 +468,14 @@ class ProductModel
         // Related / substitute links.
         $this->syncLinks($id, 'related', $data['related_ids'] ?? []);
         $this->syncLinks($id, 'substitute', $data['substitute_ids'] ?? []);
+
+        // Vevőcsoportos árak: parallel arrays group_id[] / group_price[] / group_sale_price[].
+        $this->saveGroupPrices(
+            $id,
+            $data['group_id'] ?? [],
+            $data['group_price'] ?? [],
+            $data['group_sale_price'] ?? []
+        );
     }
 
     private function syncLinks(int $id, string $type, array $linkedIds): void

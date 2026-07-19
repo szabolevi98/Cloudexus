@@ -96,6 +96,40 @@
                     </div>
                 </div>
 
+                {# --- Vevőcsoport árak --- #}
+                {% if customer_groups %}
+                    <div class="cx-card mb-3">
+                        <div class="cx-card__header"><h2>Vevőcsoport árak</h2></div>
+                        <div class="cx-card__body">
+                            <div class="form-text mb-2">Ha egy vevőcsoportnak itt fix árat adsz, az felülírja a termék alapárát a csoportba tartozó partnerek rendelésein/számláin. Az akciós ár opcionális, és ha ki van töltve, az az aktív ár a csoport számára.</div>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead>
+                                    <tr>
+                                        <th>Vevőcsoport</th>
+                                        <th>Fix ár (Ft)</th>
+                                        <th>Akciós ár (Ft)</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for g in customer_groups %}
+                                        {% set gp = product.group_prices[g.id]|default(null) %}
+                                        <tr>
+                                            <td>
+                                                {{ g.name }}
+                                                <input type="hidden" name="group_id[]" value="{{ g.id }}">
+                                            </td>
+                                            <td><input type="number" step="0.01" min="0" name="group_price[]" class="form-control form-control-sm" value="{{ gp.price|default('') }}"></td>
+                                            <td><input type="number" step="0.01" min="0" name="group_sale_price[]" class="form-control form-control-sm" value="{{ gp.sale_price|default('') }}"></td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
                 {# --- Képek --- #}
                 <div class="cx-card mb-3">
                     <div class="cx-card__header"><h2>Képek</h2></div>
@@ -161,6 +195,10 @@
                                 <label for="vat_rate" class="form-label">ÁFA %</label>
                                 <input type="number" step="0.01" id="vat_rate" name="vat_rate" class="form-control" value="{{ product.vat_rate|default(27) }}">
                             </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sale_price" class="form-label">Akciós ár (Ft) <span class="text-muted small">(ha ki van töltve, ez az aktív ár)</span></label>
+                            <input type="number" step="0.01" min="0" id="sale_price" name="sale_price" class="form-control" value="{{ product.sale_price|default('') }}">
                         </div>
                         {% if product %}
                             <div class="alert alert-secondary d-flex justify-content-between align-items-center py-2 mb-3">

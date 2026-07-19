@@ -1,0 +1,61 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="cx-card">
+                <div class="cx-card__header"><h2>Új vevőcsoport</h2></div>
+                <div class="cx-card__body">
+                    <form method="post" action="{{ base_url }}/customer-groups/create">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Név</label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="pl. Viszonteladó" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Leírás <span class="text-muted small">(opcionális)</span></label>
+                            <input type="text" id="description" name="description" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>Hozzáadás</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="cx-card">
+                <div class="cx-card__header">
+                    <h2>Vevőcsoportok</h2>
+                    <span class="text-muted small">{{ groups|length }} db</span>
+                </div>
+                <div class="cx-card__body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 cx-table">
+                            <thead><tr><th>Név</th><th>Leírás</th><th class="text-end">Partnerek</th><th class="text-end">Műveletek</th></tr></thead>
+                            <tbody>
+                            {% for g in groups %}
+                                <tr>
+                                    <td><input type="text" name="name" form="cg-{{ g.id }}" class="form-control form-control-sm" value="{{ g.name }}"></td>
+                                    <td><input type="text" name="description" form="cg-{{ g.id }}" class="form-control form-control-sm" value="{{ g.description }}"></td>
+                                    <td class="text-end text-muted">
+                                        <a href="{{ base_url }}/partners?customer_group_id={{ g.id }}">{{ g.partner_count }} db</a>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <button type="submit" form="cg-{{ g.id }}" class="btn btn-sm btn-outline-primary">Mentés</button>
+                                        <button type="submit" form="cg-del-{{ g.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Biztosan törlöd?');"><i class="bi bi-trash"></i></button>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="4" class="text-center text-muted py-4">Még nincs vevőcsoport.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for g in groups %}
+        <form id="cg-{{ g.id }}" method="post" action="{{ base_url }}/customer-groups/{{ g.id }}"></form>
+        <form id="cg-del-{{ g.id }}" method="post" action="{{ base_url }}/customer-groups/{{ g.id }}/delete"></form>
+    {% endfor %}
+{% endblock %}

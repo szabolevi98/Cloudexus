@@ -55,7 +55,8 @@
 
                 {% include 'common/line-items.twig' with {
                     products: products,
-                    prefill: from_order ? from_order.items|map(i => {product_id: i.product_id, quantity: i.quantity, unit_price: i.unit_price}) : []
+                    prefill: from_order ? from_order.items|map(i => {product_id: i.product_id, quantity: i.quantity, unit_price: i.unit_price}) : [],
+                    partner_select_id: 'partner_id'
                 } %}
 
                 <div class="d-flex justify-content-between align-items-center mt-4">

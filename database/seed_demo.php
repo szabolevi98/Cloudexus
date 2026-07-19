@@ -16,6 +16,7 @@ use Cloudexus\Core\Config;
 use Cloudexus\Core\DatabaseConnection;
 use Cloudexus\Model\Cash\CashVoucherModel;
 use Cloudexus\Model\Core\CategoryModel;
+use Cloudexus\Model\Core\CustomerGroupModel;
 use Cloudexus\Model\Core\PartnerModel;
 use Cloudexus\Model\Core\ProductModel;
 use Cloudexus\Model\Core\StockMovementModel;
@@ -40,14 +41,15 @@ foreach ([
     'partner_activities', 'todos', 'warehouse_locations', 'stocktaking_items', 'stocktakings',
     'cash_vouchers', 'incoming_invoice_items', 'incoming_invoices',
     'purchase_order_items', 'purchase_orders', 'invoice_items', 'invoices',
-    'order_items', 'orders', 'stock_movements', 'products', 'categories',
-    'partners', 'warehouses',
+    'order_items', 'orders', 'stock_movements', 'product_group_prices', 'products', 'categories',
+    'partners', 'warehouses', 'customer_groups',
 ] as $table) {
     $pdo->exec("TRUNCATE TABLE $table");
 }
 $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 
 $categoryModel = new CategoryModel();
+$customerGroupModel = new CustomerGroupModel();
 $productModel = new ProductModel();
 $partnerModel = new PartnerModel();
 $warehouseModel = new WarehouseModel();
@@ -117,6 +119,8 @@ foreach ($catalog as $categoryName => $items) {
     $units = ['db', 'doboz', 'csomag', 'szett', 'karton'];
     foreach ($items as [$name, $price]) {
         $sku = 'PRD-' . str_pad((string) $skuCounter++, 4, '0', STR_PAD_LEFT);
+        // Minden negyedik termékre akciós ár kerül (10-25% kedvezmény).
+        $salePrice = rand(1, 100) <= 25 ? round($price * (1 - rand(10, 25) / 100), -1) : null;
         $productId = $productModel->create([
             'sku' => $sku,
             // EAN-13-szerű demo vonalkód (599 = magyar prefix)
@@ -128,6 +132,7 @@ foreach ($catalog as $categoryName => $items) {
             'category_id' => $categoryIds[$categoryName],
             'unit' => $units[array_rand($units)],
             'price' => $price,
+            'sale_price' => $salePrice ?? '',
             'vat_rate' => 27,
             // A termékek felénél riasztási szint is van, hogy az alacsony készlet widget éljen.
             'min_stock' => rand(0, 1) ? rand(50, 250) : 0,
@@ -187,6 +192,45 @@ foreach ($subIdsByParent as $parentName => $childIds) {
 echo count($products) . " products in " . (count($categoryIds) + $subCount) . " categories (incl. subcategories).\n";
 
 // ---------------------------------------------------------------------------
+// Customer groups
+// ---------------------------------------------------------------------------
+echo "Seeding customer groups...\n";
+
+$customerGroupIds = [];
+foreach ([
+    ['Viszonteladó', 'Nagy tételben rendelő kereskedő partnerek, kedvezményes árakkal.'],
+    ['VIP', 'Kiemelt, hosszú távú partnerek egyedi árakkal.'],
+    ['Nagykereskedő', 'Nagykereskedelmi partnerek, tömeges rendelésekhez.'],
+] as [$name, $description]) {
+    $customerGroupIds[$name] = $customerGroupModel->create(['name' => $name, 'description' => $description]);
+}
+
+// Néhány terméknek vevőcsoportos fix ára is van (a vevőcsoport-listánk minden csoportja).
+$groupPriceCount = 0;
+foreach ($products as $product) {
+    if (rand(1, 100) > 20) {
+        continue;
+    }
+    $groupIds = [];
+    $groupPrices = [];
+    $groupSalePrices = [];
+    foreach ($customerGroupIds as $groupId) {
+        if (rand(0, 1) === 0) {
+            continue;
+        }
+        $groupPrice = round($product['price'] * (1 - rand(5, 20) / 100), -1);
+        $groupIds[] = $groupId;
+        $groupPrices[] = $groupPrice;
+        $groupSalePrices[] = rand(1, 100) <= 30 ? round($groupPrice * (1 - rand(5, 15) / 100), -1) : '';
+        $groupPriceCount++;
+    }
+    if ($groupIds) {
+        $productModel->saveGroupPrices($product['id'], $groupIds, $groupPrices, $groupSalePrices);
+    }
+}
+echo "$groupPriceCount vevőcsoport-ár sor.\n";
+
+// ---------------------------------------------------------------------------
 // Partners
 // ---------------------------------------------------------------------------
 echo "Seeding partners...\n";
@@ -202,10 +246,14 @@ $supplierNames = [
 $bothNames = ['Multi Trade Kft.', 'Regionális Nagyker Zrt.'];
 
 $partners = ['customer' => [], 'supplier' => []];
+$customerGroupNames = array_keys($customerGroupIds);
 
 foreach ($customerNames as $i => $name) {
+    // Minden harmadik vevő tartozik valamelyik vevőcsoportba, a többi sima áron vásárol.
+    $groupId = $i % 3 === 0 ? $customerGroupIds[$customerGroupNames[array_rand($customerGroupNames)]] : null;
+
     $id = $partnerModel->create([
-        'type' => 'customer', 'name' => $name,
+        'type' => 'customer', 'customer_group_id' => $groupId, 'name' => $name,
         'tax_number' => sprintf('%08d-1-%02d', rand(10000000, 99999999), rand(1, 44)),
         'email' => 'info@' . strtolower(preg_replace('/[^a-z0-9]/i', '', $name)) . '.hu',
         'phone' => '+36 30 ' . rand(100, 999) . ' ' . rand(1000, 9999),

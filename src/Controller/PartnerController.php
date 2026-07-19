@@ -3,6 +3,7 @@
 namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Auth;
+use Cloudexus\Model\Core\CustomerGroupModel;
 use Cloudexus\Model\Core\PartnerModel;
 use Cloudexus\Model\Crm\PartnerActivityModel;
 
@@ -10,12 +11,14 @@ class PartnerController extends BaseController
 {
     private PartnerModel $partners;
     private PartnerActivityModel $activities;
+    private CustomerGroupModel $customerGroups;
 
     public function __construct()
     {
         parent::__construct();
         $this->partners = new PartnerModel();
         $this->activities = new PartnerActivityModel();
+        $this->customerGroups = new CustomerGroupModel();
         $this->activeMenu = 'partners';
     }
 
@@ -83,6 +86,7 @@ class PartnerController extends BaseController
             'q' => trim($_GET['q'] ?? ''),
             'type' => $_GET['type'] ?? '',
             'status' => $_GET['status'] ?? '',
+            'customer_group_id' => (int) ($_GET['customer_group_id'] ?? 0),
         ];
         $pager = new \Cloudexus\Core\Paginator(25);
 
@@ -91,6 +95,7 @@ class PartnerController extends BaseController
             'partners' => $this->partners->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
+            'customer_groups' => $this->customerGroups->all(),
         ]);
     }
 
@@ -123,7 +128,7 @@ class PartnerController extends BaseController
         $this->requireAuth();
 
         $this->pageTitle = 'Új partner';
-        $this->render('partners/form.twig', ['partner' => null]);
+        $this->render('partners/form.twig', ['partner' => null, 'customer_groups' => $this->customerGroups->all()]);
     }
 
     public function create(): void
@@ -152,7 +157,7 @@ class PartnerController extends BaseController
         }
 
         $this->pageTitle = 'Partner szerkesztése';
-        $this->render('partners/form.twig', ['partner' => $partner]);
+        $this->render('partners/form.twig', ['partner' => $partner, 'customer_groups' => $this->customerGroups->all()]);
     }
 
     public function update(int $id): void
@@ -184,6 +189,7 @@ class PartnerController extends BaseController
     {
         return [
             'type' => $_POST['type'] ?? 'customer',
+            'customer_group_id' => (int) ($_POST['customer_group_id'] ?? 0),
             'name' => trim($_POST['name'] ?? ''),
             'tax_number' => trim($_POST['tax_number'] ?? ''),
             'email' => trim($_POST['email'] ?? ''),

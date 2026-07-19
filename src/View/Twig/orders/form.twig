@@ -27,7 +27,7 @@
                     </div>
                 </div>
 
-                {% include 'common/line-items.twig' with {products: products} %}
+                {% include 'common/line-items.twig' with {products: products, partner_select_id: 'partner_id'} %}
 
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <a href="{{ base_url }}/orders" class="btn btn-outline-secondary">Mégse</a>

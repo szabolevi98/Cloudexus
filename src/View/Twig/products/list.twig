@@ -85,7 +85,14 @@
                                     {{ product.stock_qty|number_format(0, ',', ' ') }} {{ product.unit }}
                                 </span>
                             </td>
-                            <td class="text-end text-nowrap">{{ product.price|number_format(0, ',', ' ') }} Ft</td>
+                            <td class="text-end text-nowrap">
+                                {% if product.sale_price %}
+                                    <span class="text-muted text-decoration-line-through small">{{ product.price|number_format(0, ',', ' ') }} Ft</span><br>
+                                    <span class="fw-medium text-danger">{{ product.sale_price|number_format(0, ',', ' ') }} Ft</span>
+                                {% else %}
+                                    {{ product.price|number_format(0, ',', ' ') }} Ft
+                                {% endif %}
+                            </td>
                             <td>
                                 {% if product.is_active %}
                                     <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>

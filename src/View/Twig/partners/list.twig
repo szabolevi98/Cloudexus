@@ -37,6 +37,15 @@
                             <option value="inactive" {{ filters.status == 'inactive' ? 'selected' : '' }}>Inaktív</option>
                         </select>
                     </div>
+                    <div class="col-sm-3 col-lg-2">
+                        <label class="form-label small text-muted mb-1">Vevőcsoport</label>
+                        <select name="customer_group_id" class="form-select form-select-sm">
+                            <option value="">Mind</option>
+                            {% for g in customer_groups %}
+                                <option value="{{ g.id }}" {{ filters.customer_group_id == g.id ? 'selected' : '' }}>{{ g.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="col-auto">
                         <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
                         <a href="{{ base_url }}/partners" class="btn btn-sm btn-outline-secondary">Törlés</a>
@@ -52,6 +61,7 @@
                         <th>Adószám</th>
                         <th>E-mail</th>
                         <th>Telefon</th>
+                        <th>Vevőcsoport</th>
                         <th>Állapot</th>
                         <th class="text-end">Műveletek</th>
                     </tr>
@@ -72,6 +82,7 @@
                             <td class="text-muted">{{ partner.tax_number ?: '—' }}</td>
                             <td class="text-muted">{{ partner.email ?: '—' }}</td>
                             <td class="text-muted">{{ partner.phone ?: '—' }}</td>
+                            <td class="text-muted">{{ partner.customer_group_name ?: '—' }}</td>
                             <td>
                                 {% if partner.is_active %}
                                     <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>
@@ -91,7 +102,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="7" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő partner.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő partner.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

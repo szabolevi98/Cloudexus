@@ -53,7 +53,26 @@
     const template = document.getElementById('line-item-template');
     const totalCell = document.getElementById('line-items-total');
     const prefill = {{ prefill|default([])|json_encode|raw }};
+    const partnerSelectId = {{ partner_select_id ? ('"' ~ partner_select_id ~ '"')|raw : 'null' }};
+    const partnerSelect = partnerSelectId ? document.getElementById(partnerSelectId) : null;
+    const priceCache = {};
     const numberFormat = (n) => new Intl.NumberFormat('hu-HU').format(Math.round(n)) + ' Ft';
+
+    function currentPartnerId() {
+        return partnerSelect ? (parseInt(partnerSelect.value, 10) || 0) : 0;
+    }
+
+    function fetchEffectivePrice(productId) {
+        const partnerId = currentPartnerId();
+        const key = productId + ':' + partnerId;
+        if (priceCache[key]) {
+            return priceCache[key];
+        }
+        const url = '{{ base_url }}/pricing/effective?product_id=' + encodeURIComponent(productId) + (partnerId ? '&partner_id=' + partnerId : '');
+        const promise = fetch(url).then((r) => r.json()).then((data) => data.price || 0);
+        priceCache[key] = promise;
+        return promise;
+    }
 
     function recalcRow(row) {
         const qty = parseFloat(row.querySelector('.cx-line-item__quantity').value) || 0;
@@ -76,9 +95,14 @@
         const row = template.content.firstElementChild.cloneNode(true);
 
         row.querySelector('.cx-line-item__product').addEventListener('change', (e) => {
-            const price = e.target.selectedOptions[0]?.dataset.price || 0;
-            row.querySelector('.cx-line-item__price').value = price;
-            recalcRow(row);
+            const productId = e.target.value;
+            if (!productId) {
+                return;
+            }
+            fetchEffectivePrice(productId).then((price) => {
+                row.querySelector('.cx-line-item__price').value = price;
+                recalcRow(row);
+            });
         });
         row.querySelector('.cx-line-item__quantity').addEventListener('input', () => recalcRow(row));
         row.querySelector('.cx-line-item__price').addEventListener('input', () => recalcRow(row));
@@ -98,6 +122,21 @@
     }
 
     document.getElementById('add-line-item').addEventListener('click', () => addRow());
+
+    if (partnerSelect) {
+        partnerSelect.addEventListener('change', () => {
+            body.querySelectorAll('tr').forEach((row) => {
+                const productId = row.querySelector('.cx-line-item__product').value;
+                if (!productId) {
+                    return;
+                }
+                fetchEffectivePrice(productId).then((price) => {
+                    row.querySelector('.cx-line-item__price').value = price;
+                    recalcRow(row);
+                });
+            });
+        });
+    }
 
     if (prefill.length) {
         prefill.forEach((item) => addRow(item));

@@ -5,6 +5,7 @@ namespace Cloudexus\Controller;
 use Cloudexus\Core\Auth;
 use Cloudexus\Core\Paginator;
 use Cloudexus\Model\Core\CategoryModel;
+use Cloudexus\Model\Core\CustomerGroupModel;
 use Cloudexus\Model\Core\ProductModel;
 use Cloudexus\Model\Core\StockMovementModel;
 use Cloudexus\Model\Core\UnitModel;
@@ -18,6 +19,7 @@ class ProductController extends BaseController
     private ProductModel $products;
     private CategoryModel $categories;
     private UnitModel $units;
+    private CustomerGroupModel $customerGroups;
 
     public function __construct()
     {
@@ -25,6 +27,7 @@ class ProductController extends BaseController
         $this->products = new ProductModel();
         $this->categories = new CategoryModel();
         $this->units = new UnitModel();
+        $this->customerGroups = new CustomerGroupModel();
         $this->activeMenu = 'products';
     }
 
@@ -190,6 +193,7 @@ class ProductController extends BaseController
             'product' => $product,
             'units' => $this->units->all(),
             'warehouses' => (new WarehouseModel())->activeList(),
+            'customer_groups' => $this->customerGroups->all(),
             // Előre kijelölt Select2 opciók (id + felirat) szerkesztéskor
             'category_options' => $product ? $this->categories->labelsForIds($product['category_ids']) : [],
             'related_options' => $product ? $this->products->labelsForIds($product['related_ids']) : [],
@@ -213,6 +217,7 @@ class ProductController extends BaseController
             'category_ids' => $categoryIds,
             'unit' => trim($_POST['unit'] ?? 'db'),
             'price' => (float) str_replace(',', '.', $_POST['price'] ?? '0'),
+            'sale_price' => trim(str_replace(',', '.', $_POST['sale_price'] ?? '')),
             'vat_rate' => (float) str_replace(',', '.', $_POST['vat_rate'] ?? '27'),
             'min_stock' => (float) str_replace(',', '.', $_POST['min_stock'] ?? '0'),
             'width_mm' => $_POST['width_mm'] ?? '',
@@ -225,6 +230,9 @@ class ProductController extends BaseController
             'attr_value' => $_POST['attr_value'] ?? [],
             'related_ids' => $_POST['related_ids'] ?? [],
             'substitute_ids' => $_POST['substitute_ids'] ?? [],
+            'group_id' => $_POST['group_id'] ?? [],
+            'group_price' => $_POST['group_price'] ?? [],
+            'group_sale_price' => $_POST['group_sale_price'] ?? [],
         ];
     }
 
