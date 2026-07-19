@@ -33,3 +33,10 @@ username =
 password =
 from_address = "no-reply@cloudexus.local"
 from_name = "Cloudexus"
+
+[recaptcha]
+; https://www.google.com/recaptcha/admin -> v3 site
+site_key =
+secret_key =
+; v3 score küszöb (0.0-1.0), ez alatt a bejelentkezés elutasítva
+min_score = 0.5

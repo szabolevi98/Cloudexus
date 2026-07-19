@@ -24,8 +24,9 @@
         </div>
     {% endif %}
 
-    <form method="post" action="{{ base_url }}/login">
+    <form method="post" action="{{ base_url }}/login" id="login-form">
         <input type="hidden" name="_token" value="{{ csrf_token }}">
+        <input type="hidden" name="recaptcha_token" id="recaptcha_token">
         <div class="mb-3">
             <label for="username" class="form-label">Felhasználónév vagy e-mail</label>
             <div class="input-group">
@@ -40,8 +41,34 @@
                 <input type="password" id="password" name="password" class="form-control" required>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary w-100 py-2">Belépés</button>
+        <button type="submit" class="btn btn-primary w-100 py-2" id="login-submit">Belépés</button>
+        {% if recaptcha_enabled %}
+            <p class="text-muted small mt-3 mb-0">
+                Ezt az oldalt a Google reCAPTCHA védi
+                (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Adatvédelem</a>
+                és <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Felhasználási feltételek</a>).
+            </p>
+        {% endif %}
     </form>
 </div>
 </body>
+{% if recaptcha_enabled %}
+    <script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_site_key }}"></script>
+    <script>
+        (function () {
+            const form = document.getElementById('login-form');
+            const submitBtn = document.getElementById('login-submit');
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                submitBtn.disabled = true;
+                grecaptcha.ready(function () {
+                    grecaptcha.execute('{{ recaptcha_site_key }}', {action: 'login'}).then(function (token) {
+                        document.getElementById('recaptcha_token').value = token;
+                        form.submit();
+                    });
+                });
+            });
+        })();
+    </script>
+{% endif %}
 </html>
