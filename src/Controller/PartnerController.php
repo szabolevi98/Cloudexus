@@ -72,6 +72,36 @@ class PartnerController extends BaseController
         $this->redirect('/partners/' . $id);
     }
 
+    public function updateAddress(int $id, int $addressId): void
+    {
+        $this->requireAuth();
+
+        $address = $this->addresses->findById($addressId);
+        if (!$address || (int) $address['partner_id'] !== $id) {
+            $this->redirect('/partners/' . $id);
+        }
+
+        $city = trim($_POST['city'] ?? '');
+        $postalCode = trim($_POST['postal_code'] ?? '');
+        $street = trim($_POST['street'] ?? '');
+
+        if ($city === '' || $postalCode === '' || $street === '') {
+            $this->flashError('A város, az irányítószám és az utca-házszám megadása kötelező.');
+            $this->redirect('/partners/' . $id);
+        }
+
+        $this->addresses->update($addressId, [
+            'country' => trim($_POST['country'] ?? ''),
+            'city' => $city,
+            'postal_code' => $postalCode,
+            'street' => $street,
+            'note' => trim($_POST['note'] ?? ''),
+        ]);
+
+        $this->flashSuccess('Cím frissítve.');
+        $this->redirect('/partners/' . $id);
+    }
+
     public function deleteAddress(int $id, int $addressId): void
     {
         $this->requireAuth();

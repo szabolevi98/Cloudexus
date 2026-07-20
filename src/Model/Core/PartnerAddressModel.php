@@ -47,6 +47,21 @@ class PartnerAddressModel
         return (int) DatabaseConnection::get()->lastInsertId();
     }
 
+    public function update(int $id, array $data): void
+    {
+        DatabaseConnection::get()->prepare(
+            'UPDATE partner_addresses SET country = :country, city = :city, postal_code = :postal_code, street = :street, note = :note
+             WHERE id = :id'
+        )->execute([
+            'id' => $id,
+            'country' => $data['country'] ?: 'Magyarország',
+            'city' => $data['city'],
+            'postal_code' => $data['postal_code'],
+            'street' => $data['street'],
+            'note' => $data['note'] ?: null,
+        ]);
+    }
+
     public function delete(int $id): void
     {
         DatabaseConnection::get()->prepare('DELETE FROM partner_addresses WHERE id = :id')->execute(['id' => $id]);

@@ -44,15 +44,28 @@
                 </div>
                 <div class="cx-card__body">
                     {% for a in addresses %}
-                        <div class="d-flex justify-content-between align-items-start gap-2 pb-2 mb-2 {{ not loop.last ? 'border-bottom' : '' }}">
-                            <div class="small">
-                                {% if a.country and a.country != 'Magyarország' %}<div>{{ a.country }}</div>{% endif %}
-                                <div>{{ a.postal_code }} {{ a.city }}, {{ a.street }}</div>
-                                {% if a.note %}<div class="text-muted">{{ a.note }}</div>{% endif %}
+                        <div class="pb-2 mb-2 {{ not loop.last ? 'border-bottom' : '' }}">
+                            <div class="row g-2">
+                                <div class="col-4">
+                                    <input type="text" name="country" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.country }}" placeholder="Ország">
+                                </div>
+                                <div class="col-3">
+                                    <input type="text" name="postal_code" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.postal_code }}" placeholder="Irányítószám">
+                                </div>
+                                <div class="col-5">
+                                    <input type="text" name="city" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.city }}" placeholder="Város">
+                                </div>
+                                <div class="col-8">
+                                    <input type="text" name="street" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.street }}" placeholder="Utca, házszám">
+                                </div>
+                                <div class="col-4">
+                                    <input type="text" name="note" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.note }}" placeholder="Megjegyzés">
+                                </div>
                             </div>
-                            <form method="post" action="{{ base_url }}/partners/{{ partner.id }}/addresses/{{ a.id }}/delete" onsubmit="return confirm('Törlöd a címet?');">
-                                <button type="submit" class="btn btn-sm btn-link text-danger p-0"><i class="bi bi-trash"></i></button>
-                            </form>
+                            <div class="mt-2 text-end">
+                                <button type="submit" form="addr-{{ a.id }}" class="btn btn-sm btn-outline-primary">Mentés</button>
+                                <button type="submit" form="addr-del-{{ a.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Törlöd a címet?');"><i class="bi bi-trash"></i></button>
+                            </div>
                         </div>
                     {% else %}
                         <div class="text-muted small">Még nincs cím felvéve.</div>
@@ -154,4 +167,9 @@
             </div>
         </div>
     </div>
+
+    {% for a in addresses %}
+        <form id="addr-{{ a.id }}" method="post" action="{{ base_url }}/partners/{{ partner.id }}/addresses/{{ a.id }}"></form>
+        <form id="addr-del-{{ a.id }}" method="post" action="{{ base_url }}/partners/{{ partner.id }}/addresses/{{ a.id }}/delete"></form>
+    {% endfor %}
 {% endblock %}
