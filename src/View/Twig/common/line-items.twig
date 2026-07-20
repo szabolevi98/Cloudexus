@@ -55,6 +55,7 @@
     const prefill = {{ prefill|default([])|json_encode|raw }};
     const partnerSelectId = {{ partner_select_id ? ('"' ~ partner_select_id ~ '"')|raw : 'null' }};
     const partnerSelect = partnerSelectId ? document.getElementById(partnerSelectId) : null;
+    const extraCostSelector = {{ extra_cost_selector ? ('"' ~ extra_cost_selector ~ '"')|raw : 'null' }};
     const priceCache = {};
     const numberFormat = (n) => new Intl.NumberFormat('hu-HU').format(Math.round(n)) + ' Ft';
 
@@ -88,6 +89,11 @@
             const price = parseFloat(row.querySelector('.cx-line-item__price').value) || 0;
             total += qty * price;
         });
+        if (extraCostSelector) {
+            document.querySelectorAll(extraCostSelector).forEach((input) => {
+                total += parseFloat(input.value) || 0;
+            });
+        }
         totalCell.textContent = numberFormat(total);
     }
 
@@ -122,6 +128,12 @@
     }
 
     document.getElementById('add-line-item').addEventListener('click', () => addRow());
+
+    if (extraCostSelector) {
+        document.querySelectorAll(extraCostSelector).forEach((input) => {
+            input.addEventListener('input', recalcTotal);
+        });
+    }
 
     if (partnerSelect) {
         partnerSelect.addEventListener('change', () => {

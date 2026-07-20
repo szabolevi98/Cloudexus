@@ -19,6 +19,32 @@
                 {% endif %}
             </div>
         </div>
+        {% if order.shipping_address_id or order.billing_address_id %}
+            <div class="cx-card__body border-bottom pt-3 pb-3">
+                <div class="row small">
+                    {% if order.shipping_address_id %}
+                        <div class="col-md-6">
+                            <div class="text-muted mb-1">Szállítási cím</div>
+                            <div>
+                                {% if order.shipping_country and order.shipping_country != 'Magyarország' %}{{ order.shipping_country }}, {% endif %}
+                                {{ order.shipping_postal_code }} {{ order.shipping_city }}, {{ order.shipping_street }}
+                                {% if order.shipping_note %}<div class="text-muted">{{ order.shipping_note }}</div>{% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if order.billing_address_id %}
+                        <div class="col-md-6">
+                            <div class="text-muted mb-1">Számlázási cím</div>
+                            <div>
+                                {% if order.billing_country and order.billing_country != 'Magyarország' %}{{ order.billing_country }}, {% endif %}
+                                {{ order.billing_postal_code }} {{ order.billing_city }}, {{ order.billing_street }}
+                                {% if order.billing_note %}<div class="text-muted">{{ order.billing_note }}</div>{% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
         <div class="cx-card__body p-0">
             <div class="table-responsive">
                 <table class="table cx-table align-middle mb-0">
@@ -43,6 +69,18 @@
                     {% endfor %}
                     </tbody>
                     <tfoot>
+                    {% if order.shipping_cost > 0 %}
+                        <tr>
+                            <td colspan="4" class="text-end text-muted">Szállítási költség</td>
+                            <td class="text-end text-muted">{{ order.shipping_cost|number_format(0, ',', ' ') }} Ft</td>
+                        </tr>
+                    {% endif %}
+                    {% if order.payment_cost > 0 %}
+                        <tr>
+                            <td colspan="4" class="text-end text-muted">Fizetési költség</td>
+                            <td class="text-end text-muted">{{ order.payment_cost|number_format(0, ',', ' ') }} Ft</td>
+                        </tr>
+                    {% endif %}
                     <tr>
                         <td colspan="4" class="text-end fw-medium">Végösszeg</td>
                         <td class="text-end fw-bold">{{ order.total_amount|number_format(0, ',', ' ') }} Ft</td>

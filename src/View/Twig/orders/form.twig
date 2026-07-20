@@ -26,8 +26,33 @@
                         <input type="date" name="order_date" class="form-control" value="{{ "now"|date("Y-m-d") }}">
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="shipping_address_id" class="form-label">Szállítási cím <span class="text-muted small">(opcionális)</span></label>
+                        <select id="shipping_address_id" name="shipping_address_id" class="form-select">
+                            <option value="">— válassz partnert előbb —</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="billing_address_id" class="form-label">Számlázási cím <span class="text-muted small">(opcionális)</span></label>
+                        <select id="billing_address_id" name="billing_address_id" class="form-select">
+                            <option value="">— válassz partnert előbb —</option>
+                        </select>
+                    </div>
+                </div>
 
-                {% include 'common/line-items.twig' with {products: products, partner_select_id: 'partner_id'} %}
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="shipping_cost" class="form-label">Szállítási költség (Ft)</label>
+                        <input type="number" step="0.01" min="0" id="shipping_cost" name="shipping_cost" class="form-control cx-order-cost" value="0">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="payment_cost" class="form-label">Fizetési költség (Ft) <span class="text-muted small">(pl. utánvét)</span></label>
+                        <input type="number" step="0.01" min="0" id="payment_cost" name="payment_cost" class="form-control cx-order-cost" value="0">
+                    </div>
+                </div>
+
+                {% include 'common/line-items.twig' with {products: products, partner_select_id: 'partner_id', extra_cost_selector: '.cx-order-cost'} %}
 
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <a href="{{ base_url }}/orders" class="btn btn-outline-secondary">Mégse</a>
@@ -38,4 +63,46 @@
             </form>
         </div>
     </div>
+
+    <script>
+        (function () {
+            const addresses = {{ partner_addresses|default([])|json_encode|raw }};
+            const partnerSelect = document.getElementById('partner_id');
+            const shippingSelect = document.getElementById('shipping_address_id');
+            const billingSelect = document.getElementById('billing_address_id');
+
+            function formatAddress(a) {
+                let label = a.postal_code + ' ' + a.city + ', ' + a.street;
+                if (a.country && a.country !== 'Magyarország') {
+                    label = a.country + ', ' + label;
+                }
+                if (a.note) {
+                    label += ' (' + a.note + ')';
+                }
+                return label;
+            }
+
+            function fillAddressSelects() {
+                const partnerId = parseInt(partnerSelect.value, 10);
+                const matching = addresses.filter((a) => a.partner_id == partnerId);
+
+                [shippingSelect, billingSelect].forEach((select) => {
+                    select.innerHTML = '';
+                    const emptyOption = document.createElement('option');
+                    emptyOption.value = '';
+                    emptyOption.textContent = matching.length ? '— nincs kiválasztva —' : '— a partnernek nincs rögzített címe —';
+                    select.appendChild(emptyOption);
+                    matching.forEach((a) => {
+                        const option = document.createElement('option');
+                        option.value = a.id;
+                        option.textContent = formatAddress(a);
+                        select.appendChild(option);
+                    });
+                });
+            }
+
+            partnerSelect.addEventListener('change', fillAddressSelects);
+            fillAddressSelects();
+        })();
+    </script>
 {% endblock %}

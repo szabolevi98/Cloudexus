@@ -17,6 +17,7 @@ use Cloudexus\Core\DatabaseConnection;
 use Cloudexus\Model\Cash\CashVoucherModel;
 use Cloudexus\Model\Core\CategoryModel;
 use Cloudexus\Model\Core\CustomerGroupModel;
+use Cloudexus\Model\Core\PartnerAddressModel;
 use Cloudexus\Model\Core\PartnerModel;
 use Cloudexus\Model\Core\ProductModel;
 use Cloudexus\Model\Core\StockMovementModel;
@@ -38,7 +39,7 @@ function randDate(int $daysAgoMax, int $daysAgoMin = 0): string
 echo "Truncating business tables...\n";
 $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 foreach ([
-    'partner_activities', 'todos', 'warehouse_locations', 'stocktaking_items', 'stocktakings',
+    'partner_activities', 'partner_addresses', 'todos', 'warehouse_locations', 'stocktaking_items', 'stocktakings',
     'cash_vouchers', 'incoming_invoice_items', 'incoming_invoices',
     'purchase_order_items', 'purchase_orders', 'invoice_items', 'invoices',
     'order_items', 'orders', 'stock_movements', 'product_group_prices', 'products', 'categories',
@@ -247,6 +248,7 @@ $bothNames = ['Multi Trade Kft.', 'Regionális Nagyker Zrt.'];
 
 $partners = ['customer' => [], 'supplier' => []];
 $customerGroupNames = array_keys($customerGroupIds);
+$allPartnerIds = [];
 
 foreach ($customerNames as $i => $name) {
     // Minden harmadik vevő tartozik valamelyik vevőcsoportba, a többi sima áron vásárol.
@@ -257,10 +259,10 @@ foreach ($customerNames as $i => $name) {
         'tax_number' => sprintf('%08d-1-%02d', rand(10000000, 99999999), rand(1, 44)),
         'email' => 'info@' . strtolower(preg_replace('/[^a-z0-9]/i', '', $name)) . '.hu',
         'phone' => '+36 30 ' . rand(100, 999) . ' ' . rand(1000, 9999),
-        'address' => 'Budapest, Példa utca ' . ($i + 1) . '.',
         'is_active' => 1,
     ]);
     $partners['customer'][] = $id;
+    $allPartnerIds[] = $id;
 }
 
 foreach ($supplierNames as $i => $name) {
@@ -269,10 +271,10 @@ foreach ($supplierNames as $i => $name) {
         'tax_number' => sprintf('%08d-2-%02d', rand(10000000, 99999999), rand(1, 44)),
         'email' => 'sales@' . strtolower(preg_replace('/[^a-z0-9]/i', '', $name)) . '.hu',
         'phone' => '+36 20 ' . rand(100, 999) . ' ' . rand(1000, 9999),
-        'address' => 'Debrecen, Ipar körút ' . ($i + 1) . '.',
         'is_active' => 1,
     ]);
     $partners['supplier'][] = $id;
+    $allPartnerIds[] = $id;
 }
 
 foreach ($bothNames as $i => $name) {
@@ -281,14 +283,43 @@ foreach ($bothNames as $i => $name) {
         'tax_number' => sprintf('%08d-2-%02d', rand(10000000, 99999999), rand(1, 44)),
         'email' => 'kapcsolat@' . strtolower(preg_replace('/[^a-z0-9]/i', '', $name)) . '.hu',
         'phone' => '+36 70 ' . rand(100, 999) . ' ' . rand(1000, 9999),
-        'address' => 'Szeged, Nagyker utca ' . ($i + 1) . '.',
         'is_active' => 1,
     ]);
     $partners['customer'][] = $id;
     $partners['supplier'][] = $id;
+    $allPartnerIds[] = $id;
 }
 
 echo count($partners['customer']) . " customer-capable, " . count($partners['supplier']) . " supplier-capable partners.\n";
+
+// Minden partnernek 1-2 szerkezetes cím (szállítási/számlázási kiválasztáshoz a rendeléseknél).
+echo "Seeding partner addresses...\n";
+$addressModel = new PartnerAddressModel();
+$addressCities = [
+    ['Budapest', '1011'], ['Debrecen', '4024'], ['Szeged', '6720'], ['Miskolc', '3525'],
+    ['Pécs', '7621'], ['Győr', '9021'], ['Nyíregyháza', '4400'], ['Kecskemét', '6000'],
+];
+$addressStreets = [
+    'Fő utca', 'Kossuth Lajos utca', 'Petőfi Sándor utca', 'Rákóczi utca', 'Ipari park',
+    'Vörösmarty utca', 'Széchenyi tér', 'Bem utca',
+];
+$partnerAddressIds = []; // partnerId => [addressId, ...]
+foreach ($allPartnerIds as $partnerId) {
+    $addressCount = rand(1, 2);
+    for ($i = 0; $i < $addressCount; $i++) {
+        [$city, $postal] = $addressCities[array_rand($addressCities)];
+        $addressId = $addressModel->create([
+            'partner_id' => $partnerId,
+            'country' => 'Magyarország',
+            'city' => $city,
+            'postal_code' => $postal,
+            'street' => $addressStreets[array_rand($addressStreets)] . ' ' . rand(1, 120) . '.',
+            'note' => rand(1, 100) <= 30 ? rand(1, 5) . '. emelet ' . rand(1, 20) . '. ajtó' : '',
+        ]);
+        $partnerAddressIds[$partnerId][] = $addressId;
+    }
+}
+echo array_sum(array_map('count', $partnerAddressIds)) . " partner addresses.\n";
 
 // ---------------------------------------------------------------------------
 // Warehouses
@@ -439,6 +470,8 @@ echo "Seeding sales orders and invoices...\n";
 $orderCount = 0;
 $invoiceCount = 0;
 $paidCount = 0;
+$shippingCostOptions = [990, 1490, 1990, 2490];
+$paymentCostOptions = [390, 590, 890];
 
 for ($i = 0; $i < 130; $i++) {
     $orderDate = randDate(30, 0);
@@ -454,11 +487,20 @@ for ($i = 0; $i < 130; $i++) {
         ];
     }
 
+    $orderPartnerId = $partners['customer'][array_rand($partners['customer'])];
+    $orderAddressIds = $partnerAddressIds[$orderPartnerId] ?? [];
+
     $orderId = $orderModel->create([
         'order_number' => $orderModel->nextOrderNumber(),
-        'partner_id' => $partners['customer'][array_rand($partners['customer'])],
+        'partner_id' => $orderPartnerId,
+        // A rendelések ~70%-ánál van kiválasztott szállítási/számlázási cím a partner cím-listájából.
+        'shipping_address_id' => $orderAddressIds && rand(1, 100) <= 70 ? $orderAddressIds[array_rand($orderAddressIds)] : null,
+        'billing_address_id' => $orderAddressIds && rand(1, 100) <= 70 ? $orderAddressIds[array_rand($orderAddressIds)] : null,
         'status' => 'confirmed',
         'order_date' => $orderDate,
+        // ~40% szállítási költséggel, ~20% utánvételi/fizetési költséggel jár.
+        'shipping_cost' => rand(1, 100) <= 40 ? $shippingCostOptions[array_rand($shippingCostOptions)] : 0,
+        'payment_cost' => rand(1, 100) <= 20 ? $paymentCostOptions[array_rand($paymentCostOptions)] : 0,
         'created_by' => null,
     ], $items);
     $orderCount++;
@@ -484,11 +526,14 @@ for ($i = 0; $i < 130; $i++) {
         $invoiceCount++;
 
         // ~65% of invoices get paid via a cash voucher (bevétel + settlement).
+        // The invoice only bills the line items (no shipping/payment cost columns
+        // there yet), so settle it for the item total, not the order's total_amount.
         if (rand(1, 100) <= 65) {
+            $itemsTotal = array_sum(array_map(fn($item) => $item['quantity'] * $item['unit_price'], $order['items']));
             $cashModel->create([
                 'voucher_number' => $cashModel->nextVoucherNumber(),
                 'type' => 'bevetel',
-                'amount' => $order['total_amount'],
+                'amount' => $itemsTotal,
                 'partner_id' => $order['partner_id'],
                 'invoice_id' => $invoiceId,
                 'note' => 'Számla kiegyenlítése',

@@ -30,8 +30,58 @@
                         <dt class="col-4 text-muted fw-normal">Adószám</dt><dd class="col-8">{{ partner.tax_number ?: '—' }}</dd>
                         <dt class="col-4 text-muted fw-normal">E-mail</dt><dd class="col-8">{{ partner.email ?: '—' }}</dd>
                         <dt class="col-4 text-muted fw-normal">Telefon</dt><dd class="col-8">{{ partner.phone ?: '—' }}</dd>
-                        <dt class="col-4 text-muted fw-normal">Cím</dt><dd class="col-8">{{ partner.address ?: '—' }}</dd>
                     </dl>
+                    {% if partner.address and addresses is empty %}
+                        <div class="text-muted small mt-2"><i class="bi bi-clock-history me-1"></i>Korábbi (nem szerkezetes) cím: {{ partner.address }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="cx-card mb-3">
+                <div class="cx-card__header">
+                    <h2>Címek</h2>
+                    <span class="text-muted small">{{ addresses|length }} db</span>
+                </div>
+                <div class="cx-card__body">
+                    {% for a in addresses %}
+                        <div class="d-flex justify-content-between align-items-start gap-2 pb-2 mb-2 {{ not loop.last ? 'border-bottom' : '' }}">
+                            <div class="small">
+                                {% if a.country and a.country != 'Magyarország' %}<div>{{ a.country }}</div>{% endif %}
+                                <div>{{ a.postal_code }} {{ a.city }}, {{ a.street }}</div>
+                                {% if a.note %}<div class="text-muted">{{ a.note }}</div>{% endif %}
+                            </div>
+                            <form method="post" action="{{ base_url }}/partners/{{ partner.id }}/addresses/{{ a.id }}/delete" onsubmit="return confirm('Törlöd a címet?');">
+                                <button type="submit" class="btn btn-sm btn-link text-danger p-0"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="text-muted small">Még nincs cím felvéve.</div>
+                    {% endfor %}
+                    <form method="post" action="{{ base_url }}/partners/{{ partner.id }}/addresses" class="mt-3 pt-3 border-top">
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <label class="form-label small text-muted mb-1">Ország</label>
+                                <input type="text" name="country" class="form-control form-control-sm" value="Magyarország">
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small text-muted mb-1">Irányítószám</label>
+                                <input type="text" name="postal_code" class="form-control form-control-sm" required>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small text-muted mb-1">Város</label>
+                            <input type="text" name="city" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small text-muted mb-1">Utca, házszám</label>
+                            <input type="text" name="street" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small text-muted mb-1">Megjegyzés <span class="text-muted">(opcionális, pl. emelet/ajtó)</span></label>
+                            <input type="text" name="note" class="form-control form-control-sm">
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-plus-lg me-1"></i>Cím hozzáadása</button>
+                    </form>
                 </div>
             </div>
 

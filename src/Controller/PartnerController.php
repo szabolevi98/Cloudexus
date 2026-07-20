@@ -4,6 +4,7 @@ namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Auth;
 use Cloudexus\Model\Core\CustomerGroupModel;
+use Cloudexus\Model\Core\PartnerAddressModel;
 use Cloudexus\Model\Core\PartnerModel;
 use Cloudexus\Model\Crm\PartnerActivityModel;
 
@@ -11,6 +12,7 @@ class PartnerController extends BaseController
 {
     private PartnerModel $partners;
     private PartnerActivityModel $activities;
+    private PartnerAddressModel $addresses;
     private CustomerGroupModel $customerGroups;
 
     public function __construct()
@@ -18,6 +20,7 @@ class PartnerController extends BaseController
         parent::__construct();
         $this->partners = new PartnerModel();
         $this->activities = new PartnerActivityModel();
+        $this->addresses = new PartnerAddressModel();
         $this->customerGroups = new CustomerGroupModel();
         $this->activeMenu = 'partners';
     }
@@ -35,7 +38,51 @@ class PartnerController extends BaseController
         $this->render('partners/show.twig', [
             'partner' => $partner,
             'activities' => $this->activities->forPartner($id),
+            'addresses' => $this->addresses->forPartner($id),
         ]);
+    }
+
+    public function addAddress(int $id): void
+    {
+        $this->requireAuth();
+
+        if (!$this->partners->findById($id)) {
+            $this->redirect('/partners');
+        }
+
+        $city = trim($_POST['city'] ?? '');
+        $postalCode = trim($_POST['postal_code'] ?? '');
+        $street = trim($_POST['street'] ?? '');
+
+        if ($city === '' || $postalCode === '' || $street === '') {
+            $this->flashError('A város, az irányítószám és az utca-házszám megadása kötelező.');
+            $this->redirect('/partners/' . $id);
+        }
+
+        $this->addresses->create([
+            'partner_id' => $id,
+            'country' => trim($_POST['country'] ?? ''),
+            'city' => $city,
+            'postal_code' => $postalCode,
+            'street' => $street,
+            'note' => trim($_POST['note'] ?? ''),
+        ]);
+
+        $this->flashSuccess('Cím hozzáadva.');
+        $this->redirect('/partners/' . $id);
+    }
+
+    public function deleteAddress(int $id, int $addressId): void
+    {
+        $this->requireAuth();
+
+        $address = $this->addresses->findById($addressId);
+        if ($address && (int) $address['partner_id'] === $id) {
+            $this->addresses->delete($addressId);
+            $this->flashSuccess('Cím törölve.');
+        }
+
+        $this->redirect('/partners/' . $id);
     }
 
     public function addActivity(int $id): void

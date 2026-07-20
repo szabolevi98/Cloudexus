@@ -3,6 +3,7 @@
 namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Auth;
+use Cloudexus\Model\Core\PartnerAddressModel;
 use Cloudexus\Model\Core\PartnerModel;
 use Cloudexus\Model\Core\ProductModel;
 use Cloudexus\Model\Sales\OrderModel;
@@ -11,6 +12,7 @@ class OrderController extends BaseController
 {
     private OrderModel $orders;
     private PartnerModel $partners;
+    private PartnerAddressModel $addresses;
     private ProductModel $products;
 
     public function __construct()
@@ -18,6 +20,7 @@ class OrderController extends BaseController
         parent::__construct();
         $this->orders = new OrderModel();
         $this->partners = new PartnerModel();
+        $this->addresses = new PartnerAddressModel();
         $this->products = new ProductModel();
         $this->activeMenu = 'orders';
     }
@@ -53,6 +56,7 @@ class OrderController extends BaseController
             'order_number' => $this->orders->nextOrderNumber(),
             'partners' => $this->partners->customersAndBoth(),
             'products' => $this->products->all(),
+            'partner_addresses' => $this->addresses->all(),
         ]);
     }
 
@@ -70,8 +74,12 @@ class OrderController extends BaseController
         $id = $this->orders->create([
             'order_number' => $_POST['order_number'],
             'partner_id' => (int) $_POST['partner_id'],
+            'shipping_address_id' => (int) ($_POST['shipping_address_id'] ?? 0),
+            'billing_address_id' => (int) ($_POST['billing_address_id'] ?? 0),
             'status' => 'confirmed',
             'order_date' => $_POST['order_date'] ?: date('Y-m-d'),
+            'shipping_cost' => (float) str_replace(',', '.', $_POST['shipping_cost'] ?? '0'),
+            'payment_cost' => (float) str_replace(',', '.', $_POST['payment_cost'] ?? '0'),
             'created_by' => Auth::id(),
         ], $items);
 

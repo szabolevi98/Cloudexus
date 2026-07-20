@@ -99,6 +99,8 @@ registerCrud($router, '/partners', PartnerController::class);
 $router->get('/partners/{id}', fn($id) => (new PartnerController())->show((int) $id));
 $router->post('/partners/{id}/activities', fn($id) => (new PartnerController())->addActivity((int) $id));
 $router->post('/partners/{id}/activities/{aid}/delete', fn($id, $aid) => (new PartnerController())->deleteActivity((int) $id, (int) $aid));
+$router->post('/partners/{id}/addresses', fn($id) => (new PartnerController())->addAddress((int) $id));
+$router->post('/partners/{id}/addresses/{aid}/delete', fn($id, $aid) => (new PartnerController())->deleteAddress((int) $id, (int) $aid));
 registerCrud($router, '/warehouses', WarehouseController::class);
 registerCrud($router, '/locations', LocationController::class);
 

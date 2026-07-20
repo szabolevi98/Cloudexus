@@ -44,10 +44,11 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="mb-3">
-                    <label for="address" class="form-label">Cím</label>
-                    <input type="text" id="address" name="address" class="form-control" value="{{ partner.address|default('') }}">
-                </div>
+                {% if not partner %}
+                    <div class="alert alert-info small mb-3">
+                        <i class="bi bi-info-circle me-1"></i>A partner címeit a mentés után, a partner adatlapján tudod hozzáadni (több cím is felvehető, pl. külön szállítási és számlázási cím).
+                    </div>
+                {% endif %}
                 <div class="form-check mb-4">
                     <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {{ (partner is null or partner.is_active) ? 'checked' : '' }}>
                     <label for="is_active" class="form-check-label">Aktív</label>

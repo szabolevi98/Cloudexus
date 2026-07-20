@@ -19,9 +19,15 @@ class OrderModel
     public function findById(int $id): ?array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT o.*, p.name AS partner_name
+            'SELECT o.*, p.name AS partner_name,
+                    sa.country AS shipping_country, sa.city AS shipping_city, sa.postal_code AS shipping_postal_code,
+                    sa.street AS shipping_street, sa.note AS shipping_note,
+                    ba.country AS billing_country, ba.city AS billing_city, ba.postal_code AS billing_postal_code,
+                    ba.street AS billing_street, ba.note AS billing_note
              FROM orders o
              JOIN partners p ON p.id = o.partner_id
+             LEFT JOIN partner_addresses sa ON sa.id = o.shipping_address_id
+             LEFT JOIN partner_addresses ba ON ba.id = o.billing_address_id
              WHERE o.id = :id LIMIT 1'
         );
         $stmt->execute(['id' => $id]);
@@ -164,18 +170,24 @@ class OrderModel
         $pdo->beginTransaction();
 
         try {
-            $total = array_sum(array_map(fn($i) => $i['quantity'] * $i['unit_price'], $items));
+            $shippingCost = (float) ($data['shipping_cost'] ?? 0);
+            $paymentCost = (float) ($data['payment_cost'] ?? 0);
+            $total = array_sum(array_map(fn($i) => $i['quantity'] * $i['unit_price'], $items)) + $shippingCost + $paymentCost;
 
             $stmt = $pdo->prepare(
-                'INSERT INTO orders (order_number, partner_id, status, order_date, total_amount, created_by, created_at)
-                 VALUES (:order_number, :partner_id, :status, :order_date, :total_amount, :created_by, NOW())'
+                'INSERT INTO orders (order_number, partner_id, shipping_address_id, billing_address_id, status, order_date, total_amount, shipping_cost, payment_cost, created_by, created_at)
+                 VALUES (:order_number, :partner_id, :shipping_address_id, :billing_address_id, :status, :order_date, :total_amount, :shipping_cost, :payment_cost, :created_by, NOW())'
             );
             $stmt->execute([
                 'order_number' => $data['order_number'],
                 'partner_id' => $data['partner_id'],
+                'shipping_address_id' => $data['shipping_address_id'] ?: null,
+                'billing_address_id' => $data['billing_address_id'] ?: null,
                 'status' => $data['status'],
                 'order_date' => $data['order_date'],
                 'total_amount' => $total,
+                'shipping_cost' => $shippingCost,
+                'payment_cost' => $paymentCost,
                 'created_by' => $data['created_by'] ?: null,
             ]);
 

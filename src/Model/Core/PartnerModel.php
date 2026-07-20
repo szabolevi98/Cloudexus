@@ -100,7 +100,7 @@ class PartnerModel
             'tax_number' => $data['tax_number'] ?: null,
             'email' => $data['email'] ?: null,
             'phone' => $data['phone'] ?: null,
-            'address' => $data['address'] ?: null,
+            'address' => !empty($data['address']) ? $data['address'] : null,
             'is_active' => $data['is_active'],
         ]);
 
@@ -122,7 +122,7 @@ class PartnerModel
             'tax_number' => $data['tax_number'] ?: null,
             'email' => $data['email'] ?: null,
             'phone' => $data['phone'] ?: null,
-            'address' => $data['address'] ?: null,
+            'address' => !empty($data['address']) ? $data['address'] : null,
             'is_active' => $data['is_active'],
         ]);
     }
