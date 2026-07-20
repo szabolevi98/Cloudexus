@@ -128,6 +128,8 @@ class InvoiceController extends BaseController
             'status' => 'unpaid',
             'issue_date' => $_POST['issue_date'] ?: date('Y-m-d'),
             'due_date' => $_POST['due_date'] ?: date('Y-m-d', strtotime('+8 days')),
+            'shipping_cost' => (float) str_replace(',', '.', $_POST['shipping_cost'] ?? '0'),
+            'payment_cost' => (float) str_replace(',', '.', $_POST['payment_cost'] ?? '0'),
             'created_by' => Auth::id(),
         ], $items);
 

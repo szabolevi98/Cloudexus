@@ -305,7 +305,7 @@ $addressStreets = [
 ];
 $partnerAddressIds = []; // partnerId => [addressId, ...]
 foreach ($allPartnerIds as $partnerId) {
-    $addressCount = rand(1, 2);
+    $addressCount = rand(1, 3);
     for ($i = 0; $i < $addressCount; $i++) {
         [$city, $postal] = $addressCities[array_rand($addressCities)];
         $addressId = $addressModel->create([
@@ -517,6 +517,8 @@ for ($i = 0; $i < 130; $i++) {
             'status' => 'unpaid',
             'issue_date' => $orderDate,
             'due_date' => $dueDate,
+            'shipping_cost' => $order['shipping_cost'],
+            'payment_cost' => $order['payment_cost'],
             'created_by' => null,
         ], array_map(fn($item) => [
             'product_id' => $item['product_id'],
@@ -526,14 +528,13 @@ for ($i = 0; $i < 130; $i++) {
         $invoiceCount++;
 
         // ~65% of invoices get paid via a cash voucher (bevétel + settlement).
-        // The invoice only bills the line items (no shipping/payment cost columns
-        // there yet), so settle it for the item total, not the order's total_amount.
+        // The invoice carries the same shipping/payment cost as the order it was
+        // created from, so its total_amount matches the order's total_amount.
         if (rand(1, 100) <= 65) {
-            $itemsTotal = array_sum(array_map(fn($item) => $item['quantity'] * $item['unit_price'], $order['items']));
             $cashModel->create([
                 'voucher_number' => $cashModel->nextVoucherNumber(),
                 'type' => 'bevetel',
-                'amount' => $itemsTotal,
+                'amount' => $order['total_amount'],
                 'partner_id' => $order['partner_id'],
                 'invoice_id' => $invoiceId,
                 'note' => 'Számla kiegyenlítése',

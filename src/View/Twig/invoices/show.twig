@@ -60,6 +60,18 @@
                     {% endfor %}
                     </tbody>
                     <tfoot>
+                    {% if invoice.shipping_cost > 0 %}
+                        <tr>
+                            <td colspan="4" class="text-end text-muted">Szállítási költség</td>
+                            <td class="text-end text-muted">{{ invoice.shipping_cost|number_format(0, ',', ' ') }} Ft</td>
+                        </tr>
+                    {% endif %}
+                    {% if invoice.payment_cost > 0 %}
+                        <tr>
+                            <td colspan="4" class="text-end text-muted">Fizetési költség</td>
+                            <td class="text-end text-muted">{{ invoice.payment_cost|number_format(0, ',', ' ') }} Ft</td>
+                        </tr>
+                    {% endif %}
                     <tr>
                         <td colspan="4" class="text-end fw-medium">Végösszeg</td>
                         <td class="text-end fw-bold">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>

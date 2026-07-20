@@ -125,11 +125,13 @@ class InvoiceModel
         $pdo->beginTransaction();
 
         try {
-            $total = array_sum(array_map(fn($i) => $i['quantity'] * $i['unit_price'], $items));
+            $shippingCost = (float) ($data['shipping_cost'] ?? 0);
+            $paymentCost = (float) ($data['payment_cost'] ?? 0);
+            $total = array_sum(array_map(fn($i) => $i['quantity'] * $i['unit_price'], $items)) + $shippingCost + $paymentCost;
 
             $stmt = $pdo->prepare(
-                'INSERT INTO invoices (invoice_number, order_id, partner_id, warehouse_id, status, issue_date, due_date, total_amount, created_by, created_at)
-                 VALUES (:invoice_number, :order_id, :partner_id, :warehouse_id, :status, :issue_date, :due_date, :total_amount, :created_by, NOW())'
+                'INSERT INTO invoices (invoice_number, order_id, partner_id, warehouse_id, status, issue_date, due_date, total_amount, shipping_cost, payment_cost, created_by, created_at)
+                 VALUES (:invoice_number, :order_id, :partner_id, :warehouse_id, :status, :issue_date, :due_date, :total_amount, :shipping_cost, :payment_cost, :created_by, NOW())'
             );
             $stmt->execute([
                 'invoice_number' => $data['invoice_number'],
@@ -140,6 +142,8 @@ class InvoiceModel
                 'issue_date' => $data['issue_date'],
                 'due_date' => $data['due_date'],
                 'total_amount' => $total,
+                'shipping_cost' => $shippingCost,
+                'payment_cost' => $paymentCost,
                 'created_by' => $data['created_by'] ?: null,
             ]);
 

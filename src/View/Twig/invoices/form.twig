@@ -53,10 +53,22 @@
                     <div class="form-text">Ha megadod, a számla tételei automatikusan raktári kiadásként is könyvelődnek.</div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="shipping_cost" class="form-label">Szállítási költség (Ft)</label>
+                        <input type="number" step="0.01" min="0" id="shipping_cost" name="shipping_cost" class="form-control cx-order-cost" value="{{ from_order.shipping_cost|default(0) }}">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="payment_cost" class="form-label">Fizetési költség (Ft) <span class="text-muted small">(pl. utánvét)</span></label>
+                        <input type="number" step="0.01" min="0" id="payment_cost" name="payment_cost" class="form-control cx-order-cost" value="{{ from_order.payment_cost|default(0) }}">
+                    </div>
+                </div>
+
                 {% include 'common/line-items.twig' with {
                     products: products,
                     prefill: from_order ? from_order.items|map(i => {product_id: i.product_id, quantity: i.quantity, unit_price: i.unit_price}) : [],
-                    partner_select_id: 'partner_id'
+                    partner_select_id: 'partner_id',
+                    extra_cost_selector: '.cx-order-cost'
                 } %}
 
                 <div class="d-flex justify-content-between align-items-center mt-4">
