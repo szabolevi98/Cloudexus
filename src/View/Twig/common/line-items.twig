@@ -1,20 +1,20 @@
 <div class="cx-line-items">
-    <label class="form-label">Tételek</label>
+    <label class="form-label">{{ t('common.line_items') }}</label>
     <div class="table-responsive">
         <table class="table cx-table align-middle" id="line-items-table">
             <thead>
             <tr>
-                <th>Termék</th>
-                <th style="width:120px;">Mennyiség</th>
-                <th style="width:150px;">Egységár (Ft)</th>
-                <th style="width:150px;" class="text-end">Sor összesen</th>
+                <th>{{ t('common.product') }}</th>
+                <th style="width:120px;">{{ t('common.quantity') }}</th>
+                <th style="width:150px;">{{ t('common.unit_price_ft') }}</th>
+                <th style="width:150px;" class="text-end">{{ t('common.line_total') }}</th>
                 <th style="width:40px;"></th>
             </tr>
             </thead>
             <tbody id="line-items-body"></tbody>
             <tfoot>
             <tr>
-                <td colspan="3" class="text-end fw-medium">Végösszeg</td>
+                <td colspan="3" class="text-end fw-medium">{{ t('common.total') }}</td>
                 <td class="text-end fw-bold" id="line-items-total">0 Ft</td>
                 <td></td>
             </tr>
@@ -22,7 +22,7 @@
         </table>
     </div>
     <button type="button" class="btn btn-outline-primary btn-sm" id="add-line-item">
-        <i class="bi bi-plus-lg me-1"></i>Tétel hozzáadása
+        <i class="bi bi-plus-lg me-1"></i>{{ t('common.add_line_item') }}
     </button>
 </div>
 
@@ -30,7 +30,7 @@
     <tr class="cx-line-item">
         <td>
             <select name="product_id[]" class="form-select form-select-sm cx-line-item__product" required>
-                <option value="">Válassz terméket…</option>
+                <option value="">{{ t('common.choose_product') }}</option>
                 {% for p in products %}
                     <option value="{{ p.id }}" data-price="{{ p.price }}">{{ p.sku }} — {{ p.name }}</option>
                 {% endfor %}

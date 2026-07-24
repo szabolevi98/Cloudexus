@@ -9,13 +9,13 @@
             </div>
             <div>
                 {% if order.status == 'draft' %}
-                    <span class="badge rounded-pill text-bg-secondary">Piszkozat</span>
+                    <span class="badge rounded-pill text-bg-secondary">{{ t('common.order_status.draft') }}</span>
                 {% elseif order.status == 'confirmed' %}
-                    <span class="badge rounded-pill text-bg-primary">Visszaigazolt</span>
+                    <span class="badge rounded-pill text-bg-primary">{{ t('common.order_status.confirmed') }}</span>
                 {% elseif order.status == 'invoiced' %}
-                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Számlázva</span>
+                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('common.order_status.invoiced') }}</span>
                 {% else %}
-                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Törölve</span>
+                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.order_status.cancelled') }}</span>
                 {% endif %}
             </div>
         </div>
@@ -24,7 +24,7 @@
                 <div class="row small">
                     {% if order.shipping_address_id %}
                         <div class="col-md-6">
-                            <div class="text-muted mb-1">Szállítási cím</div>
+                            <div class="text-muted mb-1">{{ t('orders.shipping_address') }}</div>
                             <div>
                                 {% if order.shipping_country and order.shipping_country != 'Magyarország' %}{{ order.shipping_country }}, {% endif %}
                                 {{ order.shipping_postal_code }} {{ order.shipping_city }}, {{ order.shipping_street }}
@@ -34,7 +34,7 @@
                     {% endif %}
                     {% if order.billing_address_id %}
                         <div class="col-md-6">
-                            <div class="text-muted mb-1">Számlázási cím</div>
+                            <div class="text-muted mb-1">{{ t('orders.billing_address') }}</div>
                             <div>
                                 {% if order.billing_country and order.billing_country != 'Magyarország' %}{{ order.billing_country }}, {% endif %}
                                 {{ order.billing_postal_code }} {{ order.billing_city }}, {{ order.billing_street }}
@@ -50,11 +50,11 @@
                 <table class="table cx-table align-middle mb-0">
                     <thead>
                     <tr>
-                        <th>Cikkszám</th>
-                        <th>Megnevezés</th>
-                        <th class="text-end">Mennyiség</th>
-                        <th class="text-end">Egységár</th>
-                        <th class="text-end">Sor összesen</th>
+                        <th>{{ t('common.sku') }}</th>
+                        <th>{{ t('orders.product_name') }}</th>
+                        <th class="text-end">{{ t('common.quantity') }}</th>
+                        <th class="text-end">{{ t('common.unit_price') }}</th>
+                        <th class="text-end">{{ t('common.line_total') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -71,18 +71,18 @@
                     <tfoot>
                     {% if order.shipping_cost > 0 %}
                         <tr>
-                            <td colspan="4" class="text-end text-muted">Szállítási költség</td>
+                            <td colspan="4" class="text-end text-muted">{{ t('orders.shipping_cost_row') }}</td>
                             <td class="text-end text-muted">{{ order.shipping_cost|number_format(0, ',', ' ') }} Ft</td>
                         </tr>
                     {% endif %}
                     {% if order.payment_cost > 0 %}
                         <tr>
-                            <td colspan="4" class="text-end text-muted">Fizetési költség</td>
+                            <td colspan="4" class="text-end text-muted">{{ t('orders.payment_cost_row') }}</td>
                             <td class="text-end text-muted">{{ order.payment_cost|number_format(0, ',', ' ') }} Ft</td>
                         </tr>
                     {% endif %}
                     <tr>
-                        <td colspan="4" class="text-end fw-medium">Végösszeg</td>
+                        <td colspan="4" class="text-end fw-medium">{{ t('common.total') }}</td>
                         <td class="text-end fw-bold">{{ order.total_amount|number_format(0, ',', ' ') }} Ft</td>
                     </tr>
                     </tfoot>
@@ -93,15 +93,15 @@
 
     <div class="d-flex gap-2">
         <a href="{{ base_url }}/orders" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Vissza a listához
+            <i class="bi bi-arrow-left me-1"></i>{{ t('common.back_to_list') }}
         </a>
         {% if order.status != 'invoiced' and order.status != 'cancelled' %}
             <a href="{{ base_url }}/invoices/create?order_id={{ order.id }}" class="btn btn-primary">
-                <i class="bi bi-receipt me-1"></i>Számla készítése
+                <i class="bi bi-receipt me-1"></i>{{ t('orders.make_invoice') }}
             </a>
-            <form method="post" action="{{ base_url }}/orders/{{ order.id }}/cancel" onsubmit="return confirm('Biztosan stornózod a rendelést?');">
+            <form method="post" action="{{ base_url }}/orders/{{ order.id }}/cancel" onsubmit="return confirm('{{ t('orders.confirm_void')|e('js') }}');">
                 <button type="submit" class="btn btn-outline-danger">
-                    <i class="bi bi-x-circle me-1"></i>Stornózás
+                    <i class="bi bi-x-circle me-1"></i>{{ t('orders.void') }}
                 </button>
             </form>
         {% endif %}

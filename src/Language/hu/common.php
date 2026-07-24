@@ -41,6 +41,10 @@ return [
     'sku' => 'Cikkszám',
     'warehouse' => 'Raktár',
     'created_by' => 'Rögzítette',
+    'line_items' => 'Tételek',
+    'choose_product' => 'Válassz terméket…',
+    'unit_price_ft' => 'Egységár (Ft)',
+    'add_line_item' => 'Tétel hozzáadása',
     'invoice_status' => [
         'unpaid' => 'Fizetésre vár',
         'paid' => 'Kifizetve',

@@ -38,7 +38,7 @@ class OrderController extends BaseController
         ];
         $pager = new \Cloudexus\Core\Paginator(25);
 
-        $this->pageTitle = 'Vevői rendelések';
+        $this->pageTitle = $this->t('orders.list_title');
         $this->render('orders/list.twig', [
             'orders' => $this->orders->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -51,7 +51,7 @@ class OrderController extends BaseController
     {
         $this->requireAuth();
 
-        $this->pageTitle = 'Új vevői rendelés';
+        $this->pageTitle = $this->t('orders.new_full');
         $this->render('orders/form.twig', [
             'order_number' => $this->orders->nextOrderNumber(),
             'partners' => $this->partners->customersAndBoth(),
@@ -67,7 +67,7 @@ class OrderController extends BaseController
         $items = $this->collectItems();
 
         if (empty($_POST['partner_id']) || empty($items)) {
-            $this->flashError('A partner és legalább egy tétel megadása kötelező.');
+            $this->flashError($this->t('orders.required'));
             $this->redirect('/orders/create');
         }
 
@@ -83,7 +83,7 @@ class OrderController extends BaseController
             'created_by' => Auth::id(),
         ], $items);
 
-        $this->flashSuccess('Vevői rendelés létrehozva.');
+        $this->flashSuccess($this->t('orders.created'));
         $this->redirect('/orders/' . $id);
     }
 
@@ -96,7 +96,7 @@ class OrderController extends BaseController
             $this->redirect('/orders');
         }
 
-        $this->pageTitle = 'Rendelés: ' . $order['order_number'];
+        $this->pageTitle = $this->t('orders.title_prefix') . ': ' . $order['order_number'];
         $this->render('orders/show.twig', ['order' => $order]);
     }
 
@@ -105,7 +105,7 @@ class OrderController extends BaseController
         $this->requireAuth();
 
         $this->orders->updateStatus($id, 'cancelled');
-        $this->flashSuccess('Rendelés törölve (stornózva).');
+        $this->flashSuccess($this->t('orders.cancelled'));
         $this->redirect('/orders/' . $id);
     }
 
@@ -114,7 +114,7 @@ class OrderController extends BaseController
         $this->requireAuth();
 
         $this->orders->delete($id);
-        $this->flashSuccess('Rendelés törölve.');
+        $this->flashSuccess($this->t('orders.deleted'));
         $this->redirect('/orders');
     }
 
