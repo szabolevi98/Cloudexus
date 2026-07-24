@@ -119,6 +119,8 @@ Ezután nyisd meg a `config.ini`-ben beállított `base_url`-t (pl. `http://loca
 
 ```
 Cloudexus/
+├── bin/
+│   └── build_css.php    # a rétegzett CSS forrásokat egyesíti web/assets/css/app.css-be
 ├── config/              # config.ini (gitignore-olt) + .dist sablon
 ├── database/
 │   ├── core/            # sorszámozott SQL migrációk (01_core.sql, …)
@@ -135,6 +137,10 @@ Cloudexus/
 ├── var/                 # cache + naplók (gitignore-olt)
 └── web/                 # publikus gyökér: index.php front controller + assetek
 ```
+
+> A CSS-t nem Sass/bundler építi: a `src/View/Css/` alatti fájlokat a `php bin/build_css.php`
+> fűzi össze egyetlen `web/assets/css/app.css`-be, fix sorrendben. CSS-módosításnál mindig a
+> forrásfájlokat szerkeszd, utána futtasd a scriptet — az `app.css`-t sose kézzel.
 
 ## 🗺️ Roadmap
 
