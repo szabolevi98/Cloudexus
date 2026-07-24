@@ -42,7 +42,7 @@ class ProductController extends BaseController
         ];
         $pager = new Paginator(30);
 
-        $this->pageTitle = 'Termékek';
+        $this->pageTitle = $this->t('products.list_title');
         $this->render('products/list.twig', [
             'products' => $this->products->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -65,11 +65,17 @@ class ProductController extends BaseController
 
         \Cloudexus\Core\CsvExporter::download(
             'termekek',
-            ['Cikkszám', 'Vonalkód', 'Megnevezés', 'Kategória', 'Egység', 'Nettó ár', 'ÁFA %', 'Készlet', 'Min. készlet', 'Webshop', 'Aktív'],
+            [
+                $this->t('products.csv.sku'), $this->t('products.csv.barcode'), $this->t('products.csv.name'),
+                $this->t('products.csv.category'), $this->t('products.csv.unit'), $this->t('products.csv.net_price'),
+                $this->t('products.csv.vat'), $this->t('products.csv.stock'), $this->t('products.csv.min_stock'),
+                $this->t('products.csv.webshop'), $this->t('products.csv.active'),
+            ],
             array_map(fn($p) => [
                 $p['sku'], $p['barcode'] ?? '', $p['name'], $p['category_name'] ?? '',
                 $p['unit'], $p['price'], $p['vat_rate'], $p['stock_qty'], $p['min_stock'],
-                $p['is_webshop'] ? 'igen' : 'nem', $p['is_active'] ? 'igen' : 'nem',
+                $p['is_webshop'] ? $this->t('common.yes') : $this->t('common.no'),
+                $p['is_active'] ? $this->t('common.yes') : $this->t('common.no'),
             ], $rows)
         );
     }
@@ -84,7 +90,7 @@ class ProductController extends BaseController
     {
         $this->requireAuth();
 
-        $this->pageTitle = 'Új termék';
+        $this->pageTitle = $this->t('products.new');
         $this->render('products/form.twig', $this->formData(null));
     }
 
@@ -105,7 +111,7 @@ class ProductController extends BaseController
         $this->handleImageUrl($id);
         $this->handleOpeningStock($id);
 
-        $this->flashSuccess('Termék létrehozva.');
+        $this->flashSuccess($this->t('products.created'));
         $this->redirect('/products/' . $id . '/edit');
     }
 
@@ -118,7 +124,7 @@ class ProductController extends BaseController
             $this->redirect('/products');
         }
 
-        $this->pageTitle = 'Termék szerkesztése';
+        $this->pageTitle = $this->t('products.edit_title');
         $this->render('products/form.twig', $this->formData($product));
     }
 
@@ -138,7 +144,7 @@ class ProductController extends BaseController
         $this->handleImageUploads($id);
         $this->handleImageUrl($id);
 
-        $this->flashSuccess('Termék frissítve.');
+        $this->flashSuccess($this->t('products.updated'));
         $this->redirect('/products/' . $id . '/edit');
     }
 
@@ -148,10 +154,10 @@ class ProductController extends BaseController
 
         try {
             $this->products->delete($id);
-            $this->flashSuccess('Termék törölve.');
+            $this->flashSuccess($this->t('products.deleted'));
         } catch (\PDOException $e) {
             // Van hozzá készletmozgás / bizonylat — ne töröljük, inkább inaktiváljuk.
-            $this->flashError('A termék nem törölhető, mert kapcsolódik hozzá készletmozgás vagy bizonylat. Állítsd inkább inaktívra.');
+            $this->flashError($this->t('products.delete_blocked'));
         }
 
         $this->redirect('/products');
@@ -168,7 +174,7 @@ class ProductController extends BaseController
                 @unlink($file);
             }
             $this->products->deleteImage($imageId);
-            $this->flashSuccess('Kép törölve.');
+            $this->flashSuccess($this->t('products.image_deleted'));
         }
 
         $this->redirect('/products/' . $id . '/edit');
@@ -181,7 +187,7 @@ class ProductController extends BaseController
         $image = $this->products->findImage($imageId);
         if ($image && (int) $image['product_id'] === $id) {
             $this->products->setPrimaryImage($imageId);
-            $this->flashSuccess('Elsődleges kép beállítva.');
+            $this->flashSuccess($this->t('products.primary_set'));
         }
 
         $this->redirect('/products/' . $id . '/edit');
@@ -241,10 +247,10 @@ class ProductController extends BaseController
         $errors = [];
 
         if ($data['sku'] === '' || $data['name'] === '') {
-            $errors[] = 'A cikkszám és a megnevezés megadása kötelező.';
+            $errors[] = $this->t('products.required_fields');
         }
         if (!$errors && $this->products->skuExists($data['sku'], $excludeId)) {
-            $errors[] = 'Ez a cikkszám már foglalt.';
+            $errors[] = $this->t('products.sku_taken');
         }
 
         return $errors;
@@ -269,11 +275,11 @@ class ProductController extends BaseController
 
             $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
             if (!in_array($ext, self::ALLOWED_EXT, true)) {
-                $this->flashError('Csak kép tölthető fel (jpg, png, webp, gif).');
+                $this->flashError($this->t('products.image_only'));
                 continue;
             }
             if (($_FILES['images']['size'][$i] ?? 0) > 5 * 1024 * 1024) {
-                $this->flashError('A kép mérete legfeljebb 5 MB lehet.');
+                $this->flashError($this->t('products.image_too_large'));
                 continue;
             }
 
@@ -296,7 +302,7 @@ class ProductController extends BaseController
         if (filter_var($url, FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $url)) {
             $this->products->addImage($productId, $url);
         } else {
-            $this->flashError('Érvénytelen kép URL.');
+            $this->flashError($this->t('products.invalid_image_url'));
         }
     }
 

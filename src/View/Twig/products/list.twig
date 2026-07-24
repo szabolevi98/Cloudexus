@@ -3,13 +3,13 @@
 {% block content %}
     <div class="cx-card">
         <div class="cx-card__header">
-            <h2>Termékek</h2>
+            <h2>{{ t('products.list_title') }}</h2>
             <div class="d-flex gap-2">
                 <a href="{{ base_url }}/products/export?{{ filters|url_encode }}" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-download me-1"></i>CSV export
+                    <i class="bi bi-download me-1"></i>{{ t('common.csv_export') }}
                 </a>
                 <a href="{{ base_url }}/products/create" class="btn btn-primary btn-sm">
-                    <i class="bi bi-plus-lg me-1"></i>Új termék
+                    <i class="bi bi-plus-lg me-1"></i>{{ t('products.new') }}
                 </a>
             </div>
         </div>
@@ -17,29 +17,29 @@
             <form method="get" class="p-3 border-bottom">
                 <div class="row g-2 align-items-end">
                     <div class="col-sm-4 col-lg-3">
-                        <label class="form-label small text-muted mb-1">Keresés</label>
-                        <input type="text" name="q" class="form-control form-control-sm" placeholder="Cikkszám vagy megnevezés…" value="{{ filters.q }}">
+                        <label class="form-label small text-muted mb-1">{{ t('common.search') }}</label>
+                        <input type="text" name="q" class="form-control form-control-sm" placeholder="{{ t('products.search_placeholder') }}" value="{{ filters.q }}">
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Kategória</label>
+                        <label class="form-label small text-muted mb-1">{{ t('products.category') }}</label>
                         <select name="category_id" class="form-select form-select-sm">
-                            <option value="">Mind</option>
+                            <option value="">{{ t('common.all') }}</option>
                             {% for c in categories %}
                                 <option value="{{ c.id }}" {{ filters.category_id == c.id ? 'selected' : '' }}>{{ c.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Állapot</label>
+                        <label class="form-label small text-muted mb-1">{{ t('common.status') }}</label>
                         <select name="status" class="form-select form-select-sm">
-                            <option value="">Mind</option>
-                            <option value="active" {{ filters.status == 'active' ? 'selected' : '' }}>Aktív</option>
-                            <option value="inactive" {{ filters.status == 'inactive' ? 'selected' : '' }}>Inaktív</option>
+                            <option value="">{{ t('common.all') }}</option>
+                            <option value="active" {{ filters.status == 'active' ? 'selected' : '' }}>{{ t('common.active') }}</option>
+                            <option value="inactive" {{ filters.status == 'inactive' ? 'selected' : '' }}>{{ t('common.inactive') }}</option>
                         </select>
                     </div>
                     <div class="col-auto">
-                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
-                        <a href="{{ base_url }}/products" class="btn btn-sm btn-outline-secondary">Törlés</a>
+                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>{{ t('common.filter') }}</button>
+                        <a href="{{ base_url }}/products" class="btn btn-sm btn-outline-secondary">{{ t('common.clear') }}</a>
                     </div>
                 </div>
             </form>
@@ -48,13 +48,13 @@
                     <thead>
                     <tr>
                         <th style="width:44px;"></th>
-                        <th>Cikkszám</th>
-                        <th>Megnevezés</th>
-                        <th>Kategória</th>
-                        <th class="text-end">Készlet</th>
-                        <th class="text-end">Nettó ár</th>
-                        <th>Állapot</th>
-                        <th class="text-end">Műveletek</th>
+                        <th>{{ t('common.sku') }}</th>
+                        <th>{{ t('products.col_name') }}</th>
+                        <th>{{ t('products.category') }}</th>
+                        <th class="text-end">{{ t('products.col_stock') }}</th>
+                        <th class="text-end">{{ t('products.col_net_price') }}</th>
+                        <th>{{ t('common.status') }}</th>
+                        <th class="text-end">{{ t('common.actions') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -70,7 +70,7 @@
                             <td class="fw-medium text-nowrap">{{ product.sku }}</td>
                             <td>
                                 <a href="{{ base_url }}/products/{{ product.id }}/edit" class="text-decoration-none">{{ product.name }}</a>
-                                {% if not product.is_webshop %}<i class="bi bi-shop-window text-muted ms-1" title="Nem webshopos"></i>{% endif %}
+                                {% if not product.is_webshop %}<i class="bi bi-shop-window text-muted ms-1" title="{{ t('products.not_webshop') }}"></i>{% endif %}
                             </td>
                             <td class="text-muted">{{ product.category_name ?: '—' }}</td>
                             <td class="text-end">
@@ -81,7 +81,7 @@
                                 {% else %}
                                     {% set stockClass = 'text-bg-success-subtle text-success-emphasis' %}
                                 {% endif %}
-                                <span class="badge rounded-pill {{ stockClass }}" {% if product.min_stock > 0 %}title="Minimum: {{ product.min_stock|number_format(0, ',', ' ') }}"{% endif %}>
+                                <span class="badge rounded-pill {{ stockClass }}" {% if product.min_stock > 0 %}title="{{ t('products.min_prefix') }}: {{ product.min_stock|number_format(0, ',', ' ') }}"{% endif %}>
                                     {{ product.stock_qty|number_format(0, ',', ' ') }} {{ product.unit }}
                                 </span>
                             </td>
@@ -95,16 +95,16 @@
                             </td>
                             <td>
                                 {% if product.is_active %}
-                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('common.active') }}</span>
                                 {% else %}
-                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Inaktív</span>
+                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.inactive') }}</span>
                                 {% endif %}
                             </td>
                             <td class="text-end text-nowrap">
                                 <a href="{{ base_url }}/products/{{ product.id }}/edit" class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form method="post" action="{{ base_url }}/products/{{ product.id }}/delete" class="d-inline" onsubmit="return confirm('Biztosan törlöd?');">
+                                <form method="post" action="{{ base_url }}/products/{{ product.id }}/delete" class="d-inline" onsubmit="return confirm('{{ t('common.confirm_delete')|e('js') }}');">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">
                                         <i class="bi bi-trash"></i>
                                     </button>
@@ -112,7 +112,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="8" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő termék.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-4">{{ t('products.none_found') }}</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>
