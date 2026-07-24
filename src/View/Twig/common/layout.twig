@@ -106,6 +106,14 @@
                 <a class="cx-nav__link {{ active_menu == 'units' ? 'is-active' : '' }}" href="{{ base_url }}/units">
                     <i class="bi bi-rulers"></i><span>Mennyiségi egységek</span>
                 </a>
+
+                <div class="cx-nav__group-label">API</div>
+                <a class="cx-nav__link {{ active_menu == 'api-users' ? 'is-active' : '' }}" href="{{ base_url }}/api-users">
+                    <i class="bi bi-key"></i><span>API felhasználók</span>
+                </a>
+                <a class="cx-nav__link" href="{{ base_url }}/API.md" target="_blank" rel="noopener">
+                    <i class="bi bi-file-earmark-code"></i><span>API dokumentáció</span>
+                </a>
             {% endif %}
         </nav>
     </aside>

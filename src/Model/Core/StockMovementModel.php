@@ -202,6 +202,10 @@ class StockMovementModel
             $where[] = 'm.location_id = :location_id';
             $params['location_id'] = (int) $filters['location_id'];
         }
+        if (!empty($filters['product_id'])) {
+            $where[] = 'm.product_id = :product_id';
+            $params['product_id'] = (int) $filters['product_id'];
+        }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 

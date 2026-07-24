@@ -1,5 +1,17 @@
 <?php
 
+use Cloudexus\Controller\Api\CategoryApiController;
+use Cloudexus\Controller\Api\CustomerGroupApiController;
+use Cloudexus\Controller\Api\InvoiceApiController;
+use Cloudexus\Controller\Api\OrderApiController;
+use Cloudexus\Controller\Api\ParameterNameApiController;
+use Cloudexus\Controller\Api\PartnerApiController;
+use Cloudexus\Controller\Api\PricingApiController;
+use Cloudexus\Controller\Api\ProductApiController;
+use Cloudexus\Controller\Api\StockApiController;
+use Cloudexus\Controller\Api\UnitApiController;
+use Cloudexus\Controller\Api\WarehouseApiController;
+use Cloudexus\Controller\ApiUserController;
 use Cloudexus\Controller\CashVoucherController;
 use Cloudexus\Controller\CategoryController;
 use Cloudexus\Controller\CustomerGroupController;
@@ -49,11 +61,22 @@ set_exception_handler(function (\Throwable $e): void {
     echo 'Váratlan hiba történt. Kérjük, próbáld újra később.';
 });
 
-Session::start();
+// The REST API (/api/*) authenticates with a bearer token, not the session
+// cookie, so it must bypass session start and the form CSRF gate.
+$requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+$scriptBase = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+if ($scriptBase !== '' && str_starts_with($requestPath, $scriptBase)) {
+    $requestPath = substr($requestPath, strlen($scriptBase));
+}
+$isApiRequest = $requestPath === '/api' || str_starts_with($requestPath, '/api/');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !Csrf::validate($_POST['_token'] ?? null)) {
-    http_response_code(403);
-    exit('Érvénytelen vagy lejárt munkamenet. Frissítsd az oldalt, majd próbáld újra.');
+if (!$isApiRequest) {
+    Session::start();
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !Csrf::validate($_POST['_token'] ?? null)) {
+        http_response_code(403);
+        exit('Érvénytelen vagy lejárt munkamenet. Frissítsd az oldalt, majd próbáld újra.');
+    }
 }
 
 $router = new Router();
@@ -123,6 +146,13 @@ $router->post('/customer-groups/create', fn() => (new CustomerGroupController())
 $router->post('/customer-groups/{id}', fn($id) => (new CustomerGroupController())->update((int) $id));
 $router->post('/customer-groups/{id}/delete', fn($id) => (new CustomerGroupController())->delete((int) $id));
 
+$router->get('/api-users', fn() => (new ApiUserController())->list());
+$router->post('/api-users/create', fn() => (new ApiUserController())->create());
+$router->post('/api-users/{id}', fn($id) => (new ApiUserController())->update((int) $id));
+$router->post('/api-users/{id}/toggle', fn($id) => (new ApiUserController())->toggle((int) $id));
+$router->post('/api-users/{id}/regenerate', fn($id) => (new ApiUserController())->regenerate((int) $id));
+$router->post('/api-users/{id}/delete', fn($id) => (new ApiUserController())->delete((int) $id));
+
 $router->get('/stock', fn() => (new StockController())->overview());
 $router->get('/stock/in', fn() => (new StockController())->inList());
 $router->post('/stock/in/create', fn() => (new StockController())->inCreate());
@@ -180,5 +210,43 @@ $router->get('/cash', fn() => (new CashVoucherController())->list());
 $router->get('/cash/create', fn() => (new CashVoucherController())->createForm());
 $router->post('/cash/create', fn() => (new CashVoucherController())->create());
 $router->post('/cash/{id}/delete', fn($id) => (new CashVoucherController())->delete((int) $id));
+
+// ---------------------------------------------------------------------------
+// REST API (/api/*) — bearer-token auth, JSON. Read-only catalog, full CRUD on
+// partners and orders. See web/API.md for the full documentation.
+// ---------------------------------------------------------------------------
+$router->get('/api/products', fn() => (new ProductApiController())->index());
+$router->get('/api/products/sku/{sku}', fn($sku) => (new ProductApiController())->showBySku(rawurldecode($sku)));
+$router->get('/api/products/{id}', fn($id) => (new ProductApiController())->show((int) $id));
+
+$router->get('/api/categories', fn() => (new CategoryApiController())->index());
+$router->get('/api/categories/{id}', fn($id) => (new CategoryApiController())->show((int) $id));
+
+$router->get('/api/parameter-names', fn() => (new ParameterNameApiController())->index());
+$router->get('/api/units', fn() => (new UnitApiController())->index());
+
+$router->get('/api/customer-groups', fn() => (new CustomerGroupApiController())->index());
+$router->get('/api/customer-groups/{id}', fn($id) => (new CustomerGroupApiController())->show((int) $id));
+
+$router->get('/api/warehouses', fn() => (new WarehouseApiController())->index());
+$router->get('/api/stock', fn() => (new StockApiController())->index());
+$router->get('/api/pricing/effective', fn() => (new PricingApiController())->effective());
+
+$router->get('/api/invoices', fn() => (new InvoiceApiController())->index());
+$router->get('/api/invoices/{id}', fn($id) => (new InvoiceApiController())->show((int) $id));
+
+$router->get('/api/partners', fn() => (new PartnerApiController())->index());
+$router->get('/api/partners/tax/{tax}', fn($tax) => (new PartnerApiController())->showByTax(rawurldecode($tax)));
+$router->put('/api/partners/tax/{tax}', fn($tax) => (new PartnerApiController())->upsertByTax(rawurldecode($tax)));
+$router->get('/api/partners/{id}', fn($id) => (new PartnerApiController())->show((int) $id));
+$router->post('/api/partners', fn() => (new PartnerApiController())->create());
+$router->put('/api/partners/{id}', fn($id) => (new PartnerApiController())->update((int) $id));
+$router->delete('/api/partners/{id}', fn($id) => (new PartnerApiController())->delete((int) $id));
+
+$router->get('/api/orders', fn() => (new OrderApiController())->index());
+$router->get('/api/orders/{id}', fn($id) => (new OrderApiController())->show((int) $id));
+$router->post('/api/orders', fn() => (new OrderApiController())->create());
+$router->put('/api/orders/{id}', fn($id) => (new OrderApiController())->update((int) $id));
+$router->delete('/api/orders/{id}', fn($id) => (new OrderApiController())->delete((int) $id));
 
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);

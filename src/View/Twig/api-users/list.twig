@@ -1,0 +1,79 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="cx-card">
+                <div class="cx-card__header"><h2>Új API-felhasználó</h2></div>
+                <div class="cx-card__body">
+                    <form method="post" action="{{ base_url }}/api-users/create">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Név / megnevezés</label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="pl. Webshop szinkron" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>Létrehozás</button>
+                    </form>
+                    <div class="form-text mt-2">
+                        A token létrehozáskor generálódik. A kérésekben az
+                        <code>Authorization: Bearer &lt;token&gt;</code> fejléccel kell küldeni.
+                        A dokumentációt lásd az <a href="{{ base_url }}/API.md" target="_blank" rel="noopener">API dokumentáció</a> menüben.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="cx-card">
+                <div class="cx-card__header">
+                    <h2>API-felhasználók</h2>
+                    <span class="text-muted small">{{ api_users|length }} db</span>
+                </div>
+                <div class="cx-card__body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 cx-table">
+                            <thead><tr><th>Név</th><th>Token</th><th>Állapot</th><th class="text-end">Műveletek</th></tr></thead>
+                            <tbody>
+                            {% for u in api_users %}
+                                <tr>
+                                    <td style="max-width:180px;">
+                                        <input type="text" name="name" form="apiu-{{ u.id }}" class="form-control form-control-sm" value="{{ u.name }}">
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm" style="min-width:280px;">
+                                            <input type="text" class="form-control form-control-sm font-monospace" value="{{ u.token }}" readonly onclick="this.select()" style="font-size:.75rem;">
+                                            <button type="button" class="btn btn-outline-secondary" title="Másolás" onclick="navigator.clipboard.writeText('{{ u.token }}')"><i class="bi bi-clipboard"></i></button>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if u.is_active %}
+                                            <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>
+                                        {% else %}
+                                            <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Inaktív</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <button type="submit" form="apiu-{{ u.id }}" class="btn btn-sm btn-outline-primary">Mentés</button>
+                                        <button type="submit" form="apiu-toggle-{{ u.id }}" class="btn btn-sm btn-outline-secondary" title="{{ u.is_active ? 'Inaktiválás' : 'Aktiválás' }}">
+                                            <i class="bi {{ u.is_active ? 'bi-pause' : 'bi-play' }}"></i>
+                                        </button>
+                                        <button type="submit" form="apiu-regen-{{ u.id }}" class="btn btn-sm btn-outline-warning" title="Új token" onclick="return confirm('Új tokent generálsz? A régi azonnal érvénytelen lesz.');"><i class="bi bi-arrow-repeat"></i></button>
+                                        <button type="submit" form="apiu-del-{{ u.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Biztosan törlöd?');"><i class="bi bi-trash"></i></button>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="4" class="text-center text-muted py-4">Még nincs API-felhasználó.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for u in api_users %}
+        <form id="apiu-{{ u.id }}" method="post" action="{{ base_url }}/api-users/{{ u.id }}"></form>
+        <form id="apiu-toggle-{{ u.id }}" method="post" action="{{ base_url }}/api-users/{{ u.id }}/toggle"></form>
+        <form id="apiu-regen-{{ u.id }}" method="post" action="{{ base_url }}/api-users/{{ u.id }}/regenerate"></form>
+        <form id="apiu-del-{{ u.id }}" method="post" action="{{ base_url }}/api-users/{{ u.id }}/delete"></form>
+    {% endfor %}
+{% endblock %}

@@ -28,6 +28,19 @@ class PartnerModel
         return $stmt->fetch() ?: null;
     }
 
+    /** Partner resolved by exact tax number (for the REST API's /partners/tax/{taxNumber}). */
+    public function findByTaxNumber(string $taxNumber): ?array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT p.*, g.name AS customer_group_name
+             FROM partners p
+             LEFT JOIN customer_groups g ON g.id = p.customer_group_id
+             WHERE p.tax_number = :tax LIMIT 1'
+        );
+        $stmt->execute(['tax' => $taxNumber]);
+        return $stmt->fetch() ?: null;
+    }
+
     /**
      * Filters: q (name/tax_number/email), type ('customer'|'supplier'|'both'), status, customer_group_id.
      */
@@ -53,6 +66,10 @@ class PartnerModel
         if (!empty($filters['customer_group_id'])) {
             $where[] = 'p.customer_group_id = :group_id';
             $params['group_id'] = (int) $filters['customer_group_id'];
+        }
+        if (!empty($filters['updated_since'])) {
+            $where[] = 'p.updated_at >= :updated_since';
+            $params['updated_since'] = $filters['updated_since'];
         }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';

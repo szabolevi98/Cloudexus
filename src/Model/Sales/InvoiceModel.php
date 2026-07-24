@@ -47,6 +47,10 @@ class InvoiceModel
             $where[] = 'i.issue_date <= :date_to';
             $params['date_to'] = $filters['date_to'];
         }
+        if (!empty($filters['updated_since'])) {
+            $where[] = 'i.updated_at >= :updated_since';
+            $params['updated_since'] = $filters['updated_since'];
+        }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 

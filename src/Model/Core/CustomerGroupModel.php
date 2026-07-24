@@ -26,6 +26,10 @@ class CustomerGroupModel
             $params['q1'] = '%' . $filters['q'] . '%';
             $params['q2'] = '%' . $filters['q'] . '%';
         }
+        if (!empty($filters['updated_since'])) {
+            $where[] = 'g.updated_at >= :updated_since';
+            $params['updated_since'] = $filters['updated_since'];
+        }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 

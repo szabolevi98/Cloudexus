@@ -27,6 +27,10 @@ class WarehouseModel
             $where[] = 'is_active = :active';
             $params['active'] = $filters['status'] === 'active' ? 1 : 0;
         }
+        if (!empty($filters['updated_since'])) {
+            $where[] = 'updated_at >= :updated_since';
+            $params['updated_since'] = $filters['updated_since'];
+        }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 

@@ -22,6 +22,10 @@ class ParameterNameModel
             $where[] = 'name LIKE :q';
             $params['q'] = '%' . $filters['q'] . '%';
         }
+        if (!empty($filters['updated_since'])) {
+            $where[] = 'updated_at >= :updated_since';
+            $params['updated_since'] = $filters['updated_since'];
+        }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 

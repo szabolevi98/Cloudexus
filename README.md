@@ -158,12 +158,12 @@ Cloudexus/
 - [x] CRM: ügyfélkapcsolat-történet (hívás/e-mail/találkozó napló)
 - [x] Akciós ár és vevőcsoportos árazás (partnerenkénti, csoportonkénti fix ár + akciós ár)
 - [x] Score-alapú Google reCAPTCHA v3 a bejelentkezésen, configból ki-/bekapcsolható
+- [x] REST API (token-alapú auth, olvasható katalógus + teljes CRUD partnerekre/rendelésekre, API-felhasználók admin + dokumentáció)
 
 **Következő lépcsők:**
 
 - [ ] NAV Online Számla adatszolgáltatás
 - [ ] Futárszolgálat-integrációk (GLS, MPL, Foxpost, …)
-- [ ] Csak REST API
 
 ## 📄 Licenc
 

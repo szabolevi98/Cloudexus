@@ -26,13 +26,18 @@ class CategoryModel
      */
     public function paginate(array $filters, \Cloudexus\Core\Paginator $pager): array
     {
-        $where = '';
+        $conds = [];
         $params = [];
 
         if ($filters['q'] !== '') {
-            $where = 'WHERE c.name LIKE :q';
+            $conds[] = 'c.name LIKE :q';
             $params['q'] = '%' . $filters['q'] . '%';
         }
+        if (!empty($filters['updated_since'])) {
+            $conds[] = 'c.updated_at >= :updated_since';
+            $params['updated_since'] = $filters['updated_since'];
+        }
+        $where = $conds ? 'WHERE ' . implode(' AND ', $conds) : '';
 
         $stmt = DatabaseConnection::get()->prepare(
             "SELECT c.*, p.name AS parent_name,

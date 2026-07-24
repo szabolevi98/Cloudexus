@@ -106,6 +106,16 @@ class ProductModel
         return $product;
     }
 
+    /** Full product resolved by SKU (for the REST API's /products/sku/{sku}). */
+    public function findFullBySku(string $sku): ?array
+    {
+        $stmt = DatabaseConnection::get()->prepare('SELECT id FROM products WHERE sku = :sku LIMIT 1');
+        $stmt->execute(['sku' => $sku]);
+        $id = $stmt->fetchColumn();
+
+        return $id ? $this->findFull((int) $id) : null;
+    }
+
     /** All group prices for a product, keyed by customer_group_id. */
     public function groupPrices(int $productId): array
     {
@@ -256,6 +266,10 @@ class ProductModel
         if ($filters['status'] !== '') {
             $where[] = 'p.is_active = :is_active';
             $params['is_active'] = $filters['status'] === 'active' ? 1 : 0;
+        }
+        if (!empty($filters['updated_since'])) {
+            $where[] = 'p.updated_at >= :updated_since';
+            $params['updated_since'] = $filters['updated_since'];
         }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';

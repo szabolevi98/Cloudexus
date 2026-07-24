@@ -1,5 +1,10 @@
 RewriteEngine On
 
+# Pass the Authorization header through to PHP (some setups strip it),
+# so the REST API can read the bearer token from $_SERVER['HTTP_AUTHORIZATION'].
+RewriteCond %{HTTP:Authorization} .
+RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]

@@ -109,6 +109,10 @@ class OrderModel
             $where[] = 'o.order_date <= :date_to';
             $params['date_to'] = $filters['date_to'];
         }
+        if (!empty($filters['updated_since'])) {
+            $where[] = 'o.updated_at >= :updated_since';
+            $params['updated_since'] = $filters['updated_since'];
+        }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
@@ -197,6 +201,54 @@ class OrderModel
             $pdo->commit();
 
             return $orderId;
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Full update of an order's fields, and if $items is not null, replaces all
+     * line items and recomputes total_amount (items + shipping + payment cost).
+     *
+     * @param array|null $items Same shape as create(); null leaves items untouched.
+     */
+    public function update(int $id, array $data, ?array $items = null): void
+    {
+        $pdo = DatabaseConnection::get();
+        $pdo->beginTransaction();
+
+        try {
+            $shippingCost = (float) ($data['shipping_cost'] ?? 0);
+            $paymentCost = (float) ($data['payment_cost'] ?? 0);
+
+            if ($items !== null) {
+                $pdo->prepare('DELETE FROM order_items WHERE order_id = :id')->execute(['id' => $id]);
+                $this->insertItems($id, $items);
+                $itemsTotal = array_sum(array_map(fn($i) => $i['quantity'] * $i['unit_price'], $items));
+            } else {
+                $itemsTotal = (float) $pdo->query("SELECT COALESCE(SUM(line_total), 0) FROM order_items WHERE order_id = " . (int) $id)->fetchColumn();
+            }
+
+            $stmt = $pdo->prepare(
+                'UPDATE orders SET partner_id = :partner_id, shipping_address_id = :shipping_address_id,
+                    billing_address_id = :billing_address_id, status = :status, order_date = :order_date,
+                    total_amount = :total_amount, shipping_cost = :shipping_cost, payment_cost = :payment_cost
+                 WHERE id = :id'
+            );
+            $stmt->execute([
+                'id' => $id,
+                'partner_id' => $data['partner_id'],
+                'shipping_address_id' => $data['shipping_address_id'] ?: null,
+                'billing_address_id' => $data['billing_address_id'] ?: null,
+                'status' => $data['status'],
+                'order_date' => $data['order_date'],
+                'total_amount' => $itemsTotal + $shippingCost + $paymentCost,
+                'shipping_cost' => $shippingCost,
+                'payment_cost' => $paymentCost,
+            ]);
+
+            $pdo->commit();
         } catch (\Throwable $e) {
             $pdo->rollBack();
             throw $e;
