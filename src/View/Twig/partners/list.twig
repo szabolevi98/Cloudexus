@@ -3,13 +3,13 @@
 {% block content %}
     <div class="cx-card">
         <div class="cx-card__header">
-            <h2>Partnerek</h2>
+            <h2>{{ t('partners.list_title') }}</h2>
             <div class="d-flex gap-2">
                 <a href="{{ base_url }}/partners/export?{{ filters|url_encode }}" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-download me-1"></i>CSV export
+                    <i class="bi bi-download me-1"></i>{{ t('common.csv_export') }}
                 </a>
                 <a href="{{ base_url }}/partners/create" class="btn btn-primary btn-sm">
-                    <i class="bi bi-plus-lg me-1"></i>Új partner
+                    <i class="bi bi-plus-lg me-1"></i>{{ t('partners.new') }}
                 </a>
             </div>
         </div>
@@ -17,38 +17,38 @@
             <form method="get" class="p-3 border-bottom">
                 <div class="row g-2 align-items-end">
                     <div class="col-sm-4 col-lg-3">
-                        <label class="form-label small text-muted mb-1">Keresés</label>
-                        <input type="text" name="q" class="form-control form-control-sm" placeholder="Név, adószám vagy e-mail…" value="{{ filters.q }}">
+                        <label class="form-label small text-muted mb-1">{{ t('common.search') }}</label>
+                        <input type="text" name="q" class="form-control form-control-sm" placeholder="{{ t('partners.search_placeholder') }}" value="{{ filters.q }}">
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Típus</label>
+                        <label class="form-label small text-muted mb-1">{{ t('partners.type') }}</label>
                         <select name="type" class="form-select form-select-sm">
-                            <option value="">Mind</option>
-                            <option value="customer" {{ filters.type == 'customer' ? 'selected' : '' }}>Vevő</option>
-                            <option value="supplier" {{ filters.type == 'supplier' ? 'selected' : '' }}>Szállító</option>
-                            <option value="both" {{ filters.type == 'both' ? 'selected' : '' }}>Vevő + Szállító</option>
+                            <option value="">{{ t('common.all') }}</option>
+                            <option value="customer" {{ filters.type == 'customer' ? 'selected' : '' }}>{{ t('partners.type_customer') }}</option>
+                            <option value="supplier" {{ filters.type == 'supplier' ? 'selected' : '' }}>{{ t('partners.type_supplier') }}</option>
+                            <option value="both" {{ filters.type == 'both' ? 'selected' : '' }}>{{ t('partners.type_both') }}</option>
                         </select>
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Állapot</label>
+                        <label class="form-label small text-muted mb-1">{{ t('common.status') }}</label>
                         <select name="status" class="form-select form-select-sm">
-                            <option value="">Mind</option>
-                            <option value="active" {{ filters.status == 'active' ? 'selected' : '' }}>Aktív</option>
-                            <option value="inactive" {{ filters.status == 'inactive' ? 'selected' : '' }}>Inaktív</option>
+                            <option value="">{{ t('common.all') }}</option>
+                            <option value="active" {{ filters.status == 'active' ? 'selected' : '' }}>{{ t('common.active') }}</option>
+                            <option value="inactive" {{ filters.status == 'inactive' ? 'selected' : '' }}>{{ t('common.inactive') }}</option>
                         </select>
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Vevőcsoport</label>
+                        <label class="form-label small text-muted mb-1">{{ t('partners.customer_group') }}</label>
                         <select name="customer_group_id" class="form-select form-select-sm">
-                            <option value="">Mind</option>
+                            <option value="">{{ t('common.all') }}</option>
                             {% for g in customer_groups %}
                                 <option value="{{ g.id }}" {{ filters.customer_group_id == g.id ? 'selected' : '' }}>{{ g.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-auto">
-                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
-                        <a href="{{ base_url }}/partners" class="btn btn-sm btn-outline-secondary">Törlés</a>
+                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>{{ t('common.filter') }}</button>
+                        <a href="{{ base_url }}/partners" class="btn btn-sm btn-outline-secondary">{{ t('common.clear') }}</a>
                     </div>
                 </div>
             </form>
@@ -56,14 +56,14 @@
                 <table class="table table-hover align-middle mb-0 cx-table">
                     <thead>
                     <tr>
-                        <th>Név</th>
-                        <th>Típus</th>
-                        <th>Adószám</th>
-                        <th>E-mail</th>
-                        <th>Telefon</th>
-                        <th>Vevőcsoport</th>
-                        <th>Állapot</th>
-                        <th class="text-end">Műveletek</th>
+                        <th>{{ t('common.name') }}</th>
+                        <th>{{ t('partners.type') }}</th>
+                        <th>{{ t('partners.tax_number') }}</th>
+                        <th>{{ t('partners.email') }}</th>
+                        <th>{{ t('partners.phone') }}</th>
+                        <th>{{ t('partners.customer_group') }}</th>
+                        <th>{{ t('common.status') }}</th>
+                        <th class="text-end">{{ t('common.actions') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -72,11 +72,11 @@
                             <td class="fw-medium"><a href="{{ base_url }}/partners/{{ partner.id }}" class="text-decoration-none">{{ partner.name }}</a></td>
                             <td>
                                 {% if partner.type == 'customer' %}
-                                    <span class="badge rounded-pill text-bg-primary">Vevő</span>
+                                    <span class="badge rounded-pill text-bg-primary">{{ t('partners.type_customer') }}</span>
                                 {% elseif partner.type == 'supplier' %}
-                                    <span class="badge rounded-pill text-bg-secondary">Szállító</span>
+                                    <span class="badge rounded-pill text-bg-secondary">{{ t('partners.type_supplier') }}</span>
                                 {% else %}
-                                    <span class="badge rounded-pill text-bg-info">Vevő + Szállító</span>
+                                    <span class="badge rounded-pill text-bg-info">{{ t('partners.type_both') }}</span>
                                 {% endif %}
                             </td>
                             <td class="text-muted">{{ partner.tax_number ?: '—' }}</td>
@@ -85,16 +85,16 @@
                             <td class="text-muted">{{ partner.customer_group_name ?: '—' }}</td>
                             <td>
                                 {% if partner.is_active %}
-                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('common.active') }}</span>
                                 {% else %}
-                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Inaktív</span>
+                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.inactive') }}</span>
                                 {% endif %}
                             </td>
                             <td class="text-end">
                                 <a href="{{ base_url }}/partners/{{ partner.id }}/edit" class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form method="post" action="{{ base_url }}/partners/{{ partner.id }}/delete" class="d-inline" onsubmit="return confirm('Biztosan törlöd?');">
+                                <form method="post" action="{{ base_url }}/partners/{{ partner.id }}/delete" class="d-inline" onsubmit="return confirm('{{ t('common.confirm_delete')|e('js') }}');">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">
                                         <i class="bi bi-trash"></i>
                                     </button>
@@ -102,7 +102,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="8" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő partner.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-4">{{ t('partners.none_found') }}</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

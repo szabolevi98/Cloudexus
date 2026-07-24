@@ -3,42 +3,42 @@
 {% block content %}
     <div class="cx-card" style="max-width: 560px;">
         <div class="cx-card__header">
-            <h2>{{ partner ? 'Partner szerkesztése' : 'Új partner' }}</h2>
+            <h2>{{ partner ? t('partners.edit_title') : t('partners.new') }}</h2>
         </div>
         <div class="cx-card__body">
             <form method="post" action="{{ base_url }}/partners{{ partner ? '/' ~ partner.id : '/create' }}">
                 <div class="mb-3">
-                    <label for="name" class="form-label">Név</label>
+                    <label for="name" class="form-label">{{ t('common.name') }}</label>
                     <input type="text" id="name" name="name" class="form-control" value="{{ partner.name|default('') }}" required>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="type" class="form-label">Típus</label>
+                        <label for="type" class="form-label">{{ t('partners.type') }}</label>
                         <select id="type" name="type" class="form-select">
-                            <option value="customer" {{ partner.type == 'customer' ? 'selected' : '' }}>Vevő</option>
-                            <option value="supplier" {{ partner.type == 'supplier' ? 'selected' : '' }}>Szállító</option>
-                            <option value="both" {{ partner.type == 'both' ? 'selected' : '' }}>Vevő + Szállító</option>
+                            <option value="customer" {{ partner.type == 'customer' ? 'selected' : '' }}>{{ t('partners.type_customer') }}</option>
+                            <option value="supplier" {{ partner.type == 'supplier' ? 'selected' : '' }}>{{ t('partners.type_supplier') }}</option>
+                            <option value="both" {{ partner.type == 'both' ? 'selected' : '' }}>{{ t('partners.type_both') }}</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="tax_number" class="form-label">Adószám</label>
+                        <label for="tax_number" class="form-label">{{ t('partners.tax_number') }}</label>
                         <input type="text" id="tax_number" name="tax_number" class="form-control" value="{{ partner.tax_number|default('') }}">
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="email" class="form-label">E-mail</label>
+                        <label for="email" class="form-label">{{ t('partners.email') }}</label>
                         <input type="email" id="email" name="email" class="form-control" value="{{ partner.email|default('') }}">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="phone" class="form-label">Telefon</label>
+                        <label for="phone" class="form-label">{{ t('partners.phone') }}</label>
                         <input type="text" id="phone" name="phone" class="form-control" value="{{ partner.phone|default('') }}">
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label for="customer_group_id" class="form-label">Vevőcsoport</label>
+                    <label for="customer_group_id" class="form-label">{{ t('partners.customer_group') }}</label>
                     <select id="customer_group_id" name="customer_group_id" class="form-select cx-select2">
-                        <option value="">Nincs</option>
+                        <option value="">{{ t('partners.customer_group_none') }}</option>
                         {% for g in customer_groups %}
                             <option value="{{ g.id }}" {{ partner.customer_group_id == g.id ? 'selected' : '' }}>{{ g.name }}</option>
                         {% endfor %}
@@ -46,15 +46,15 @@
                 </div>
                 {% if not partner %}
                     <div class="alert alert-info small mb-3">
-                        <i class="bi bi-info-circle me-1"></i>A partner címeit a mentés után, a partner adatlapján tudod hozzáadni (több cím is felvehető, pl. külön szállítási és számlázási cím).
+                        <i class="bi bi-info-circle me-1"></i>{{ t('partners.addresses_after_save') }}
                     </div>
                 {% endif %}
                 <div class="form-check mb-4">
                     <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {{ (partner is null or partner.is_active) ? 'checked' : '' }}>
-                    <label for="is_active" class="form-check-label">Aktív</label>
+                    <label for="is_active" class="form-check-label">{{ t('common.active') }}</label>
                 </div>
-                <button type="submit" class="btn btn-primary">Mentés</button>
-                <a href="{{ base_url }}/partners" class="btn btn-outline-secondary">Mégse</a>
+                <button type="submit" class="btn btn-primary">{{ t('common.save') }}</button>
+                <a href="{{ base_url }}/partners" class="btn btn-outline-secondary">{{ t('common.cancel') }}</a>
             </form>
         </div>
     </div>

@@ -55,7 +55,7 @@ class PartnerController extends BaseController
         $street = trim($_POST['street'] ?? '');
 
         if ($city === '' || $postalCode === '' || $street === '') {
-            $this->flashError('A város, az irányítószám és az utca-házszám megadása kötelező.');
+            $this->flashError($this->t('partners.address_fields_required'));
             $this->redirect('/partners/' . $id);
         }
 
@@ -68,7 +68,7 @@ class PartnerController extends BaseController
             'note' => trim($_POST['note'] ?? ''),
         ]);
 
-        $this->flashSuccess('Cím hozzáadva.');
+        $this->flashSuccess($this->t('partners.address_added'));
         $this->redirect('/partners/' . $id);
     }
 
@@ -86,7 +86,7 @@ class PartnerController extends BaseController
         $street = trim($_POST['street'] ?? '');
 
         if ($city === '' || $postalCode === '' || $street === '') {
-            $this->flashError('A város, az irányítószám és az utca-házszám megadása kötelező.');
+            $this->flashError($this->t('partners.address_fields_required'));
             $this->redirect('/partners/' . $id);
         }
 
@@ -98,7 +98,7 @@ class PartnerController extends BaseController
             'note' => trim($_POST['note'] ?? ''),
         ]);
 
-        $this->flashSuccess('Cím frissítve.');
+        $this->flashSuccess($this->t('partners.address_updated'));
         $this->redirect('/partners/' . $id);
     }
 
@@ -109,7 +109,7 @@ class PartnerController extends BaseController
         $address = $this->addresses->findById($addressId);
         if ($address && (int) $address['partner_id'] === $id) {
             $this->addresses->delete($addressId);
-            $this->flashSuccess('Cím törölve.');
+            $this->flashSuccess($this->t('partners.address_deleted'));
         }
 
         $this->redirect('/partners/' . $id);
@@ -125,7 +125,7 @@ class PartnerController extends BaseController
 
         $subject = trim($_POST['subject'] ?? '');
         if ($subject === '') {
-            $this->flashError('A tárgy megadása kötelező.');
+            $this->flashError($this->t('partners.activity_subject_required'));
             $this->redirect('/partners/' . $id);
         }
 
@@ -138,7 +138,7 @@ class PartnerController extends BaseController
             'created_by' => Auth::id(),
         ]);
 
-        $this->flashSuccess('Bejegyzés hozzáadva.');
+        $this->flashSuccess($this->t('partners.activity_added'));
         $this->redirect('/partners/' . $id);
     }
 
@@ -149,7 +149,7 @@ class PartnerController extends BaseController
         $activity = $this->activities->findById($activityId);
         if ($activity && (int) $activity['partner_id'] === $id) {
             $this->activities->delete($activityId);
-            $this->flashSuccess('Bejegyzés törölve.');
+            $this->flashSuccess($this->t('partners.activity_deleted'));
         }
 
         $this->redirect('/partners/' . $id);
@@ -167,7 +167,7 @@ class PartnerController extends BaseController
         ];
         $pager = new \Cloudexus\Core\Paginator(25);
 
-        $this->pageTitle = 'Partnerek';
+        $this->pageTitle = $this->t('partners.list_title');
         $this->render('partners/list.twig', [
             'partners' => $this->partners->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -188,14 +188,23 @@ class PartnerController extends BaseController
         $pager = new \Cloudexus\Core\Paginator(1000000);
         $rows = $this->partners->paginate($filters, $pager);
 
-        $typeLabels = ['customer' => 'vevő', 'supplier' => 'szállító', 'both' => 'vevő+szállító'];
+        $typeLabels = [
+            'customer' => $this->t('partners.csv_type.customer'),
+            'supplier' => $this->t('partners.csv_type.supplier'),
+            'both' => $this->t('partners.csv_type.both'),
+        ];
 
         \Cloudexus\Core\CsvExporter::download(
             'partnerek',
-            ['Név', 'Típus', 'Adószám', 'E-mail', 'Telefon', 'Cím', 'Aktív'],
+            [
+                $this->t('partners.csv.name'), $this->t('partners.csv.type'), $this->t('partners.csv.tax_number'),
+                $this->t('partners.csv.email'), $this->t('partners.csv.phone'), $this->t('partners.csv.address'),
+                $this->t('partners.csv.active'),
+            ],
             array_map(fn($p) => [
                 $p['name'], $typeLabels[$p['type']] ?? $p['type'], $p['tax_number'] ?? '',
-                $p['email'] ?? '', $p['phone'] ?? '', $p['address'] ?? '', $p['is_active'] ? 'igen' : 'nem',
+                $p['email'] ?? '', $p['phone'] ?? '', $p['address'] ?? '',
+                $p['is_active'] ? $this->t('common.yes') : $this->t('common.no'),
             ], $rows)
         );
     }
@@ -204,7 +213,7 @@ class PartnerController extends BaseController
     {
         $this->requireAuth();
 
-        $this->pageTitle = 'Új partner';
+        $this->pageTitle = $this->t('partners.new');
         $this->render('partners/form.twig', ['partner' => null, 'customer_groups' => $this->customerGroups->all()]);
     }
 
@@ -215,12 +224,12 @@ class PartnerController extends BaseController
         $data = $this->collectInput();
 
         if ($data['name'] === '') {
-            $this->flashError('A partner nevének megadása kötelező.');
+            $this->flashError($this->t('partners.name_required'));
             $this->redirect('/partners/create');
         }
 
         $this->partners->create($data);
-        $this->flashSuccess('Partner létrehozva.');
+        $this->flashSuccess($this->t('partners.created'));
         $this->redirect('/partners');
     }
 
@@ -233,7 +242,7 @@ class PartnerController extends BaseController
             $this->redirect('/partners');
         }
 
-        $this->pageTitle = 'Partner szerkesztése';
+        $this->pageTitle = $this->t('partners.edit_title');
         $this->render('partners/form.twig', ['partner' => $partner, 'customer_groups' => $this->customerGroups->all()]);
     }
 
@@ -244,12 +253,12 @@ class PartnerController extends BaseController
         $data = $this->collectInput();
 
         if ($data['name'] === '') {
-            $this->flashError('A partner nevének megadása kötelező.');
+            $this->flashError($this->t('partners.name_required'));
             $this->redirect('/partners/' . $id . '/edit');
         }
 
         $this->partners->update($id, $data);
-        $this->flashSuccess('Partner frissítve.');
+        $this->flashSuccess($this->t('partners.updated'));
         $this->redirect('/partners');
     }
 
@@ -258,7 +267,7 @@ class PartnerController extends BaseController
         $this->requireAuth();
 
         $this->partners->delete($id);
-        $this->flashSuccess('Partner törölve.');
+        $this->flashSuccess($this->t('partners.deleted'));
         $this->redirect('/partners');
     }
 

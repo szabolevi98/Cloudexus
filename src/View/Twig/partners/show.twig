@@ -1,7 +1,7 @@
 {% extends 'common/layout.twig' %}
 
 {% block content %}
-    {% set typeLabels = {'call': 'Hívás', 'email': 'E-mail', 'meeting': 'Találkozó', 'note': 'Jegyzet', 'offer': 'Ajánlat'} %}
+    {% set typeLabels = {'call': t('partners.activity_types.call'), 'email': t('partners.activity_types.email'), 'meeting': t('partners.activity_types.meeting'), 'note': t('partners.activity_types.note'), 'offer': t('partners.activity_types.offer')} %}
     {% set typeIcons = {'call': 'bi-telephone', 'email': 'bi-envelope', 'meeting': 'bi-people', 'note': 'bi-sticky', 'offer': 'bi-file-earmark-text'} %}
 
     <div class="row g-3">
@@ -14,97 +14,97 @@
                 <div class="cx-card__body">
                     <div class="mb-2">
                         {% if partner.type == 'customer' %}
-                            <span class="badge rounded-pill text-bg-primary">Vevő</span>
+                            <span class="badge rounded-pill text-bg-primary">{{ t('partners.type_customer') }}</span>
                         {% elseif partner.type == 'supplier' %}
-                            <span class="badge rounded-pill text-bg-secondary">Szállító</span>
+                            <span class="badge rounded-pill text-bg-secondary">{{ t('partners.type_supplier') }}</span>
                         {% else %}
-                            <span class="badge rounded-pill text-bg-info">Vevő + Szállító</span>
+                            <span class="badge rounded-pill text-bg-info">{{ t('partners.type_both') }}</span>
                         {% endif %}
                         {% if partner.is_active %}
-                            <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>
+                            <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('common.active') }}</span>
                         {% else %}
-                            <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Inaktív</span>
+                            <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.inactive') }}</span>
                         {% endif %}
                     </div>
                     <dl class="row mb-0 small">
-                        <dt class="col-4 text-muted fw-normal">Adószám</dt><dd class="col-8">{{ partner.tax_number ?: '—' }}</dd>
-                        <dt class="col-4 text-muted fw-normal">E-mail</dt><dd class="col-8">{{ partner.email ?: '—' }}</dd>
-                        <dt class="col-4 text-muted fw-normal">Telefon</dt><dd class="col-8">{{ partner.phone ?: '—' }}</dd>
+                        <dt class="col-4 text-muted fw-normal">{{ t('partners.tax_number') }}</dt><dd class="col-8">{{ partner.tax_number ?: '—' }}</dd>
+                        <dt class="col-4 text-muted fw-normal">{{ t('partners.email') }}</dt><dd class="col-8">{{ partner.email ?: '—' }}</dd>
+                        <dt class="col-4 text-muted fw-normal">{{ t('partners.phone') }}</dt><dd class="col-8">{{ partner.phone ?: '—' }}</dd>
                     </dl>
                     {% if partner.address and addresses is empty %}
-                        <div class="text-muted small mt-2"><i class="bi bi-clock-history me-1"></i>Korábbi (nem szerkezetes) cím: {{ partner.address }}</div>
+                        <div class="text-muted small mt-2"><i class="bi bi-clock-history me-1"></i>{{ t('partners.legacy_address_prefix') }}: {{ partner.address }}</div>
                     {% endif %}
                 </div>
             </div>
 
             <div class="cx-card mb-3">
                 <div class="cx-card__header">
-                    <h2>Címek</h2>
-                    <span class="text-muted small">{{ addresses|length }} db</span>
+                    <h2>{{ t('partners.addresses') }}</h2>
+                    <span class="text-muted small">{{ addresses|length }} {{ t('common.pcs') }}</span>
                 </div>
                 <div class="cx-card__body">
                     {% for a in addresses %}
                         <div class="pb-2 mb-2 {{ not loop.last ? 'border-bottom' : '' }}">
                             <div class="row g-2">
                                 <div class="col-4">
-                                    <input type="text" name="country" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.country }}" placeholder="Ország">
+                                    <input type="text" name="country" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.country }}" placeholder="{{ t('partners.country') }}">
                                 </div>
                                 <div class="col-3">
-                                    <input type="text" name="postal_code" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.postal_code }}" placeholder="Irányítószám">
+                                    <input type="text" name="postal_code" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.postal_code }}" placeholder="{{ t('partners.postal_code') }}">
                                 </div>
                                 <div class="col-5">
-                                    <input type="text" name="city" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.city }}" placeholder="Város">
+                                    <input type="text" name="city" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.city }}" placeholder="{{ t('partners.city') }}">
                                 </div>
                                 <div class="col-8">
-                                    <input type="text" name="street" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.street }}" placeholder="Utca, házszám">
+                                    <input type="text" name="street" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.street }}" placeholder="{{ t('partners.street') }}">
                                 </div>
                                 <div class="col-4">
-                                    <input type="text" name="note" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.note }}" placeholder="Megjegyzés">
+                                    <input type="text" name="note" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.note }}" placeholder="{{ t('common.note') }}">
                                 </div>
                             </div>
                             <div class="mt-2 text-end">
-                                <button type="submit" form="addr-{{ a.id }}" class="btn btn-sm btn-outline-primary">Mentés</button>
-                                <button type="submit" form="addr-del-{{ a.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Törlöd a címet?');"><i class="bi bi-trash"></i></button>
+                                <button type="submit" form="addr-{{ a.id }}" class="btn btn-sm btn-outline-primary">{{ t('common.save') }}</button>
+                                <button type="submit" form="addr-del-{{ a.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ t('partners.confirm_delete_address')|e('js') }}');"><i class="bi bi-trash"></i></button>
                             </div>
                         </div>
                     {% else %}
-                        <div class="text-muted small">Még nincs cím felvéve.</div>
+                        <div class="text-muted small">{{ t('partners.no_addresses') }}</div>
                     {% endfor %}
                     <form method="post" action="{{ base_url }}/partners/{{ partner.id }}/addresses" class="mt-3 pt-3 border-top">
                         <div class="row">
                             <div class="col-6 mb-2">
-                                <label class="form-label small text-muted mb-1">Ország</label>
+                                <label class="form-label small text-muted mb-1">{{ t('partners.country') }}</label>
                                 <input type="text" name="country" class="form-control form-control-sm" value="Magyarország">
                             </div>
                             <div class="col-6 mb-2">
-                                <label class="form-label small text-muted mb-1">Irányítószám</label>
+                                <label class="form-label small text-muted mb-1">{{ t('partners.postal_code') }}</label>
                                 <input type="text" name="postal_code" class="form-control form-control-sm" required>
                             </div>
                         </div>
                         <div class="mb-2">
-                            <label class="form-label small text-muted mb-1">Város</label>
+                            <label class="form-label small text-muted mb-1">{{ t('partners.city') }}</label>
                             <input type="text" name="city" class="form-control form-control-sm" required>
                         </div>
                         <div class="mb-2">
-                            <label class="form-label small text-muted mb-1">Utca, házszám</label>
+                            <label class="form-label small text-muted mb-1">{{ t('partners.street') }}</label>
                             <input type="text" name="street" class="form-control form-control-sm" required>
                         </div>
                         <div class="mb-2">
-                            <label class="form-label small text-muted mb-1">Megjegyzés <span class="text-muted">(opcionális, pl. emelet/ajtó)</span></label>
+                            <label class="form-label small text-muted mb-1">{{ t('common.note') }} <span class="text-muted">{{ t('partners.address_note_hint') }}</span></label>
                             <input type="text" name="note" class="form-control form-control-sm">
                         </div>
-                        <button type="submit" class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-plus-lg me-1"></i>Cím hozzáadása</button>
+                        <button type="submit" class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-plus-lg me-1"></i>{{ t('partners.add_address') }}</button>
                     </form>
                 </div>
             </div>
 
             <div class="cx-card mb-3">
-                <div class="cx-card__header"><h2>Új bejegyzés</h2></div>
+                <div class="cx-card__header"><h2>{{ t('partners.new_entry') }}</h2></div>
                 <div class="cx-card__body">
                     <form method="post" action="{{ base_url }}/partners/{{ partner.id }}/activities">
                         <div class="row">
                             <div class="col-6 mb-3">
-                                <label for="type" class="form-label">Típus</label>
+                                <label for="type" class="form-label">{{ t('partners.type') }}</label>
                                 <select id="type" name="type" class="form-select">
                                     {% for key, label in typeLabels %}
                                         <option value="{{ key }}">{{ label }}</option>
@@ -112,19 +112,19 @@
                                 </select>
                             </div>
                             <div class="col-6 mb-3">
-                                <label for="activity_date" class="form-label">Időpont</label>
+                                <label for="activity_date" class="form-label">{{ t('partners.activity_datetime') }}</label>
                                 <input type="datetime-local" id="activity_date" name="activity_date" class="form-control" value="{{ "now"|date("Y-m-d\\TH:i") }}">
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="subject" class="form-label">Tárgy</label>
+                            <label for="subject" class="form-label">{{ t('partners.activity_subject') }}</label>
                             <input type="text" id="subject" name="subject" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label for="note" class="form-label">Megjegyzés</label>
+                            <label for="note" class="form-label">{{ t('common.note') }}</label>
                             <textarea id="note" name="note" class="form-control" rows="3"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>Hozzáadás</button>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>{{ t('common.add') }}</button>
                     </form>
                 </div>
             </div>
@@ -133,8 +133,8 @@
         <div class="col-lg-8">
             <div class="cx-card mb-3">
                 <div class="cx-card__header">
-                    <h2>Kapcsolattörténet</h2>
-                    <span class="text-muted small">{{ activities|length }} bejegyzés</span>
+                    <h2>{{ t('partners.history_title') }}</h2>
+                    <span class="text-muted small">{{ activities|length }} {{ t('partners.entries_suffix') }}</span>
                 </div>
                 <div class="cx-card__body">
                     {% for a in activities %}
@@ -148,19 +148,19 @@
                                     </div>
                                     <div class="text-nowrap">
                                         <span class="text-muted small me-2">{{ a.activity_date }}</span>
-                                        <form method="post" action="{{ base_url }}/partners/{{ partner.id }}/activities/{{ a.id }}/delete" class="d-inline" onsubmit="return confirm('Törlöd a bejegyzést?');">
+                                        <form method="post" action="{{ base_url }}/partners/{{ partner.id }}/activities/{{ a.id }}/delete" class="d-inline" onsubmit="return confirm('{{ t('partners.confirm_delete_activity')|e('js') }}');">
                                             <button type="submit" class="btn btn-sm btn-link text-danger p-0"><i class="bi bi-trash"></i></button>
                                         </form>
                                     </div>
                                 </div>
                                 {% if a.note %}<div class="text-muted small mt-1">{{ a.note|nl2br }}</div>{% endif %}
-                                {% if a.created_by_name %}<div class="text-muted mt-1" style="font-size:.75rem;">Rögzítette: {{ a.created_by_name }}</div>{% endif %}
+                                {% if a.created_by_name %}<div class="text-muted mt-1" style="font-size:.75rem;">{{ t('partners.recorded_by') }}: {{ a.created_by_name }}</div>{% endif %}
                             </div>
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-5">
                             <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
-                            Még nincs kapcsolattörténet ehhez a partnerhez.
+                            {{ t('partners.no_history') }}
                         </div>
                     {% endfor %}
                 </div>
