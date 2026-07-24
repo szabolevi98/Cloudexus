@@ -161,10 +161,9 @@ Cloudexus/
 
 **Következő lépcsők:**
 
-- [ ] Szállítólevelek és fuvarszervezés
 - [ ] NAV Online Számla adatszolgáltatás
 - [ ] Futárszolgálat-integrációk (GLS, MPL, Foxpost, …)
-- [ ] Webshop-integrációk + REST API
+- [ ] Csak REST API
 
 ## 📄 Licenc
 
