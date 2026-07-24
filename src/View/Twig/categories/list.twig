@@ -3,21 +3,21 @@
 {% block content %}
     <div class="cx-card">
         <div class="cx-card__header">
-            <h2>Termékkategóriák</h2>
+            <h2>{{ t('categories.list_title') }}</h2>
             <a href="{{ base_url }}/categories/create" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg me-1"></i>Új kategória
+                <i class="bi bi-plus-lg me-1"></i>{{ t('categories.new') }}
             </a>
         </div>
         <div class="cx-card__body p-0">
             <form method="get" class="p-3 border-bottom">
                 <div class="row g-2 align-items-end">
                     <div class="col-sm-4 col-lg-3">
-                        <label class="form-label small text-muted mb-1">Keresés</label>
-                        <input type="text" name="q" class="form-control form-control-sm" placeholder="Kategória neve…" value="{{ filters.q }}">
+                        <label class="form-label small text-muted mb-1">{{ t('common.search') }}</label>
+                        <input type="text" name="q" class="form-control form-control-sm" placeholder="{{ t('categories.search_placeholder') }}" value="{{ filters.q }}">
                     </div>
                     <div class="col-auto">
-                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
-                        <a href="{{ base_url }}/categories" class="btn btn-sm btn-outline-secondary">Törlés</a>
+                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>{{ t('common.filter') }}</button>
+                        <a href="{{ base_url }}/categories" class="btn btn-sm btn-outline-secondary">{{ t('common.clear') }}</a>
                     </div>
                 </div>
             </form>
@@ -25,9 +25,9 @@
                 <table class="table table-hover align-middle mb-0 cx-table">
                     <thead>
                     <tr>
-                        <th>Kategória (útvonal)</th>
-                        <th class="text-end">Termékek</th>
-                        <th class="text-end">Műveletek</th>
+                        <th>{{ t('categories.col_path') }}</th>
+                        <th class="text-end">{{ t('categories.col_products') }}</th>
+                        <th class="text-end">{{ t('common.actions') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -42,14 +42,14 @@
                             </td>
                             <td class="text-end">
                                 <a href="{{ base_url }}/products?category_id={{ category.id }}" class="badge rounded-pill text-bg-primary text-decoration-none">
-                                    {{ category.product_count }} db
+                                    {{ category.product_count }} {{ t('common.pcs') }}
                                 </a>
                             </td>
                             <td class="text-end">
                                 <a href="{{ base_url }}/categories/{{ category.id }}/edit" class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form method="post" action="{{ base_url }}/categories/{{ category.id }}/delete" class="d-inline" onsubmit="return confirm('Biztosan törlöd?');">
+                                <form method="post" action="{{ base_url }}/categories/{{ category.id }}/delete" class="d-inline" onsubmit="return confirm('{{ t('common.confirm_delete')|e('js') }}');">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">
                                         <i class="bi bi-trash"></i>
                                     </button>
@@ -57,7 +57,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="3" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő kategória.</td></tr>
+                        <tr><td colspan="3" class="text-center text-muted py-4">{{ t('categories.none_found') }}</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

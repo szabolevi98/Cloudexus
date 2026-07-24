@@ -3,18 +3,18 @@
 {% block content %}
     <div class="cx-card" style="max-width: 480px;">
         <div class="cx-card__header">
-            <h2>{{ category ? 'Kategória szerkesztése' : 'Új kategória' }}</h2>
+            <h2>{{ category ? t('categories.edit_title') : t('categories.new') }}</h2>
         </div>
         <div class="cx-card__body">
             <form method="post" action="{{ base_url }}/categories{{ category ? '/' ~ category.id : '/create' }}">
                 <div class="mb-3">
-                    <label for="name" class="form-label">Név</label>
+                    <label for="name" class="form-label">{{ t('common.name') }}</label>
                     <input type="text" id="name" name="name" class="form-control" value="{{ category.name|default('') }}" required>
                 </div>
                 <div class="mb-4">
-                    <label for="parent_id" class="form-label">Szülő kategória</label>
+                    <label for="parent_id" class="form-label">{{ t('categories.parent') }}</label>
                     <select id="parent_id" name="parent_id" class="form-select">
-                        <option value="">— nincs —</option>
+                        <option value="">{{ t('categories.parent_none') }}</option>
                         {% for c in categories %}
                             {% if not category or c.id != category.id %}
                                 <option value="{{ c.id }}" {{ category and category.parent_id == c.id ? 'selected' : '' }}>{{ paths[c.id] }}</option>
@@ -22,8 +22,8 @@
                         {% endfor %}
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Mentés</button>
-                <a href="{{ base_url }}/categories" class="btn btn-outline-secondary">Mégse</a>
+                <button type="submit" class="btn btn-primary">{{ t('common.save') }}</button>
+                <a href="{{ base_url }}/categories" class="btn btn-outline-secondary">{{ t('common.cancel') }}</a>
             </form>
         </div>
     </div>

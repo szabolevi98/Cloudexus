@@ -22,7 +22,7 @@ class CategoryController extends BaseController
         $filters = ['q' => trim($_GET['q'] ?? '')];
         $pager = new \Cloudexus\Core\Paginator(25);
 
-        $this->pageTitle = 'Termékkategóriák';
+        $this->pageTitle = $this->t('categories.list_title');
         $this->render('categories/list.twig', [
             'categories' => $this->categories->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -41,7 +41,7 @@ class CategoryController extends BaseController
     {
         $this->requireAuth();
 
-        $this->pageTitle = 'Új kategória';
+        $this->pageTitle = $this->t('categories.new');
         $this->render('categories/form.twig', [
             'category' => null,
             'categories' => $this->categories->all(),
@@ -56,12 +56,12 @@ class CategoryController extends BaseController
         $data = $this->collectInput();
 
         if ($data['name'] === '') {
-            $this->flashError('A kategória nevének megadása kötelező.');
+            $this->flashError($this->t('categories.name_required'));
             $this->redirect('/categories/create');
         }
 
         $this->categories->create($data);
-        $this->flashSuccess('Kategória létrehozva.');
+        $this->flashSuccess($this->t('categories.created'));
         $this->redirect('/categories');
     }
 
@@ -74,7 +74,7 @@ class CategoryController extends BaseController
             $this->redirect('/categories');
         }
 
-        $this->pageTitle = 'Kategória szerkesztése';
+        $this->pageTitle = $this->t('categories.edit_title');
         $this->render('categories/form.twig', [
             'category' => $category,
             'categories' => $this->categories->all(),
@@ -89,12 +89,12 @@ class CategoryController extends BaseController
         $data = $this->collectInput();
 
         if ($data['name'] === '') {
-            $this->flashError('A kategória nevének megadása kötelező.');
+            $this->flashError($this->t('categories.name_required'));
             $this->redirect('/categories/' . $id . '/edit');
         }
 
         $this->categories->update($id, $data);
-        $this->flashSuccess('Kategória frissítve.');
+        $this->flashSuccess($this->t('categories.updated'));
         $this->redirect('/categories');
     }
 
@@ -103,7 +103,7 @@ class CategoryController extends BaseController
         $this->requireAuth();
 
         $this->categories->delete($id);
-        $this->flashSuccess('Kategória törölve.');
+        $this->flashSuccess($this->t('categories.deleted'));
         $this->redirect('/categories');
     }
 
