@@ -1,6 +1,6 @@
 # Cloudexus REST API
 
-Gépi integrációhoz (pl. webshop-szinkron) készült REST API. JSON be- és kimenet,
+Külső integrációhoz (pl. webshop-szinkron) készült REST API. JSON be- és kimenet,
 token-alapú hitelesítés.
 
 ## Alap

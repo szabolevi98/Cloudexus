@@ -146,6 +146,7 @@ $router->post('/customer-groups/create', fn() => (new CustomerGroupController())
 $router->post('/customer-groups/{id}', fn($id) => (new CustomerGroupController())->update((int) $id));
 $router->post('/customer-groups/{id}/delete', fn($id) => (new CustomerGroupController())->delete((int) $id));
 
+$router->get('/api-docs', fn() => (new ApiUserController())->docs());
 $router->get('/api-users', fn() => (new ApiUserController())->list());
 $router->post('/api-users/create', fn() => (new ApiUserController())->create());
 $router->post('/api-users/{id}', fn($id) => (new ApiUserController())->update((int) $id));

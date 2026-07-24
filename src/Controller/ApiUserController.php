@@ -23,6 +23,15 @@ class ApiUserController extends BaseController
         $this->render('api-users/list.twig', ['api_users' => $this->apiUsers->all()]);
     }
 
+    public function docs(): void
+    {
+        $this->requireAdmin();
+
+        $this->activeMenu = 'api-docs';
+        $this->pageTitle = 'API dokumentáció';
+        $this->render('api-docs.twig');
+    }
+
     public function create(): void
     {
         $this->requireAdmin();

@@ -111,7 +111,7 @@
                 <a class="cx-nav__link {{ active_menu == 'api-users' ? 'is-active' : '' }}" href="{{ base_url }}/api-users">
                     <i class="bi bi-key"></i><span>API felhasználók</span>
                 </a>
-                <a class="cx-nav__link" href="{{ base_url }}/API.md" target="_blank" rel="noopener">
+                <a class="cx-nav__link {{ active_menu == 'api-docs' ? 'is-active' : '' }}" href="{{ base_url }}/api-docs">
                     <i class="bi bi-file-earmark-code"></i><span>API dokumentáció</span>
                 </a>
             {% endif %}
