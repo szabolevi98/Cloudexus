@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="{{ current_locale }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bejelentkezés — Cloudexus</title>
+    <title>{{ t('auth.page_title') }} — Cloudexus</title>
     <link rel="icon" href="{{ base_url }}/assets/favicon.svg" type="image/svg+xml">
     <link href="{{ base_url }}/assets/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="{{ base_url }}/assets/vendor/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet">
@@ -16,7 +16,16 @@
         <span class="cx-auth-card__brand-icon"><i class="bi bi-boxes"></i></span>
         <span>Cloudexus</span>
     </div>
-    <p class="cx-auth-card__subtitle">Felhő alapú ügyviteli rendszer</p>
+    <p class="cx-auth-card__subtitle">{{ t('auth.subtitle') }}</p>
+
+    <div class="d-flex justify-content-center gap-2 mb-3">
+        {% set locale_names = {'hu': 'Magyar', 'en': 'English'} %}
+        {% for loc in available_locales %}
+            <a class="btn btn-sm {{ loc == current_locale ? 'btn-outline-primary' : 'btn-outline-secondary' }}" href="{{ base_url }}/lang/{{ loc }}">
+                {{ locale_names[loc]|default(loc|upper) }}
+            </a>
+        {% endfor %}
+    </div>
 
     {% if error %}
         <div class="alert alert-danger d-flex align-items-center py-2" role="alert">
@@ -28,20 +37,20 @@
         <input type="hidden" name="_token" value="{{ csrf_token }}">
         <input type="hidden" name="recaptcha_token" id="recaptcha_token">
         <div class="mb-3">
-            <label for="username" class="form-label">Felhasználónév vagy e-mail</label>
+            <label for="username" class="form-label">{{ t('auth.username') }}</label>
             <div class="input-group">
                 <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
                 <input type="text" id="username" name="username" class="form-control" required autofocus>
             </div>
         </div>
         <div class="mb-4">
-            <label for="password" class="form-label">Jelszó</label>
+            <label for="password" class="form-label">{{ t('auth.password') }}</label>
             <div class="input-group">
                 <span class="input-group-text bg-white"><i class="bi bi-lock"></i></span>
                 <input type="password" id="password" name="password" class="form-control" required>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary w-100 py-2" id="login-submit">Belépés</button>
+        <button type="submit" class="btn btn-primary w-100 py-2" id="login-submit">{{ t('auth.sign_in') }}</button>
     </form>
 </div>
 </body>

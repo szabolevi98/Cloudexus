@@ -18,6 +18,7 @@ use Cloudexus\Controller\CustomerGroupController;
 use Cloudexus\Controller\DashboardController;
 use Cloudexus\Controller\IncomingInvoiceController;
 use Cloudexus\Controller\InvoiceController;
+use Cloudexus\Controller\LocaleController;
 use Cloudexus\Controller\LocationController;
 use Cloudexus\Controller\LoginController;
 use Cloudexus\Controller\OrderController;
@@ -43,6 +44,13 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 Config::load(dirname(__DIR__) . '/config/config.ini');
 date_default_timezone_set(Config::get('app.timezone', 'Europe/Budapest'));
+
+// UI language: the user's saved choice (cx_locale cookie) or the config default.
+\Cloudexus\Core\Lang::init(
+    (string) Config::get('app.default_locale', 'hu'),
+    array_map('trim', explode(',', (string) Config::get('app.available_locales', 'hu,en'))),
+    $_COOKIE['cx_locale'] ?? null
+);
 
 // Never leak PHP notices/warnings into responses (they would corrupt JSON,
 // CSV downloads and redirects). Everything is logged to var/log instead.
@@ -99,6 +107,8 @@ $router->get('/', fn() => header('Location: ' . Config::get('app.base_url') . '/
 $router->get('/login', fn() => (new LoginController())->show());
 $router->post('/login', fn() => (new LoginController())->submit());
 $router->get('/logout', fn() => (new LoginController())->logout());
+
+$router->get('/lang/{code}', fn($code) => (new LocaleController())->switch($code));
 
 $router->get('/dashboard', fn() => (new DashboardController())->show());
 

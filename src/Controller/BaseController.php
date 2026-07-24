@@ -4,9 +4,11 @@ namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Auth;
 use Cloudexus\Core\Config;
+use Cloudexus\Core\Lang;
 use Cloudexus\Core\Session;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
+use Twig\TwigFunction;
 
 abstract class BaseController
 {
@@ -20,6 +22,14 @@ abstract class BaseController
         $this->twig = new Environment($loader, [
             'cache' => Config::get('app.debug') ? false : dirname(__DIR__, 2) . '/var/cache/twig',
         ]);
+        // {{ t('domain.key') }} translation helper, with optional {placeholders}.
+        $this->twig->addFunction(new TwigFunction('t', [Lang::class, 'get']));
+    }
+
+    /** Translate a key (controller-side: flash messages, page titles, …). */
+    protected function t(string $key, array $replace = []): string
+    {
+        return Lang::get($key, $replace);
     }
 
     protected function render(string $template, array $data = []): void
@@ -38,6 +48,8 @@ abstract class BaseController
             'csrf_token' => \Cloudexus\Core\Csrf::token(),
             'active_menu' => $this->activeMenu,
             'page_title' => $this->pageTitle,
+            'current_locale' => Lang::locale(),
+            'available_locales' => Lang::available(),
             'flashes' => $flashes,
         ], $data));
     }

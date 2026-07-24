@@ -6,7 +6,7 @@
             <div class="cx-stat cx-stat--primary">
                 <div class="cx-stat__icon"><i class="bi bi-cart-check"></i></div>
                 <div>
-                    <div class="cx-stat__label">Vevői rendelés (10 nap)</div>
+                    <div class="cx-stat__label">{{ t('dashboard.orders_10_days') }}</div>
                     <div class="cx-stat__value">{{ orders_total_value|default(0)|number_format(0, ',', ' ') }} Ft</div>
                 </div>
             </div>
@@ -15,10 +15,10 @@
             <div class="cx-stat cx-stat--warning">
                 <div class="cx-stat__icon"><i class="bi bi-hourglass-split"></i></div>
                 <div>
-                    <div class="cx-stat__label">Kintlevőség</div>
+                    <div class="cx-stat__label">{{ t('dashboard.receivables') }}</div>
                     <div class="cx-stat__value">{{ outstanding.total|default(0)|number_format(0, ',', ' ') }} Ft</div>
                     {% if outstanding.overdue > 0 %}
-                        <a href="{{ base_url }}/invoices?status=overdue" class="small text-danger text-decoration-none">Lejárt: {{ outstanding.overdue|number_format(0, ',', ' ') }} Ft</a>
+                        <a href="{{ base_url }}/invoices?status=overdue" class="small text-danger text-decoration-none">{{ t('dashboard.overdue_prefix') }}: {{ outstanding.overdue|number_format(0, ',', ' ') }} Ft</a>
                     {% endif %}
                 </div>
             </div>
@@ -27,10 +27,10 @@
             <div class="cx-stat cx-stat--danger">
                 <div class="cx-stat__icon"><i class="bi bi-exclamation-circle"></i></div>
                 <div>
-                    <div class="cx-stat__label">Kötelezettség</div>
+                    <div class="cx-stat__label">{{ t('dashboard.payables') }}</div>
                     <div class="cx-stat__value">{{ payable.total|default(0)|number_format(0, ',', ' ') }} Ft</div>
                     {% if payable.overdue > 0 %}
-                        <a href="{{ base_url }}/incoming-invoices?status=overdue" class="small text-danger text-decoration-none">Lejárt: {{ payable.overdue|number_format(0, ',', ' ') }} Ft</a>
+                        <a href="{{ base_url }}/incoming-invoices?status=overdue" class="small text-danger text-decoration-none">{{ t('dashboard.overdue_prefix') }}: {{ payable.overdue|number_format(0, ',', ' ') }} Ft</a>
                     {% endif %}
                 </div>
             </div>
@@ -39,8 +39,8 @@
             <div class="cx-stat cx-stat--success">
                 <div class="cx-stat__icon"><i class="bi bi-box-seam"></i></div>
                 <div>
-                    <div class="cx-stat__label">Termékek</div>
-                    <div class="cx-stat__value">{{ product_count|default(0) }} db</div>
+                    <div class="cx-stat__label">{{ t('dashboard.products') }}</div>
+                    <div class="cx-stat__value">{{ product_count|default(0) }} {{ t('common.pcs') }}</div>
                 </div>
             </div>
         </div>
@@ -50,8 +50,8 @@
         <div class="col-lg-8">
             <div class="cx-card h-100 mb-0 d-flex flex-column">
                 <div class="cx-card__header">
-                    <h2>Vevői rendelések</h2>
-                    <span class="text-muted small">Elmúlt 10 nap</span>
+                    <h2>{{ t('dashboard.orders_chart') }}</h2>
+                    <span class="text-muted small">{{ t('dashboard.last_10_days') }}</span>
                 </div>
                 <div class="cx-card__body flex-grow-1" style="position: relative; min-height: 280px;">
                     <canvas id="orders-chart"></canvas>
@@ -61,8 +61,8 @@
         <div class="col-lg-4">
             <div class="cx-card h-100 mb-0">
                 <div class="cx-card__header">
-                    <h2>Top kategóriák</h2>
-                    <span class="text-muted small">30 nap</span>
+                    <h2>{{ t('dashboard.top_categories') }}</h2>
+                    <span class="text-muted small">{{ t('dashboard.days_30') }}</span>
                 </div>
                 <div class="cx-card__body">
                     {% for cat in top_categories %}
@@ -78,7 +78,7 @@
                     {% else %}
                         <div class="text-center text-muted py-4">
                             <i class="bi bi-tags fs-1 d-block mb-2"></i>
-                            Még nincs értékesítési adat.
+                            {{ t('dashboard.no_sales_data') }}
                         </div>
                     {% endfor %}
                 </div>
@@ -90,20 +90,20 @@
         <div class="col-lg-8">
             <div class="cx-card mb-0 h-100">
                 <div class="cx-card__header">
-                    <h2>Legutóbbi számlák</h2>
-                    <a href="{{ base_url }}/invoices" class="btn btn-sm btn-outline-secondary">Összes számla</a>
+                    <h2>{{ t('dashboard.recent_invoices') }}</h2>
+                    <a href="{{ base_url }}/invoices" class="btn btn-sm btn-outline-secondary">{{ t('dashboard.all_invoices') }}</a>
                 </div>
                 <div class="cx-card__body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0 cx-table">
                             <thead>
                             <tr>
-                                <th>Számlaszám</th>
-                                <th>Partner</th>
-                                <th class="text-nowrap">Kiállítás</th>
-                                <th class="text-nowrap">Határidő</th>
-                                <th>Állapot</th>
-                                <th class="text-end">Összeg</th>
+                                <th>{{ t('dashboard.invoice_number') }}</th>
+                                <th>{{ t('common.partner') }}</th>
+                                <th class="text-nowrap">{{ t('dashboard.issue_date') }}</th>
+                                <th class="text-nowrap">{{ t('dashboard.due_date') }}</th>
+                                <th>{{ t('common.status') }}</th>
+                                <th class="text-end">{{ t('dashboard.amount') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -115,19 +115,19 @@
                                     <td class="text-muted text-nowrap">{{ invoice.due_date }}</td>
                                     <td>
                                         {% if invoice.status == 'unpaid' and invoice.due_date < today %}
-                                            <span class="badge rounded-pill text-bg-danger">Lejárt</span>
+                                            <span class="badge rounded-pill text-bg-danger">{{ t('common.invoice_status.overdue') }}</span>
                                         {% elseif invoice.status == 'unpaid' %}
-                                            <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">Fizetésre vár</span>
+                                            <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">{{ t('common.invoice_status.unpaid') }}</span>
                                         {% elseif invoice.status == 'paid' %}
-                                            <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Kifizetve</span>
+                                            <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('common.invoice_status.paid') }}</span>
                                         {% else %}
-                                            <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Stornózva</span>
+                                            <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.invoice_status.cancelled') }}</span>
                                         {% endif %}
                                     </td>
                                     <td class="text-end text-nowrap">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>
                                 </tr>
                             {% else %}
-                                <tr><td colspan="6" class="text-center text-muted py-4">Még nincs számla.</td></tr>
+                                <tr><td colspan="6" class="text-center text-muted py-4">{{ t('dashboard.no_invoices') }}</td></tr>
                             {% endfor %}
                             </tbody>
                         </table>
@@ -138,8 +138,8 @@
         <div class="col-lg-4">
             <div class="cx-card mb-0 h-100">
                 <div class="cx-card__header">
-                    <h2>Teendők</h2>
-                    <a href="{{ base_url }}/todos" class="btn btn-sm btn-outline-secondary">Összes</a>
+                    <h2>{{ t('dashboard.todos') }}</h2>
+                    <a href="{{ base_url }}/todos" class="btn btn-sm btn-outline-secondary">{{ t('dashboard.all') }}</a>
                 </div>
                 <div class="cx-card__body p-0">
                     {% for todo in open_todos %}
@@ -156,7 +156,7 @@
                     {% else %}
                         <div class="text-center text-muted py-4">
                             <i class="bi bi-check2-circle fs-1 d-block mb-2"></i>
-                            Nincs nyitott teendő.
+                            {{ t('dashboard.no_open_todos') }}
                         </div>
                     {% endfor %}
                 </div>
@@ -168,18 +168,18 @@
         <div class="col-12">
             <div class="cx-card mb-0">
                 <div class="cx-card__header">
-                    <h2>Alacsony készlet</h2>
-                    <span class="text-muted small">minimum alatt</span>
+                    <h2>{{ t('dashboard.low_stock') }}</h2>
+                    <span class="text-muted small">{{ t('dashboard.below_minimum') }}</span>
                 </div>
                 <div class="cx-card__body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0 cx-table">
                             <thead>
                             <tr>
-                                <th>Cikkszám</th>
-                                <th>Megnevezés</th>
-                                <th class="text-end">Készlet</th>
-                                <th class="text-end">Minimum</th>
+                                <th>{{ t('common.sku') }}</th>
+                                <th>{{ t('dashboard.product_name') }}</th>
+                                <th class="text-end">{{ t('dashboard.stock') }}</th>
+                                <th class="text-end">{{ t('dashboard.minimum') }}</th>
                                 <th></th>
                             </tr>
                             </thead>
@@ -195,11 +195,11 @@
                                     </td>
                                     <td class="text-end text-muted text-nowrap">{{ p.min_stock|number_format(0, ',', ' ') }} {{ p.unit }}</td>
                                     <td class="text-end">
-                                        <a href="{{ base_url }}/stock/in" class="btn btn-sm btn-outline-primary">Bevételezés</a>
+                                        <a href="{{ base_url }}/stock/in" class="btn btn-sm btn-outline-primary">{{ t('dashboard.receive') }}</a>
                                     </td>
                                 </tr>
                             {% else %}
-                                <tr><td colspan="5" class="text-center text-muted py-4"><i class="bi bi-check-circle me-1"></i>Minden készlet a minimum felett van.</td></tr>
+                                <tr><td colspan="5" class="text-center text-muted py-4"><i class="bi bi-check-circle me-1"></i>{{ t('dashboard.all_above_minimum') }}</td></tr>
                             {% endfor %}
                             </tbody>
                         </table>
@@ -219,7 +219,7 @@
             data: {
                 labels: dailyOrders.map(d => d.date.slice(5).replace('-', '.')),
                 datasets: [{
-                    label: 'Rendelés érték (Ft)',
+                    label: '{{ t('dashboard.orders_value_label')|e('js') }}',
                     data: dailyOrders.map(d => d.total_value),
                     borderColor: '#4f5bd5',
                     backgroundColor: 'rgba(79, 91, 213, 0.12)',

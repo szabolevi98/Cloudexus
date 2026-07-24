@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="{{ current_locale }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -23,96 +23,96 @@
 
         <nav class="cx-nav">
             <a class="cx-nav__link {{ active_menu == 'dashboard' ? 'is-active' : '' }}" href="{{ base_url }}/dashboard">
-                <i class="bi bi-speedometer2"></i><span>Vezérlőpult</span>
+                <i class="bi bi-speedometer2"></i><span>{{ t('nav.dashboard') }}</span>
             </a>
 
-            <div class="cx-nav__group-label">Törzsadatok</div>
+            <div class="cx-nav__group-label">{{ t('nav.groups.master_data') }}</div>
             <a class="cx-nav__link {{ active_menu == 'products' ? 'is-active' : '' }}" href="{{ base_url }}/products">
-                <i class="bi bi-box-seam"></i><span>Termékek</span>
+                <i class="bi bi-box-seam"></i><span>{{ t('nav.products') }}</span>
             </a>
             <a class="cx-nav__link {{ active_menu == 'categories' ? 'is-active' : '' }}" href="{{ base_url }}/categories">
-                <i class="bi bi-tags"></i><span>Kategóriák</span>
+                <i class="bi bi-tags"></i><span>{{ t('nav.categories') }}</span>
             </a>
             <a class="cx-nav__link {{ active_menu == 'partners' ? 'is-active' : '' }}" href="{{ base_url }}/partners">
-                <i class="bi bi-people"></i><span>Partnerek</span>
+                <i class="bi bi-people"></i><span>{{ t('nav.partners') }}</span>
             </a>
             <a class="cx-nav__link {{ active_menu == 'customer-groups' ? 'is-active' : '' }}" href="{{ base_url }}/customer-groups">
-                <i class="bi bi-diagram-3"></i><span>Vevőcsoportok</span>
+                <i class="bi bi-diagram-3"></i><span>{{ t('nav.customer_groups') }}</span>
             </a>
 
-            <div class="cx-nav__group-label">Készletkezelés</div>
+            <div class="cx-nav__group-label">{{ t('nav.groups.inventory') }}</div>
             <a class="cx-nav__link {{ active_menu == 'warehouses' ? 'is-active' : '' }}" href="{{ base_url }}/warehouses">
-                <i class="bi bi-building"></i><span>Raktárak</span>
+                <i class="bi bi-building"></i><span>{{ t('nav.warehouses') }}</span>
             </a>
             <a class="cx-nav__link {{ active_menu == 'locations' ? 'is-active' : '' }}" href="{{ base_url }}/locations">
-                <i class="bi bi-grid-3x3-gap"></i><span>Tárhelyek</span>
+                <i class="bi bi-grid-3x3-gap"></i><span>{{ t('nav.locations') }}</span>
             </a>
             <a class="cx-nav__link {{ active_menu == 'stock-in' ? 'is-active' : '' }}" href="{{ base_url }}/stock/in">
-                <i class="bi bi-box-arrow-in-down"></i><span>Raktári bevét</span>
+                <i class="bi bi-box-arrow-in-down"></i><span>{{ t('nav.stock_in') }}</span>
             </a>
             <a class="cx-nav__link {{ active_menu == 'stock-out' ? 'is-active' : '' }}" href="{{ base_url }}/stock/out">
-                <i class="bi bi-box-arrow-up"></i><span>Raktári kiadás</span>
+                <i class="bi bi-box-arrow-up"></i><span>{{ t('nav.stock_out') }}</span>
             </a>
             <a class="cx-nav__link {{ active_menu == 'stock-transfer' ? 'is-active' : '' }}" href="{{ base_url }}/stock/transfer">
-                <i class="bi bi-arrow-left-right"></i><span>Raktárközi átadás</span>
+                <i class="bi bi-arrow-left-right"></i><span>{{ t('nav.stock_transfer') }}</span>
             </a>
             <a class="cx-nav__link {{ active_menu == 'stock-barcode' ? 'is-active' : '' }}" href="{{ base_url }}/stock/barcode">
-                <i class="bi bi-upc-scan"></i><span>Vonalkód gyűjtő</span>
+                <i class="bi bi-upc-scan"></i><span>{{ t('nav.barcode') }}</span>
             </a>
             <a class="cx-nav__link {{ active_menu == 'stocktaking' ? 'is-active' : '' }}" href="{{ base_url }}/stocktaking">
-                <i class="bi bi-clipboard-check"></i><span>Leltározás</span>
+                <i class="bi bi-clipboard-check"></i><span>{{ t('nav.stocktaking') }}</span>
             </a>
             <a class="cx-nav__link {{ active_menu == 'stock-overview' ? 'is-active' : '' }}" href="{{ base_url }}/stock">
-                <i class="bi bi-bar-chart-steps"></i><span>Raktárkészlet</span>
+                <i class="bi bi-bar-chart-steps"></i><span>{{ t('nav.stock_overview') }}</span>
             </a>
 
-            <div class="cx-nav__group-label">Értékesítés</div>
+            <div class="cx-nav__group-label">{{ t('nav.groups.sales') }}</div>
             <a class="cx-nav__link {{ active_menu == 'orders' ? 'is-active' : '' }}" href="{{ base_url }}/orders">
-                <i class="bi bi-cart-check"></i><span>Vevői rendelések</span>
+                <i class="bi bi-cart-check"></i><span>{{ t('nav.orders') }}</span>
             </a>
             <a class="cx-nav__link {{ active_menu == 'invoices' ? 'is-active' : '' }}" href="{{ base_url }}/invoices">
-                <i class="bi bi-receipt"></i><span>Számlázás</span>
+                <i class="bi bi-receipt"></i><span>{{ t('nav.invoices') }}</span>
             </a>
 
-            <div class="cx-nav__group-label">Beszerzés</div>
+            <div class="cx-nav__group-label">{{ t('nav.groups.purchasing') }}</div>
             <a class="cx-nav__link {{ active_menu == 'purchase-orders' ? 'is-active' : '' }}" href="{{ base_url }}/purchase-orders">
-                <i class="bi bi-truck"></i><span>Szállítói rendelések</span>
+                <i class="bi bi-truck"></i><span>{{ t('nav.purchase_orders') }}</span>
             </a>
             <a class="cx-nav__link {{ active_menu == 'incoming-invoices' ? 'is-active' : '' }}" href="{{ base_url }}/incoming-invoices">
-                <i class="bi bi-receipt-cutoff"></i><span>Bejövő számlák</span>
+                <i class="bi bi-receipt-cutoff"></i><span>{{ t('nav.incoming_invoices') }}</span>
             </a>
 
-            <div class="cx-nav__group-label">Pénztár</div>
+            <div class="cx-nav__group-label">{{ t('nav.groups.cash') }}</div>
             <a class="cx-nav__link {{ active_menu == 'cash' ? 'is-active' : '' }}" href="{{ base_url }}/cash">
-                <i class="bi bi-cash-coin"></i><span>Pénztárbizonylat</span>
+                <i class="bi bi-cash-coin"></i><span>{{ t('nav.cash') }}</span>
             </a>
 
-            <div class="cx-nav__group-label">CRM</div>
+            <div class="cx-nav__group-label">{{ t('nav.groups.crm') }}</div>
             <a class="cx-nav__link {{ active_menu == 'todos' ? 'is-active' : '' }}" href="{{ base_url }}/todos">
-                <i class="bi bi-check2-square"></i><span>Teendők</span>
+                <i class="bi bi-check2-square"></i><span>{{ t('nav.todos') }}</span>
             </a>
 
             {% if auth_is_admin %}
-                <div class="cx-nav__group-label">Beállítások</div>
+                <div class="cx-nav__group-label">{{ t('nav.groups.settings') }}</div>
                 <a class="cx-nav__link {{ active_menu == 'users' ? 'is-active' : '' }}" href="{{ base_url }}/users">
-                    <i class="bi bi-person-gear"></i><span>Felhasználók</span>
+                    <i class="bi bi-person-gear"></i><span>{{ t('nav.users') }}</span>
                 </a>
                 <a class="cx-nav__link {{ active_menu == 'settings-company' ? 'is-active' : '' }}" href="{{ base_url }}/settings/company">
-                    <i class="bi bi-building-gear"></i><span>Cégadatok</span>
+                    <i class="bi bi-building-gear"></i><span>{{ t('nav.settings_company') }}</span>
                 </a>
                 <a class="cx-nav__link {{ active_menu == 'parameter-names' ? 'is-active' : '' }}" href="{{ base_url }}/parameter-names">
-                    <i class="bi bi-sliders"></i><span>Paraméterek</span>
+                    <i class="bi bi-sliders"></i><span>{{ t('nav.parameters') }}</span>
                 </a>
                 <a class="cx-nav__link {{ active_menu == 'units' ? 'is-active' : '' }}" href="{{ base_url }}/units">
-                    <i class="bi bi-rulers"></i><span>Mennyiségi egységek</span>
+                    <i class="bi bi-rulers"></i><span>{{ t('nav.units') }}</span>
                 </a>
 
-                <div class="cx-nav__group-label">API</div>
+                <div class="cx-nav__group-label">{{ t('nav.groups.api') }}</div>
                 <a class="cx-nav__link {{ active_menu == 'api-users' ? 'is-active' : '' }}" href="{{ base_url }}/api-users">
-                    <i class="bi bi-key"></i><span>API felhasználók</span>
+                    <i class="bi bi-key"></i><span>{{ t('nav.api_users') }}</span>
                 </a>
                 <a class="cx-nav__link {{ active_menu == 'api-docs' ? 'is-active' : '' }}" href="{{ base_url }}/api-docs">
-                    <i class="bi bi-file-earmark-code"></i><span>API dokumentáció</span>
+                    <i class="bi bi-file-earmark-code"></i><span>{{ t('nav.api_docs') }}</span>
                 </a>
             {% endif %}
         </nav>
@@ -120,25 +120,43 @@
 
     <div class="cx-main">
         <header class="cx-topbar">
-            <button class="cx-topbar__toggle d-lg-none" type="button" aria-label="Menü">
+            <button class="cx-topbar__toggle d-lg-none" type="button" aria-label="{{ t('nav.menu') }}">
                 <i class="bi bi-list"></i>
             </button>
             <h1 class="cx-topbar__title">{{ page_title|default('') }}</h1>
 
-            {% if auth_user_id %}
-                <div class="dropdown ms-auto">
-                    <button class="cx-user-pill" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="cx-user-pill__avatar">{{ auth_user_name|slice(0, 1)|upper }}</span>
-                        <span class="cx-user-pill__name">{{ auth_user_name }}</span>
-                        <i class="bi bi-chevron-down"></i>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                {% set locale_names = {'hu': 'Magyar', 'en': 'English'} %}
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="{{ t('nav.language') }}">
+                        <i class="bi bi-translate me-1"></i>{{ current_locale|upper }}
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                        <li><a class="dropdown-item" href="{{ base_url }}/profile"><i class="bi bi-person me-2"></i>Profil</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{{ base_url }}/logout"><i class="bi bi-box-arrow-right me-2"></i>Kilépés</a></li>
+                        {% for loc in available_locales %}
+                            <li>
+                                <a class="dropdown-item {{ loc == current_locale ? 'active' : '' }}" href="{{ base_url }}/lang/{{ loc }}">
+                                    {{ locale_names[loc]|default(loc|upper) }}
+                                </a>
+                            </li>
+                        {% endfor %}
                     </ul>
                 </div>
-            {% endif %}
+
+                {% if auth_user_id %}
+                    <div class="dropdown">
+                        <button class="cx-user-pill" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="cx-user-pill__avatar">{{ auth_user_name|slice(0, 1)|upper }}</span>
+                            <span class="cx-user-pill__name">{{ auth_user_name }}</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li><a class="dropdown-item" href="{{ base_url }}/profile"><i class="bi bi-person me-2"></i>{{ t('nav.profile') }}</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ base_url }}/logout"><i class="bi bi-box-arrow-right me-2"></i>{{ t('nav.logout') }}</a></li>
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
         </header>
 
         <main class="cx-content">

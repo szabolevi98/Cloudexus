@@ -12,6 +12,9 @@ env = dev
 debug = 1
 base_url = "http://localhost/Cloudexus/web"
 timezone = "Europe/Budapest"
+; alapértelmezett nyelv (új látogatónak, ha nincs mentett választása)
+default_locale = "hu"
+available_locales = "hu,en"
 
 [session]
 name = cloudexus_session

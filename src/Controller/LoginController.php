@@ -28,12 +28,12 @@ class LoginController extends BaseController
         $recaptchaToken = (string) ($_POST['recaptcha_token'] ?? '');
 
         if (!Recaptcha::verify($recaptchaToken, 'login')) {
-            Session::flash('login_error', 'A biztonsági ellenőrzés sikertelen volt. Próbáld újra.');
+            Session::flash('login_error', $this->t('auth.captcha_failed'));
             $this->redirect('/login');
         }
 
         if ($username === '' || $password === '' || !Auth::attempt($username, $password)) {
-            Session::flash('login_error', 'Hibás felhasználónév/e-mail vagy jelszó.');
+            Session::flash('login_error', $this->t('auth.invalid_credentials'));
             $this->redirect('/login');
         }
 

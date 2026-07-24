@@ -1,41 +1,41 @@
 # Cloudexus REST API
 
-Külső integrációhoz (pl. webshop-szinkron) készült REST API. JSON be- és kimenet,
-token-alapú hitelesítés.
+REST API for external integrations (e.g. webshop sync). JSON in and out,
+token-based authentication.
 
-## Alap
+## Basics
 
-- **Alap URL:** `https://<domain>/api` (pl. `https://cloudexus.levente.net/api`)
-- **Formátum:** minden válasz JSON (`Content-Type: application/json; charset=utf-8`)
-- **Karakterkódolás:** UTF-8
+- **Base URL:** `https://<domain>/api` (e.g. `https://cloudexus.levente.net/api`)
+- **Format:** every response is JSON (`Content-Type: application/json; charset=utf-8`)
+- **Encoding:** UTF-8
 
-## Hitelesítés
+## Authentication
 
-Minden kérésnél kötelező egy API-token az `Authorization` fejlécben:
+Every request requires an API token in the `Authorization` header:
 
 ```
 Authorization: Bearer <token>
 ```
 
-A tokent az adminfelületen, az **API → API felhasználók** menüben lehet létrehozni,
-újragenerálni, aktiválni/inaktiválni és törölni. Egy token teljes hozzáférést ad
-(nincs külön jogosultsági szint). Ha a szerver a szabványos `Authorization` fejlécet
-levágná, alternatívaként az `X-Api-Key: <token>` fejléc is használható.
+Tokens are managed in the admin UI under **API → API users** (create, regenerate,
+enable/disable, delete). A token grants full access (there is no per-token permission
+level). If the server strips the standard `Authorization` header, the `X-Api-Key: <token>`
+header can be used instead.
 
-Hiányzó vagy érvénytelen token esetén a válasz `401` (az API üzenetei angolul jönnek):
+A missing or invalid token returns `401`:
 
 ```json
 { "error": { "status": 401, "message": "Invalid or missing API token." } }
 ```
 
-## Lapozás
+## Pagination
 
-A lista végpontok offset-alapú lapozást használnak:
+List endpoints use offset-based pagination:
 
-- `?page=1` — oldalszám (alap: 1)
-- `?per_page=50` — oldalméret (alap: 50, maximum: 200)
+- `?page=1` — page number (default: 1)
+- `?per_page=50` — page size (default: 50, maximum: 200)
 
-A válasz `data` + `meta` szerkezetű:
+The response has a `data` + `meta` shape:
 
 ```json
 {
@@ -44,45 +44,45 @@ A válasz `data` + `meta` szerkezetű:
 }
 ```
 
-Egy elem lekérésekor a válasz `{ "data": { ... } }`.
+A single-item response is `{ "data": { ... } }`.
 
-## Szűrők
+## Filters
 
-Minden lista végponton elérhető:
+Available on every list endpoint:
 
-- `?q=` — szabadszavas keresés (a mezők végpontonként eltérnek)
-- `?updated_since=YYYY-MM-DD HH:MM:SS` — csak az adott időpont óta módosult rekordok
-  (delta-szinkronhoz; minden rekordnak van `updated_at` mezője)
+- `?q=` — free-text search (searched fields vary per endpoint)
+- `?updated_since=YYYY-MM-DD HH:MM:SS` — only records changed since the given time
+  (for delta sync; every record has an `updated_at` field)
 
-## Hibaformátum
+## Error format
 
-Az API válaszüzenetei (a hibaüzenetek is) **angol nyelvűek**:
+All API messages (including error messages) are in **English**:
 
 ```json
 { "error": { "status": 404, "message": "Product not found." } }
 ```
 
-Használt státuszkódok: `200` OK, `201` létrehozva, `400/422` hibás kérés,
-`401` hitelesítés hiányzik/érvénytelen, `404` nincs ilyen erőforrás.
+Status codes used: `200` OK, `201` created, `400/422` bad request,
+`401` authentication missing/invalid, `404` resource not found.
 
 ---
 
-# Végpontok
+# Endpoints
 
-## Csak olvasható erőforrások (GET)
+## Read-only resources (GET)
 
-Ezek az erőforrások API-n keresztül **csak lekérdezhetők**; létrehozni/módosítani/törölni
-az adminfelületen lehet őket.
+These resources are **read-only** via the API; they can be created/edited/deleted in the
+admin UI.
 
-### Termékek
+### Products
 
-| Metódus | Útvonal | Leírás |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/api/products` | Terméklista. Szűrők: `q` (cikkszám/név/vonalkód), `category_id`, `status` (`active`/`inactive`), `updated_since` |
-| GET | `/api/products/{id}` | Egy termék teljes adata (ID alapján) |
-| GET | `/api/products/sku/{sku}` | Egy termék teljes adata (cikkszám alapján) |
+| GET | `/api/products` | Product list. Filters: `q` (SKU/name/barcode), `category_id`, `status` (`active`/`inactive`), `updated_since` |
+| GET | `/api/products/{id}` | Single product, full data (by ID) |
+| GET | `/api/products/sku/{sku}` | Single product, full data (by SKU) |
 
-Példa válasz (`GET /api/products/1`) — a részletes termék minden mezője:
+Example response (`GET /api/products/1`) — all fields of the detailed product:
 
 ```json
 {
@@ -91,8 +91,8 @@ Példa válasz (`GET /api/products/1`) — a részletes termék minden mezője:
     "sku": "PRD-0001",
     "barcode": "5991269759143",
     "name": "Városi kerékpár 26\"",
-    "short_description": "Városi kerékpár 26\" — kiváló minőségű termék raktárról.",
-    "description": "A termék részletes (HTML) leírása.",
+    "short_description": "Short product description.",
+    "description": "Detailed (HTML) product description.",
     "category_id": 1,
     "unit": "doboz",
     "price": "89900.00",
@@ -126,37 +126,38 @@ Példa válasz (`GET /api/products/1`) — a részletes termék minden mezője:
 }
 ```
 
-Mezők: `price`/`sale_price` nettó ár (ha `sale_price` ki van töltve, az az aktív ár);
-`stock_qty` az összesített aktuális készlet; `images` a termékképek (a `path` lehet relatív
-feltöltés vagy teljes URL); `attributes` a termékparaméterek; `category_ids` az összes
-hozzárendelt kategória; `related_ids`/`substitute_ids` a kapcsolódó/helyettesítő termékek;
-`group_prices` a vevőcsoportos árak `customer_group_id` szerint kulcsolva (fix `price` +
-opcionális `sale_price`).
+Fields: `price`/`sale_price` are net prices (if `sale_price` is set, that is the active price);
+`stock_qty` is the aggregated current stock; `images` are the product images (`path` may be a
+relative upload path or a full URL); `attributes` are the product parameters; `category_ids`
+lists all assigned categories; `related_ids`/`substitute_ids` are the related/substitute
+products; `group_prices` are the customer-group prices keyed by `customer_group_id` (a fixed
+`price` plus an optional `sale_price`). Note: text values that are actual data (product name,
+description, attribute values) are returned as stored and are not translated.
 
-### Kategóriák
+### Categories
 
-| Metódus | Útvonal | Leírás |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/api/categories` | Kategórialista (fa, `parent_id`). Szűrők: `q`, `updated_since` |
-| GET | `/api/categories/{id}` | Egy kategória |
+| GET | `/api/categories` | Category list (tree, `parent_id`). Filters: `q`, `updated_since` |
+| GET | `/api/categories/{id}` | Single category |
 
-### Egyéb törzsadat
+### Other master data
 
-| Metódus | Útvonal | Leírás |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/api/parameter-names` | Paraméternevek. Szűrők: `q`, `updated_since` |
-| GET | `/api/units` | Mennyiségi egységek. Szűrők: `q`, `updated_since` |
-| GET | `/api/customer-groups` | Vevőcsoportok. Szűrők: `q`, `updated_since` |
-| GET | `/api/customer-groups/{id}` | Egy vevőcsoport |
-| GET | `/api/warehouses` | Raktárak. Szűrők: `q`, `status`, `updated_since` |
+| GET | `/api/parameter-names` | Parameter names. Filters: `q`, `updated_since` |
+| GET | `/api/units` | Units of measure. Filters: `q`, `updated_since` |
+| GET | `/api/customer-groups` | Customer groups. Filters: `q`, `updated_since` |
+| GET | `/api/customer-groups/{id}` | Single customer group |
+| GET | `/api/warehouses` | Warehouses. Filters: `q`, `status`, `updated_since` |
 
-### Készlet
+### Stock
 
-| Metódus | Útvonal | Leírás |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/api/stock` | Aktuális készlet raktár/tárhely/termék bontásban. Szűrők: `q`, `warehouse_id`, `location_id`, `product_id` |
+| GET | `/api/stock` | Current stock, broken down by warehouse/location/product. Filters: `q`, `warehouse_id`, `location_id`, `product_id` |
 
-Példa válasz (`GET /api/stock`):
+Example response (`GET /api/stock`):
 
 ```json
 {
@@ -177,17 +178,17 @@ Példa válasz (`GET /api/stock`):
 }
 ```
 
-Tárhely nélküli mozgások `location_id`/`location_code` = `null` alatt jelennek meg. A
-`quantity` az adott raktár+tárhely+termék aktuális készlete (bevét − kiadás).
+Movements without a location appear under `location_id`/`location_code` = `null`. `quantity`
+is the current stock of that warehouse+location+product (stock in − stock out).
 
-### Számlák
+### Invoices
 
-| Metódus | Útvonal | Leírás |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/api/invoices` | Számlalista. Szűrők: `q`, `partner_id`, `status`, `date_from`, `date_to`, `updated_since` |
-| GET | `/api/invoices/{id}` | Egy számla a tételeivel |
+| GET | `/api/invoices` | Invoice list. Filters: `q`, `partner_id`, `status`, `date_from`, `date_to`, `updated_since` |
+| GET | `/api/invoices/{id}` | Single invoice with its line items |
 
-Példa válasz (`GET /api/invoices/2`):
+Example response (`GET /api/invoices/2`):
 
 ```json
 {
@@ -215,68 +216,69 @@ Példa válasz (`GET /api/invoices/2`):
 }
 ```
 
-`status`: `unpaid` / `paid` / `cancelled`. A számla API-n keresztül csak olvasható.
+`status`: `unpaid` / `paid` / `cancelled`. Invoices are read-only via the API.
 
-### Árazás
+### Pricing
 
-| Metódus | Útvonal | Leírás |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/api/pricing/effective?product_id=&partner_id=` | Egy termék effektív (partnerre/vevőcsoportra érvényes) ára |
+| GET | `/api/pricing/effective?product_id=&partner_id=` | The effective (partner/customer-group specific) price of a product |
 
-Példa válasz (`GET /api/pricing/effective?product_id=1&partner_id=12`):
+Example response (`GET /api/pricing/effective?product_id=1&partner_id=12`):
 
 ```json
 { "data": { "price": 80910, "is_sale": false } }
 ```
 
-`price` a partnernek ténylegesen érvényes nettó egységár (a partner vevőcsoportjának fix/akciós
-ára, ha van, egyébként a termék saját ára/akciós ára); `is_sale` = `true`, ha ez az ár akciós.
-A `partner_id` elhagyható — akkor a termék listaára jön vissza.
+`price` is the net unit price actually applicable to the partner (the partner's customer-group
+fixed/sale price if any, otherwise the product's own price/sale price); `is_sale` is `true` if
+that price is a sale price. `partner_id` is optional — without it the product's list price is
+returned.
 
-## Teljes CRUD erőforrások
+## Full CRUD resources
 
-### Partnerek
+### Partners
 
-| Metódus | Útvonal | Leírás |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/api/partners` | Partnerlista. Szűrők: `q`, `type` (`customer`/`supplier`/`both`), `status`, `customer_group_id`, `updated_since` |
-| GET | `/api/partners/{id}` | Egy partner a címeivel |
-| GET | `/api/partners/tax/{adószám}` | Egy partner adószám alapján |
-| POST | `/api/partners` | Új partner létrehozása |
-| PUT | `/api/partners/{id}` | Partner módosítása |
-| PUT | `/api/partners/tax/{adószám}` | Upsert: ha az adószám létezik, módosít, különben létrehoz |
-| DELETE | `/api/partners/{id}` | Partner törlése |
+| GET | `/api/partners` | Partner list. Filters: `q`, `type` (`customer`/`supplier`/`both`), `status`, `customer_group_id`, `updated_since` |
+| GET | `/api/partners/{id}` | Single partner with its addresses |
+| GET | `/api/partners/tax/{taxNumber}` | Single partner by tax number |
+| POST | `/api/partners` | Create a partner |
+| PUT | `/api/partners/{id}` | Update a partner |
+| PUT | `/api/partners/tax/{taxNumber}` | Upsert: update if the tax number exists, otherwise create |
+| DELETE | `/api/partners/{id}` | Delete a partner |
 
-**Partner törzs (POST/PUT):**
+**Partner body (POST/PUT):**
 
 ```json
 {
-  "name": "Példa Kft.",
+  "name": "Example Ltd.",
   "type": "customer",
   "tax_number": "12345678-2-42",
-  "email": "info@pelda.hu",
+  "email": "info@example.com",
   "phone": "+36 30 123 4567",
   "customer_group_id": 2,
   "is_active": true,
   "addresses": [
-    { "country": "Magyarország", "postal_code": "1111", "city": "Budapest", "street": "Példa utca 1.", "note": "2. emelet 3. ajtó" }
+    { "country": "Magyarország", "postal_code": "1111", "city": "Budapest", "street": "Példa utca 1.", "note": "2nd floor, door 3" }
   ]
 }
 ```
 
-Mezők:
+Fields:
 
-- `name` — **kötelező**.
-- `type` — `customer` / `supplier` / `both` (alap: `customer`).
-- `tax_number`, `email`, `phone` — opcionális.
-- `customer_group_id` — vevőcsoport azonosító (0 vagy elhagyva = nincs).
-- `is_active` — `true`/`false` (alap: `true`).
-- `addresses` — opcionális címlista. Ha PUT-nál megadod, a partner címei **teljesen
-  lecserélődnek** a megadott listára; ha kihagyod, a meglévő címek változatlanok maradnak.
-  Egy cím akkor menthető, ha van `city`, `postal_code` és `street` (a `country` alapja
-  „Magyarország", a `note` opcionális).
+- `name` — **required**.
+- `type` — `customer` / `supplier` / `both` (default: `customer`).
+- `tax_number`, `email`, `phone` — optional.
+- `customer_group_id` — customer group id (0 or omitted = none).
+- `is_active` — `true`/`false` (default: `true`).
+- `addresses` — optional address list. On PUT, if provided, the partner's addresses are
+  **fully replaced** with the given list; if omitted, existing addresses are left unchanged.
+  An address is saved only if it has `city`, `postal_code` and `street` (`country` defaults to
+  "Magyarország", `note` is optional).
 
-Példa válasz (`GET /api/partners/1`):
+Example response (`GET /api/partners/1`):
 
 ```json
 {
@@ -293,27 +295,27 @@ Példa válasz (`GET /api/partners/1`):
     "created_at": "2026-07-24 16:44:35",
     "updated_at": "2026-07-24 16:44:35",
     "addresses": [
-      { "id": 1, "partner_id": 1, "country": "Magyarország", "postal_code": "1011", "city": "Budapest", "street": "Rákóczi utca 55.", "note": "2. emelet 14. ajtó", "created_at": "2026-07-24 16:44:35", "updated_at": "2026-07-24 16:44:35" },
+      { "id": 1, "partner_id": 1, "country": "Magyarország", "postal_code": "1011", "city": "Budapest", "street": "Rákóczi utca 55.", "note": "2nd floor, door 14", "created_at": "2026-07-24 16:44:35", "updated_at": "2026-07-24 16:44:35" },
       { "id": 2, "partner_id": 1, "country": "Magyarország", "postal_code": "4400", "city": "Nyíregyháza", "street": "Petőfi Sándor utca 5.", "note": null, "created_at": "2026-07-24 16:44:35", "updated_at": "2026-07-24 16:44:35" }
     ]
   }
 }
 ```
 
-(`customer_group_name` és a címek `id`-je csak a válaszban szerepel; létrehozáskor/módosításkor
-nem kell megadni. Törlésnél a válasz: `{ "data": { "deleted": true, "id": 1 } }`.)
+(`customer_group_name` and the address `id`s appear only in the response; they need not be
+supplied on create/update. On delete the response is `{ "data": { "deleted": true, "id": 1 } }`.)
 
-### Rendelések
+### Orders
 
-| Metódus | Útvonal | Leírás |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/api/orders` | Rendeléslista. Szűrők: `q`, `partner_id`, `status`, `date_from`, `date_to`, `updated_since` |
-| GET | `/api/orders/{id}` | Egy rendelés a tételeivel és címeivel |
-| POST | `/api/orders` | Új rendelés létrehozása |
-| PUT | `/api/orders/{id}` | Rendelés módosítása |
-| DELETE | `/api/orders/{id}` | Rendelés törlése |
+| GET | `/api/orders` | Order list. Filters: `q`, `partner_id`, `status`, `date_from`, `date_to`, `updated_since` |
+| GET | `/api/orders/{id}` | Single order with its line items and addresses |
+| POST | `/api/orders` | Create an order |
+| PUT | `/api/orders/{id}` | Update an order |
+| DELETE | `/api/orders/{id}` | Delete an order |
 
-**Rendelés törzs (POST/PUT):**
+**Order body (POST/PUT):**
 
 ```json
 {
@@ -330,21 +332,20 @@ nem kell megadni. Törlésnél a válasz: `{ "data": { "deleted": true, "id": 1 
 }
 ```
 
-Mezők:
+Fields:
 
-- `partner_id` — **kötelező**, létező partner.
-- `items` — **kötelező** (legalább egy tétel), mindegyikben `product_id`, `quantity`,
-  `unit_price`.
-- `order_date` — `YYYY-MM-DD` (alap: mai nap).
-- `status` — `draft` / `confirmed` / `invoiced` / `cancelled` (alap: `confirmed`).
-- `shipping_address_id`, `billing_address_id` — a partner egy-egy címének azonosítója
-  (opcionális; 0 vagy elhagyva = nincs).
-- `shipping_cost`, `payment_cost` — tetszőleges nettó összeg (alap: 0).
-- A rendelésszám automatikusan generálódik; a `total_amount`-ot a szerver számolja
-  (tételek + `shipping_cost` + `payment_cost`).
-- PUT-nál az `items` csak akkor cserélődik le, ha megadod; egyébként a tételek maradnak.
+- `partner_id` — **required**, an existing partner.
+- `items` — **required** (at least one line), each with `product_id`, `quantity`, `unit_price`.
+- `order_date` — `YYYY-MM-DD` (default: today).
+- `status` — `draft` / `confirmed` / `invoiced` / `cancelled` (default: `confirmed`).
+- `shipping_address_id`, `billing_address_id` — the id of one of the partner's addresses
+  (optional; 0 or omitted = none).
+- `shipping_cost`, `payment_cost` — arbitrary net amounts (default: 0).
+- The order number is generated automatically; `total_amount` is computed by the server
+  (items + `shipping_cost` + `payment_cost`).
+- On PUT, `items` is only replaced if provided; otherwise the line items are kept.
 
-Példa válasz (`GET /api/orders/19`) — a címmezők a kiválasztott címekből feloldva:
+Example response (`GET /api/orders/19`) — the address fields are resolved from the chosen addresses:
 
 ```json
 {
@@ -362,8 +363,8 @@ Példa válasz (`GET /api/orders/19`) — a címmezők a kiválasztott címekbő
     "total_amount": "183315.00",
     "created_at": "2026-07-24 16:44:35",
     "updated_at": "2026-07-24 16:44:35",
-    "shipping_country": "Magyarország", "shipping_postal_code": "1011", "shipping_city": "Budapest", "shipping_street": "Rákóczi utca 55.", "shipping_note": "2. emelet 14. ajtó",
-    "billing_country": "Magyarország", "billing_postal_code": "1011", "billing_city": "Budapest", "billing_street": "Rákóczi utca 55.", "billing_note": "2. emelet 14. ajtó",
+    "shipping_country": "Magyarország", "shipping_postal_code": "1011", "shipping_city": "Budapest", "shipping_street": "Rákóczi utca 55.", "shipping_note": "2nd floor, door 14",
+    "billing_country": "Magyarország", "billing_postal_code": "1011", "billing_city": "Budapest", "billing_street": "Rákóczi utca 55.", "billing_note": "2nd floor, door 14",
     "items": [
       { "id": 53, "order_id": 19, "product_id": 47, "quantity": "1.000", "unit_price": "2415.00", "line_total": "2415.00", "sku": "PRD-0047", "product_name": "Öntözőkanna 10L", "unit": "karton" },
       { "id": 54, "order_id": 19, "product_id": 35, "quantity": "9.000", "unit_price": "19990.00", "line_total": "179910.00", "sku": "PRD-0035", "product_name": "Éjjeliszekrény", "unit": "szett" }
@@ -372,37 +373,37 @@ Példa válasz (`GET /api/orders/19`) — a címmezők a kiválasztott címekbő
 }
 ```
 
-(A `partner_name`, a feloldott `shipping_*`/`billing_*` címmezők, valamint a tételek `sku`/
-`product_name`/`unit`/`line_total` mezői csak a válaszban szerepelnek. Törlésnél a válasz:
+(`partner_name`, the resolved `shipping_*`/`billing_*` address fields, and the line items'
+`sku`/`product_name`/`unit`/`line_total` appear only in the response. On delete the response is
 `{ "data": { "deleted": true, "id": 19 } }`.)
 
 ---
 
-# Példák (curl)
+# Examples (curl)
 
-Terméklista (2. oldal, 100 elem):
+Product list (page 2, 100 per page):
 
 ```bash
 curl -H "Authorization: Bearer <token>" \
   "https://cloudexus.levente.net/api/products?page=2&per_page=100"
 ```
 
-Csak a tegnap óta módosult termékek:
+Only products changed since yesterday:
 
 ```bash
 curl -H "Authorization: Bearer <token>" \
   "https://cloudexus.levente.net/api/products?updated_since=2026-07-19%2000:00:00"
 ```
 
-Új partner:
+Create a partner:
 
 ```bash
 curl -X POST -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
-  -d '{"name":"Új Vevő Kft.","type":"customer","tax_number":"11111111-2-11"}' \
+  -d '{"name":"New Customer Ltd.","type":"customer","tax_number":"11111111-2-11"}' \
   "https://cloudexus.levente.net/api/partners"
 ```
 
-Új rendelés:
+Create an order:
 
 ```bash
 curl -X POST -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \

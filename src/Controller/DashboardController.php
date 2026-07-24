@@ -20,7 +20,7 @@ class DashboardController extends BaseController
         $topCategories = $orders->topCategories(30, 10);
 
         $this->activeMenu = 'dashboard';
-        $this->pageTitle = 'Vezérlőpult';
+        $this->pageTitle = $this->t('dashboard.title');
         $this->render('dashboard.twig', [
             'product_count' => (new ProductModel())->count(),
             'outstanding' => $invoices->outstandingBreakdown(),
