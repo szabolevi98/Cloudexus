@@ -78,7 +78,7 @@ class CashVoucherController extends BaseController
             'invoice_id' => $_POST['invoice_id'] ?? null,
             'incoming_invoice_id' => $_POST['incoming_invoice_id'] ?? null,
             'note' => trim($_POST['note'] ?? ''),
-            'voucher_date' => $_POST['voucher_date'] ?: date('Y-m-d'),
+            'voucher_date' => ($_POST['voucher_date'] ?? '') ?: date('Y-m-d'),
             'created_by' => Auth::id(),
         ]);
 

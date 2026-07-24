@@ -82,11 +82,11 @@ class IncomingInvoiceController extends BaseController
 
         $id = $this->invoices->create([
             'invoice_number' => $_POST['invoice_number'],
-            'purchase_order_id' => $_POST['purchase_order_id'] ?: null,
+            'purchase_order_id' => ($_POST['purchase_order_id'] ?? '') ?: null,
             'partner_id' => (int) $_POST['partner_id'],
-            'warehouse_id' => $_POST['warehouse_id'] ?: null,
-            'issue_date' => $_POST['issue_date'] ?: date('Y-m-d'),
-            'due_date' => $_POST['due_date'] ?: date('Y-m-d', strtotime('+8 days')),
+            'warehouse_id' => ($_POST['warehouse_id'] ?? '') ?: null,
+            'issue_date' => ($_POST['issue_date'] ?? '') ?: date('Y-m-d'),
+            'due_date' => ($_POST['due_date'] ?? '') ?: date('Y-m-d', strtotime('+8 days')),
             'created_by' => Auth::id(),
         ], $items);
 

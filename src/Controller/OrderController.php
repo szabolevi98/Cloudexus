@@ -77,7 +77,7 @@ class OrderController extends BaseController
             'shipping_address_id' => (int) ($_POST['shipping_address_id'] ?? 0),
             'billing_address_id' => (int) ($_POST['billing_address_id'] ?? 0),
             'status' => 'confirmed',
-            'order_date' => $_POST['order_date'] ?: date('Y-m-d'),
+            'order_date' => ($_POST['order_date'] ?? '') ?: date('Y-m-d'),
             'shipping_cost' => (float) str_replace(',', '.', $_POST['shipping_cost'] ?? '0'),
             'payment_cost' => (float) str_replace(',', '.', $_POST['payment_cost'] ?? '0'),
             'created_by' => Auth::id(),

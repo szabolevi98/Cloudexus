@@ -71,7 +71,7 @@ class PurchaseOrderController extends BaseController
             'po_number' => $_POST['po_number'],
             'partner_id' => (int) $_POST['partner_id'],
             'status' => 'confirmed',
-            'order_date' => $_POST['order_date'] ?: date('Y-m-d'),
+            'order_date' => ($_POST['order_date'] ?? '') ?: date('Y-m-d'),
             'created_by' => Auth::id(),
         ], $items);
 
