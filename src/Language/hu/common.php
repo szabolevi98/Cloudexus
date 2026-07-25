@@ -29,6 +29,7 @@ return [
     'pcs' => 'db',
     'count_suffix' => 'db',
     'pagination_results' => '{from}–{to} / {total} találat',
+    'pagination' => 'Lapozás',
     'date' => 'Dátum',
     'date_from' => 'Dátumtól',
     'date_to' => 'Dátumig',

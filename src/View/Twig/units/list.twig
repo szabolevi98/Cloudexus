@@ -4,22 +4,22 @@
     <div class="row g-3">
         <div class="col-lg-4">
             <div class="cx-card">
-                <div class="cx-card__header"><h2>Új egység</h2></div>
+                <div class="cx-card__header"><h2>{{ t('units.new') }}</h2></div>
                 <div class="cx-card__body">
                     <form method="post" action="{{ base_url }}/units/create">
                         <div class="mb-3">
-                            <label for="code" class="form-label">Kód</label>
-                            <input type="text" id="code" name="code" class="form-control" placeholder="pl. db" required>
+                            <label for="code" class="form-label">{{ t('units.code') }}</label>
+                            <input type="text" id="code" name="code" class="form-control" placeholder="{{ t('units.code_placeholder') }}" required>
                         </div>
                         <div class="mb-3">
-                            <label for="name" class="form-label">Név</label>
-                            <input type="text" id="name" name="name" class="form-control" placeholder="pl. darab" required>
+                            <label for="name" class="form-label">{{ t('common.name') }}</label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="{{ t('units.name_placeholder') }}" required>
                         </div>
                         <div class="mb-3">
-                            <label for="sort_order" class="form-label">Sorrend</label>
+                            <label for="sort_order" class="form-label">{{ t('units.sort_order') }}</label>
                             <input type="number" id="sort_order" name="sort_order" class="form-control" value="0">
                         </div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>Hozzáadás</button>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>{{ t('common.add') }}</button>
                     </form>
                 </div>
             </div>
@@ -27,25 +27,25 @@
         <div class="col-lg-8">
             <div class="cx-card">
                 <div class="cx-card__header">
-                    <h2>Mennyiségi egységek</h2>
-                    <span class="text-muted small">{{ pager.total }} db</span>
+                    <h2>{{ t('units.list_title') }}</h2>
+                    <span class="text-muted small">{{ pager.total }} {{ t('common.pcs') }}</span>
                 </div>
                 <div class="cx-card__body p-0">
                     <form method="get" class="p-3 border-bottom">
                         <div class="row g-2 align-items-end">
                             <div class="col-sm-6 col-lg-5">
-                                <label class="form-label small text-muted mb-1">Keresés</label>
-                                <input type="text" name="q" class="form-control form-control-sm" placeholder="Kód vagy név…" value="{{ filters.q }}">
+                                <label class="form-label small text-muted mb-1">{{ t('common.search') }}</label>
+                                <input type="text" name="q" class="form-control form-control-sm" placeholder="{{ t('units.search_placeholder') }}" value="{{ filters.q }}">
                             </div>
                             <div class="col-auto">
-                                <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
-                                <a href="{{ base_url }}/units" class="btn btn-sm btn-outline-secondary">Törlés</a>
+                                <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>{{ t('common.filter') }}</button>
+                                <a href="{{ base_url }}/units" class="btn btn-sm btn-outline-secondary">{{ t('common.clear') }}</a>
                             </div>
                         </div>
                     </form>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0 cx-table">
-                            <thead><tr><th style="width:120px;">Kód</th><th>Név</th><th style="width:90px;">Sorrend</th><th class="text-end">Műveletek</th></tr></thead>
+                            <thead><tr><th style="width:120px;">{{ t('units.code') }}</th><th>{{ t('common.name') }}</th><th style="width:90px;">{{ t('units.sort_order') }}</th><th class="text-end">{{ t('common.actions') }}</th></tr></thead>
                             <tbody>
                             {% for u in units %}
                                 <tr>
@@ -53,12 +53,12 @@
                                     <td><input type="text" name="name" form="unit-{{ u.id }}" class="form-control form-control-sm" value="{{ u.name }}"></td>
                                     <td><input type="number" name="sort_order" form="unit-{{ u.id }}" class="form-control form-control-sm" value="{{ u.sort_order }}"></td>
                                     <td class="text-end text-nowrap">
-                                        <button type="submit" form="unit-{{ u.id }}" class="btn btn-sm btn-outline-primary">Mentés</button>
-                                        <button type="submit" form="unit-del-{{ u.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Biztosan törlöd?');"><i class="bi bi-trash"></i></button>
+                                        <button type="submit" form="unit-{{ u.id }}" class="btn btn-sm btn-outline-primary">{{ t('common.save') }}</button>
+                                        <button type="submit" form="unit-del-{{ u.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ t('common.confirm_delete')|e('js') }}');"><i class="bi bi-trash"></i></button>
                                     </td>
                                 </tr>
                             {% else %}
-                                <tr><td colspan="4" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő egység.</td></tr>
+                                <tr><td colspan="4" class="text-center text-muted py-4">{{ t('units.none_found') }}</td></tr>
                             {% endfor %}
                             </tbody>
                         </table>

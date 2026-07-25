@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'new' => 'New API user',
+    'name_label' => 'Name / label',
+    'name_placeholder' => 'e.g. Webshop sync',
+    'create' => 'Create',
+    'token_hint' => 'The token is generated on creation. Send it in requests with the <code>Authorization: Bearer &lt;token&gt;</code> header. See the <a href="{url}/API.md" target="_blank" rel="noopener">API documentation</a> menu for details.',
+    'list_title' => 'API users',
+    'token' => 'Token',
+    'status' => 'Status',
+    'active' => 'Active',
+    'inactive' => 'Inactive',
+    'copy' => 'Copy',
+    'deactivate' => 'Deactivate',
+    'activate' => 'Activate',
+    'new_token' => 'New token',
+    'regen_confirm' => 'Generate a new token? The old one becomes invalid immediately.',
+    'none' => 'No API users yet.',
+    'name_required' => 'The API user name is required.',
+    'created' => 'API user created; the token is shown in the list below.',
+    'updated' => 'API user updated.',
+    'deactivated' => 'API user deactivated.',
+    'activated' => 'API user activated.',
+    'token_regenerated' => 'New token generated. The old token is now invalid.',
+    'deleted' => 'API user deleted.',
+    'docs_title' => 'API documentation',
+];

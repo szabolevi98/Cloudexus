@@ -4,19 +4,17 @@
     <div class="row g-3">
         <div class="col-lg-4">
             <div class="cx-card">
-                <div class="cx-card__header"><h2>Új API-felhasználó</h2></div>
+                <div class="cx-card__header"><h2>{{ t('api_users.new') }}</h2></div>
                 <div class="cx-card__body">
                     <form method="post" action="{{ base_url }}/api-users/create">
                         <div class="mb-3">
-                            <label for="name" class="form-label">Név / megnevezés</label>
-                            <input type="text" id="name" name="name" class="form-control" placeholder="pl. Webshop szinkron" required>
+                            <label for="name" class="form-label">{{ t('api_users.name_label') }}</label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="{{ t('api_users.name_placeholder') }}" required>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>Létrehozás</button>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>{{ t('api_users.create') }}</button>
                     </form>
                     <div class="form-text mt-2">
-                        A token létrehozáskor generálódik. A kérésekben az
-                        <code>Authorization: Bearer &lt;token&gt;</code> fejléccel kell küldeni.
-                        A dokumentációt lásd az <a href="{{ base_url }}/API.md" target="_blank" rel="noopener">API dokumentáció</a> menüben.
+                        {{ t('api_users.token_hint', {'url': base_url})|raw }}
                     </div>
                 </div>
             </div>
@@ -24,13 +22,13 @@
         <div class="col-lg-8">
             <div class="cx-card">
                 <div class="cx-card__header">
-                    <h2>API-felhasználók</h2>
-                    <span class="text-muted small">{{ api_users|length }} db</span>
+                    <h2>{{ t('api_users.list_title') }}</h2>
+                    <span class="text-muted small">{{ api_users|length }} {{ t('common.pcs') }}</span>
                 </div>
                 <div class="cx-card__body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0 cx-table">
-                            <thead><tr><th>Név</th><th>Token</th><th>Állapot</th><th class="text-end">Műveletek</th></tr></thead>
+                            <thead><tr><th>{{ t('common.name') }}</th><th>{{ t('api_users.token') }}</th><th>{{ t('api_users.status') }}</th><th class="text-end">{{ t('common.actions') }}</th></tr></thead>
                             <tbody>
                             {% for u in api_users %}
                                 <tr>
@@ -40,27 +38,27 @@
                                     <td>
                                         <div class="input-group input-group-sm" style="min-width:280px;">
                                             <input type="text" class="form-control form-control-sm font-monospace" value="{{ u.token }}" readonly onclick="this.select()" style="font-size:.75rem;">
-                                            <button type="button" class="btn btn-outline-secondary" title="Másolás" onclick="navigator.clipboard.writeText('{{ u.token }}')"><i class="bi bi-clipboard"></i></button>
+                                            <button type="button" class="btn btn-outline-secondary" title="{{ t('api_users.copy') }}" onclick="navigator.clipboard.writeText('{{ u.token }}')"><i class="bi bi-clipboard"></i></button>
                                         </div>
                                     </td>
                                     <td>
                                         {% if u.is_active %}
-                                            <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>
+                                            <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('api_users.active') }}</span>
                                         {% else %}
-                                            <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Inaktív</span>
+                                            <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('api_users.inactive') }}</span>
                                         {% endif %}
                                     </td>
                                     <td class="text-end text-nowrap">
-                                        <button type="submit" form="apiu-{{ u.id }}" class="btn btn-sm btn-outline-primary">Mentés</button>
-                                        <button type="submit" form="apiu-toggle-{{ u.id }}" class="btn btn-sm btn-outline-secondary" title="{{ u.is_active ? 'Inaktiválás' : 'Aktiválás' }}">
+                                        <button type="submit" form="apiu-{{ u.id }}" class="btn btn-sm btn-outline-primary">{{ t('common.save') }}</button>
+                                        <button type="submit" form="apiu-toggle-{{ u.id }}" class="btn btn-sm btn-outline-secondary" title="{{ u.is_active ? t('api_users.deactivate') : t('api_users.activate') }}">
                                             <i class="bi {{ u.is_active ? 'bi-pause' : 'bi-play' }}"></i>
                                         </button>
-                                        <button type="submit" form="apiu-regen-{{ u.id }}" class="btn btn-sm btn-outline-warning" title="Új token" onclick="return confirm('Új tokent generálsz? A régi azonnal érvénytelen lesz.');"><i class="bi bi-arrow-repeat"></i></button>
-                                        <button type="submit" form="apiu-del-{{ u.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Biztosan törlöd?');"><i class="bi bi-trash"></i></button>
+                                        <button type="submit" form="apiu-regen-{{ u.id }}" class="btn btn-sm btn-outline-warning" title="{{ t('api_users.new_token') }}" onclick="return confirm('{{ t('api_users.regen_confirm')|e('js') }}');"><i class="bi bi-arrow-repeat"></i></button>
+                                        <button type="submit" form="apiu-del-{{ u.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ t('common.confirm_delete')|e('js') }}');"><i class="bi bi-trash"></i></button>
                                     </td>
                                 </tr>
                             {% else %}
-                                <tr><td colspan="4" class="text-center text-muted py-4">Még nincs API-felhasználó.</td></tr>
+                                <tr><td colspan="4" class="text-center text-muted py-4">{{ t('api_users.none') }}</td></tr>
                             {% endfor %}
                             </tbody>
                         </table>

@@ -30,7 +30,7 @@ class LocationController extends BaseController
         ];
         $pager = new Paginator(30);
 
-        $this->pageTitle = 'Tárhelyek és polcok';
+        $this->pageTitle = $this->t('locations.list_title');
         $this->render('locations/list.twig', [
             'locations' => $this->locations->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -43,7 +43,7 @@ class LocationController extends BaseController
     {
         $this->requireAuth();
 
-        $this->pageTitle = 'Új tárhely';
+        $this->pageTitle = $this->t('locations.new');
         $this->render('locations/form.twig', [
             'location' => null,
             'warehouses' => $this->warehouses->activeList(),
@@ -61,7 +61,7 @@ class LocationController extends BaseController
         }
 
         $this->locations->create($data);
-        $this->flashSuccess('Tárhely létrehozva.');
+        $this->flashSuccess($this->t('locations.created'));
         $this->redirect('/locations');
     }
 
@@ -74,7 +74,7 @@ class LocationController extends BaseController
             $this->redirect('/locations');
         }
 
-        $this->pageTitle = 'Tárhely szerkesztése';
+        $this->pageTitle = $this->t('locations.edit_title');
         $this->render('locations/form.twig', [
             'location' => $location,
             'warehouses' => $this->warehouses->activeList(),
@@ -92,7 +92,7 @@ class LocationController extends BaseController
         }
 
         $this->locations->update($id, $data);
-        $this->flashSuccess('Tárhely frissítve.');
+        $this->flashSuccess($this->t('locations.updated'));
         $this->redirect('/locations');
     }
 
@@ -101,7 +101,7 @@ class LocationController extends BaseController
         $this->requireAuth();
 
         $this->locations->delete($id);
-        $this->flashSuccess('Tárhely törölve.');
+        $this->flashSuccess($this->t('locations.deleted'));
         $this->redirect('/locations');
     }
 
@@ -118,10 +118,10 @@ class LocationController extends BaseController
     private function validate(array $data, ?int $excludeId): ?string
     {
         if ($data['warehouse_id'] <= 0 || $data['code'] === '') {
-            return 'A raktár és a helykód megadása kötelező.';
+            return $this->t('locations.required');
         }
         if ($this->locations->codeExists($data['warehouse_id'], $data['code'], $excludeId)) {
-            return 'Ez a helykód már létezik ebben a raktárban.';
+            return $this->t('locations.code_taken');
         }
         return null;
     }

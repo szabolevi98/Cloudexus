@@ -26,7 +26,7 @@ class WarehouseController extends BaseController
         ];
         $pager = new Paginator(30);
 
-        $this->pageTitle = 'Raktárak és telephelyek';
+        $this->pageTitle = $this->t('warehouses.list_title');
         $this->render('warehouses/list.twig', [
             'warehouses' => $this->warehouses->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -38,7 +38,7 @@ class WarehouseController extends BaseController
     {
         $this->requireAuth();
 
-        $this->pageTitle = 'Új raktár';
+        $this->pageTitle = $this->t('warehouses.new');
         $this->render('warehouses/form.twig', ['warehouse' => null]);
     }
 
@@ -49,12 +49,12 @@ class WarehouseController extends BaseController
         $data = $this->collectInput();
 
         if ($data['name'] === '') {
-            $this->flashError('A raktár nevének megadása kötelező.');
+            $this->flashError($this->t('warehouses.name_required'));
             $this->redirect('/warehouses/create');
         }
 
         $this->warehouses->create($data);
-        $this->flashSuccess('Raktár létrehozva.');
+        $this->flashSuccess($this->t('warehouses.created'));
         $this->redirect('/warehouses');
     }
 
@@ -67,7 +67,7 @@ class WarehouseController extends BaseController
             $this->redirect('/warehouses');
         }
 
-        $this->pageTitle = 'Raktár szerkesztése';
+        $this->pageTitle = $this->t('warehouses.edit_title');
         $this->render('warehouses/form.twig', ['warehouse' => $warehouse]);
     }
 
@@ -78,12 +78,12 @@ class WarehouseController extends BaseController
         $data = $this->collectInput();
 
         if ($data['name'] === '') {
-            $this->flashError('A raktár nevének megadása kötelező.');
+            $this->flashError($this->t('warehouses.name_required'));
             $this->redirect('/warehouses/' . $id . '/edit');
         }
 
         $this->warehouses->update($id, $data);
-        $this->flashSuccess('Raktár frissítve.');
+        $this->flashSuccess($this->t('warehouses.updated'));
         $this->redirect('/warehouses');
     }
 
@@ -92,7 +92,7 @@ class WarehouseController extends BaseController
         $this->requireAuth();
 
         $this->warehouses->delete($id);
-        $this->flashSuccess('Raktár törölve.');
+        $this->flashSuccess($this->t('warehouses.deleted'));
         $this->redirect('/warehouses');
     }
 

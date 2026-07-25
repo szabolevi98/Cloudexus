@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'new' => 'Új API-felhasználó',
+    'name_label' => 'Név / megnevezés',
+    'name_placeholder' => 'pl. Webshop szinkron',
+    'create' => 'Létrehozás',
+    'token_hint' => 'A token létrehozáskor generálódik. A kérésekben az <code>Authorization: Bearer &lt;token&gt;</code> fejléccel kell küldeni. A dokumentációt lásd az <a href="{url}/API.md" target="_blank" rel="noopener">API dokumentáció</a> menüben.',
+    'list_title' => 'API-felhasználók',
+    'token' => 'Token',
+    'status' => 'Állapot',
+    'active' => 'Aktív',
+    'inactive' => 'Inaktív',
+    'copy' => 'Másolás',
+    'deactivate' => 'Inaktiválás',
+    'activate' => 'Aktiválás',
+    'new_token' => 'Új token',
+    'regen_confirm' => 'Új tokent generálsz? A régi azonnal érvénytelen lesz.',
+    'none' => 'Még nincs API-felhasználó.',
+    'name_required' => 'Az API-felhasználó nevének megadása kötelező.',
+    'created' => 'API-felhasználó létrehozva, a token az alábbi listában látható.',
+    'updated' => 'API-felhasználó frissítve.',
+    'deactivated' => 'API-felhasználó inaktiválva.',
+    'activated' => 'API-felhasználó aktiválva.',
+    'token_regenerated' => 'Új token generálva. A régi token azonnal érvénytelen.',
+    'deleted' => 'API-felhasználó törölve.',
+    'docs_title' => 'API dokumentáció',
+];

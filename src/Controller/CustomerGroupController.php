@@ -23,7 +23,7 @@ class CustomerGroupController extends BaseController
         $filters = ['q' => trim($_GET['q'] ?? '')];
         $pager = new Paginator(30);
 
-        $this->pageTitle = 'Vevőcsoportok';
+        $this->pageTitle = $this->t('customer_groups.list_title');
         $this->render('customer-groups/list.twig', [
             'groups' => $this->groups->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -39,12 +39,12 @@ class CustomerGroupController extends BaseController
         $description = trim($_POST['description'] ?? '');
 
         if ($name === '') {
-            $this->flashError('A vevőcsoport nevének megadása kötelező.');
+            $this->flashError($this->t('customer_groups.name_required'));
         } elseif ($this->groups->exists($name)) {
-            $this->flashError('Ez a vevőcsoport név már létezik.');
+            $this->flashError($this->t('customer_groups.name_exists'));
         } else {
             $this->groups->create(['name' => $name, 'description' => $description]);
-            $this->flashSuccess('Vevőcsoport hozzáadva.');
+            $this->flashSuccess($this->t('customer_groups.created'));
         }
 
         $this->redirect('/customer-groups');
@@ -58,12 +58,12 @@ class CustomerGroupController extends BaseController
         $description = trim($_POST['description'] ?? '');
 
         if ($name === '') {
-            $this->flashError('A vevőcsoport nevének megadása kötelező.');
+            $this->flashError($this->t('customer_groups.name_required'));
         } elseif ($this->groups->exists($name, $id)) {
-            $this->flashError('Ez a vevőcsoport név már létezik.');
+            $this->flashError($this->t('customer_groups.name_exists'));
         } else {
             $this->groups->update($id, ['name' => $name, 'description' => $description]);
-            $this->flashSuccess('Vevőcsoport frissítve.');
+            $this->flashSuccess($this->t('customer_groups.updated'));
         }
 
         $this->redirect('/customer-groups');
@@ -74,7 +74,7 @@ class CustomerGroupController extends BaseController
         $this->requireAuth();
 
         $this->groups->delete($id);
-        $this->flashSuccess('Vevőcsoport törölve.');
+        $this->flashSuccess($this->t('customer_groups.deleted'));
         $this->redirect('/customer-groups');
     }
 }

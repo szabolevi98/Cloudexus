@@ -29,6 +29,7 @@ return [
     'pcs' => 'pcs',
     'count_suffix' => 'items',
     'pagination_results' => '{from}–{to} of {total} results',
+    'pagination' => 'Pagination',
     'date' => 'Date',
     'date_from' => 'Date from',
     'date_to' => 'Date to',

@@ -23,7 +23,7 @@ class UnitController extends BaseController
         $filters = ['q' => trim($_GET['q'] ?? '')];
         $pager = new Paginator(30);
 
-        $this->pageTitle = 'Mennyiségi egységek';
+        $this->pageTitle = $this->t('units.list_title');
         $this->render('units/list.twig', [
             'units' => $this->units->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -37,12 +37,12 @@ class UnitController extends BaseController
 
         $data = $this->collectInput();
         if ($data['code'] === '' || $data['name'] === '') {
-            $this->flashError('A kód és a név megadása kötelező.');
+            $this->flashError($this->t('units.code_name_required'));
         } elseif ($this->units->codeExists($data['code'])) {
-            $this->flashError('Ez a kód már létezik.');
+            $this->flashError($this->t('units.code_exists'));
         } else {
             $this->units->create($data);
-            $this->flashSuccess('Mennyiségi egység hozzáadva.');
+            $this->flashSuccess($this->t('units.created'));
         }
         $this->redirect('/units');
     }
@@ -53,12 +53,12 @@ class UnitController extends BaseController
 
         $data = $this->collectInput();
         if ($data['code'] === '' || $data['name'] === '') {
-            $this->flashError('A kód és a név megadása kötelező.');
+            $this->flashError($this->t('units.code_name_required'));
         } elseif ($this->units->codeExists($data['code'], $id)) {
-            $this->flashError('Ez a kód már létezik.');
+            $this->flashError($this->t('units.code_exists'));
         } else {
             $this->units->update($id, $data);
-            $this->flashSuccess('Mennyiségi egység frissítve.');
+            $this->flashSuccess($this->t('units.updated'));
         }
         $this->redirect('/units');
     }
@@ -68,7 +68,7 @@ class UnitController extends BaseController
         $this->requireAdmin();
 
         $this->units->delete($id);
-        $this->flashSuccess('Mennyiségi egység törölve.');
+        $this->flashSuccess($this->t('units.deleted'));
         $this->redirect('/units');
     }
 

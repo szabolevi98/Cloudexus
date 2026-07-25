@@ -30,7 +30,7 @@ class ParameterNameController extends BaseController
         $filters = ['q' => trim($_GET['q'] ?? '')];
         $pager = new Paginator(30);
 
-        $this->pageTitle = 'Paraméterek';
+        $this->pageTitle = $this->t('parameters.list_title');
         $this->render('parameter-names/list.twig', [
             'names' => $this->names->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -44,12 +44,12 @@ class ParameterNameController extends BaseController
 
         $name = trim($_POST['name'] ?? '');
         if ($name === '') {
-            $this->flashError('A paraméternév megadása kötelező.');
+            $this->flashError($this->t('parameters.name_required'));
         } elseif ($this->names->exists($name)) {
-            $this->flashError('Ez a paraméternév már létezik.');
+            $this->flashError($this->t('parameters.name_exists'));
         } else {
             $this->names->create($name);
-            $this->flashSuccess('Paraméternév hozzáadva.');
+            $this->flashSuccess($this->t('parameters.created'));
         }
         $this->redirect('/parameter-names');
     }
@@ -60,12 +60,12 @@ class ParameterNameController extends BaseController
 
         $name = trim($_POST['name'] ?? '');
         if ($name === '') {
-            $this->flashError('A paraméternév megadása kötelező.');
+            $this->flashError($this->t('parameters.name_required'));
         } elseif ($this->names->exists($name, $id)) {
-            $this->flashError('Ez a paraméternév már létezik.');
+            $this->flashError($this->t('parameters.name_exists'));
         } else {
             $this->names->update($id, $name);
-            $this->flashSuccess('Paraméternév frissítve.');
+            $this->flashSuccess($this->t('parameters.updated'));
         }
         $this->redirect('/parameter-names');
     }
@@ -75,7 +75,7 @@ class ParameterNameController extends BaseController
         $this->requireAdmin();
 
         $this->names->delete($id);
-        $this->flashSuccess('Paraméternév törölve.');
+        $this->flashSuccess($this->t('parameters.deleted'));
         $this->redirect('/parameter-names');
     }
 }

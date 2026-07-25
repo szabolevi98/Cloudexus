@@ -19,7 +19,7 @@ class ApiUserController extends BaseController
     {
         $this->requireAdmin();
 
-        $this->pageTitle = 'API felhasználók';
+        $this->pageTitle = $this->t('api_users.list_title');
         $this->render('api-users/list.twig', ['api_users' => $this->apiUsers->all()]);
     }
 
@@ -28,7 +28,7 @@ class ApiUserController extends BaseController
         $this->requireAdmin();
 
         $this->activeMenu = 'api-docs';
-        $this->pageTitle = 'API dokumentáció';
+        $this->pageTitle = $this->t('api_users.docs_title');
         $this->render('api-docs.twig');
     }
 
@@ -38,10 +38,10 @@ class ApiUserController extends BaseController
 
         $name = trim($_POST['name'] ?? '');
         if ($name === '') {
-            $this->flashError('Az API-felhasználó nevének megadása kötelező.');
+            $this->flashError($this->t('api_users.name_required'));
         } else {
             $this->apiUsers->create($name);
-            $this->flashSuccess('API-felhasználó létrehozva, a token az alábbi listában látható.');
+            $this->flashSuccess($this->t('api_users.created'));
         }
         $this->redirect('/api-users');
     }
@@ -52,10 +52,10 @@ class ApiUserController extends BaseController
 
         $name = trim($_POST['name'] ?? '');
         if ($name === '') {
-            $this->flashError('Az API-felhasználó nevének megadása kötelező.');
+            $this->flashError($this->t('api_users.name_required'));
         } else {
             $this->apiUsers->rename($id, $name);
-            $this->flashSuccess('API-felhasználó frissítve.');
+            $this->flashSuccess($this->t('api_users.updated'));
         }
         $this->redirect('/api-users');
     }
@@ -67,7 +67,7 @@ class ApiUserController extends BaseController
         $user = $this->apiUsers->findById($id);
         if ($user) {
             $this->apiUsers->setActive($id, !$user['is_active']);
-            $this->flashSuccess($user['is_active'] ? 'API-felhasználó inaktiválva.' : 'API-felhasználó aktiválva.');
+            $this->flashSuccess($user['is_active'] ? $this->t('api_users.deactivated') : $this->t('api_users.activated'));
         }
         $this->redirect('/api-users');
     }
@@ -78,7 +78,7 @@ class ApiUserController extends BaseController
 
         if ($this->apiUsers->findById($id)) {
             $this->apiUsers->regenerateToken($id);
-            $this->flashSuccess('Új token generálva. A régi token azonnal érvénytelen.');
+            $this->flashSuccess($this->t('api_users.token_regenerated'));
         }
         $this->redirect('/api-users');
     }
@@ -88,7 +88,7 @@ class ApiUserController extends BaseController
         $this->requireAdmin();
 
         $this->apiUsers->delete($id);
-        $this->flashSuccess('API-felhasználó törölve.');
+        $this->flashSuccess($this->t('api_users.deleted'));
         $this->redirect('/api-users');
     }
 }
