@@ -30,5 +30,5 @@ return [
     'minimum' => 'Minimum',
     'receive' => 'Receive',
     'all_above_minimum' => 'All stock is above the minimum.',
-    'orders_value_label' => 'Order value (Ft)',
+    'orders_value_label' => 'Order value ({currency})',
 ];

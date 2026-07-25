@@ -18,8 +18,8 @@ return [
     'warehouse_stockout' => 'Készletkiadás raktárból',
     'warehouse_hint' => 'Ha megadod, a számla tételei automatikusan raktári kiadásként is könyvelődnek.',
     'no_auto_issue' => '— nincs automatikus kiadás —',
-    'shipping_cost' => 'Szállítási költség (Ft)',
-    'payment_cost' => 'Fizetési költség (Ft)',
+    'shipping_cost' => 'Szállítási költség ({currency})',
+    'payment_cost' => 'Fizetési költség ({currency})',
     'payment_cost_hint' => '(pl. utánvét)',
     'create_invoice' => 'Számla kiállítása',
 

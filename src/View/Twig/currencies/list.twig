@@ -1,0 +1,147 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="cx-card">
+                <div class="cx-card__header"><h2>{{ t('currencies.new') }}</h2></div>
+                <div class="cx-card__body">
+                    <form method="post" action="{{ base_url }}/currencies/create">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">{{ t('currencies.title') }}</label>
+                            <input type="text" id="title" name="title" class="form-control" placeholder="{{ t('currencies.title_placeholder') }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="code" class="form-label">{{ t('currencies.code') }}</label>
+                            <input type="text" id="code" name="code" class="form-control text-uppercase" placeholder="{{ t('currencies.code_placeholder') }}" maxlength="3" required>
+                            <div class="form-text">{{ t('currencies.code_hint') }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="symbol" class="form-label">{{ t('currencies.symbol') }}</label>
+                            <input type="text" id="symbol" name="symbol" class="form-control" placeholder="{{ t('currencies.symbol_placeholder') }}" maxlength="8">
+                            <div class="form-text">{{ t('currencies.symbol_hint') }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="value" class="form-label">{{ t('currencies.value') }}</label>
+                            <input type="text" id="value" name="value" class="form-control" value="1" required>
+                            <div class="form-text">{{ t('currencies.value_hint', {'primary': primary_code}) }}</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>{{ t('common.add') }}</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="cx-card mt-3">
+                <div class="cx-card__header"><h2>{{ t('currencies.mnb_sync_title') }}</h2></div>
+                <div class="cx-card__body">
+                    <form method="post" action="{{ base_url }}/currencies/sync">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-arrow-repeat me-1"></i>{{ t('currencies.mnb_sync') }}
+                        </button>
+                    </form>
+
+                    <dl class="row small mb-0 mt-3">
+                        <dt class="col-6 fw-normal text-muted">{{ t('currencies.mnb_last_sync') }}</dt>
+                        <dd class="col-6 mb-1">{{ last_sync ?: t('currencies.mnb_never_synced') }}</dd>
+                        {% if rate_date %}
+                            <dt class="col-6 fw-normal text-muted">{{ t('currencies.mnb_rate_date') }}</dt>
+                            <dd class="col-6 mb-1">{{ rate_date }}</dd>
+                        {% endif %}
+                    </dl>
+
+                    <hr>
+
+                    <div class="form-text mb-2">{{ t('currencies.mnb_sync_hint') }}</div>
+                    <pre class="cx-code-block mb-2"><code>{{ cron_command }}</code></pre>
+                    <div class="form-text">{{ t('currencies.mnb_sync_cron_note') }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="cx-card">
+                <div class="cx-card__header">
+                    <h2>{{ t('currencies.list_title') }}</h2>
+                    <span class="text-muted small">{{ pager.total }} {{ t('common.pcs') }}</span>
+                </div>
+                <div class="cx-card__body p-0">
+                    <div class="alert alert-info rounded-0 border-0 border-bottom mb-0 small">
+                        <i class="bi bi-info-circle me-1"></i>{{ t('currencies.primary_explained') }}
+                    </div>
+                    <form method="get" class="p-3 border-bottom">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-sm-6 col-lg-5">
+                                <label class="form-label small text-muted mb-1">{{ t('common.search') }}</label>
+                                <input type="text" name="q" class="form-control form-control-sm" placeholder="{{ t('currencies.search_placeholder') }}" value="{{ filters.q }}">
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>{{ t('common.filter') }}</button>
+                                <a href="{{ base_url }}/currencies" class="btn btn-sm btn-outline-secondary">{{ t('common.clear') }}</a>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 cx-table">
+                            <thead>
+                            <tr>
+                                <th style="width:90px;">{{ t('currencies.code') }}</th>
+                                <th>{{ t('currencies.title') }}</th>
+                                <th style="width:90px;">{{ t('currencies.symbol') }}</th>
+                                <th style="width:150px;">{{ t('currencies.value') }}</th>
+                                <th style="width:130px;">{{ t('currencies.primary') }}</th>
+                                <th class="text-end">{{ t('common.actions') }}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for c in currencies %}
+                                <tr>
+                                    <td>
+                                        <input type="text" name="code" form="cur-{{ c.id }}" class="form-control form-control-sm text-uppercase" value="{{ c.code }}" maxlength="3">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="title" form="cur-{{ c.id }}" class="form-control form-control-sm" value="{{ c.title }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="symbol" form="cur-{{ c.id }}" class="form-control form-control-sm" value="{{ c.symbol }}" maxlength="8">
+                                    </td>
+                                    <td>
+                                        {% if c.is_primary %}
+                                            <input type="text" class="form-control form-control-sm" value="1" disabled>
+                                        {% else %}
+                                            <input type="text" name="value" form="cur-{{ c.id }}" class="form-control form-control-sm font-monospace" value="{{ c.value }}">
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if c.is_primary %}
+                                            <span class="badge rounded-pill text-bg-primary">{{ t('currencies.primary_badge') }}</span>
+                                        {% else %}
+                                            <button type="submit" form="cur-primary-{{ c.id }}" class="btn btn-sm btn-outline-secondary" title="{{ t('currencies.set_primary') }}">
+                                                <i class="bi bi-star"></i>
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <button type="submit" form="cur-{{ c.id }}" class="btn btn-sm btn-outline-primary">{{ t('common.save') }}</button>
+                                        {% if not c.is_primary %}
+                                            <button type="submit" form="cur-del-{{ c.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ t('common.confirm_delete')|e('js') }}');"><i class="bi bi-trash"></i></button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="6" class="text-center text-muted py-4">{{ t('currencies.none_found') }}</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% include 'common/pagination.twig' %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for c in currencies %}
+        <form id="cur-{{ c.id }}" method="post" action="{{ base_url }}/currencies/{{ c.id }}"></form>
+        <form id="cur-del-{{ c.id }}" method="post" action="{{ base_url }}/currencies/{{ c.id }}/delete"></form>
+        <form id="cur-primary-{{ c.id }}" method="post" action="{{ base_url }}/currencies/{{ c.id }}/primary"></form>
+    {% endfor %}
+{% endblock %}

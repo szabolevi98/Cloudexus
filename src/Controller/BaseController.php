@@ -4,10 +4,12 @@ namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Auth;
 use Cloudexus\Core\Config;
+use Cloudexus\Core\Currency;
 use Cloudexus\Core\Lang;
 use Cloudexus\Core\Session;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
+use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 abstract class BaseController
@@ -24,6 +26,11 @@ abstract class BaseController
         ]);
         // {{ t('domain.key') }} translation helper, with optional {placeholders}.
         $this->twig->addFunction(new TwigFunction('t', [Lang::class, 'get']));
+        // {{ amount|money }} formázás az elsődleges pénznemben, pl. "89 900 Ft".
+        $this->twig->addFilter(new TwigFilter('money', [Currency::class, 'format']));
+        // {{ currency_symbol() }} önmagában, pl. beviteli mezők címkéihez. Twig
+        // függvény és nem globális, hogy csak akkor kérdezze le a pénznemet, ha kell.
+        $this->twig->addFunction(new TwigFunction('currency_symbol', [Currency::class, 'symbol']));
     }
 
     /** Translate a key (controller-side: flash messages, page titles, …). */

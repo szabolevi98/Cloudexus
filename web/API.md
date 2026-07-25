@@ -40,11 +40,28 @@ The response has a `data` + `meta` shape:
 ```json
 {
   "data": [ { "...": "..." } ],
-  "meta": { "page": 1, "per_page": 50, "total": 8423, "total_pages": 169 }
+  "meta": {
+    "page": 1, "per_page": 50, "total": 8423, "total_pages": 169,
+    "currency": { "code": "HUF", "symbol": "Ft", "title": "Forint" }
+  }
 }
 ```
 
-A single-item response is `{ "data": { ... } }`.
+A single-item response is `{ "data": { ... }, "meta": { "currency": { ... } } }`.
+
+## Currency
+
+Every monetary amount in every response is expressed in the installation's **primary
+currency** — amounts are never converted, and no request parameter changes them. The
+`meta.currency` block tells you which currency that is:
+
+```json
+{ "meta": { "currency": { "code": "HUF", "symbol": "Ft", "title": "Forint" } } }
+```
+
+It is present on all list responses, and on the single-item responses that carry amounts
+(products, invoices, orders, pricing). To convert on your side, read the rates from
+[`GET /api/currencies`](#other-master-data).
 
 ## Filters
 
@@ -122,6 +139,9 @@ Example response (`GET /api/products/1`) — all fields of the detailed product:
       "1": { "customer_group_id": 1, "price": "3650.00", "sale_price": null },
       "3": { "customer_group_id": 3, "price": "3600.00", "sale_price": "3060.00" }
     }
+  },
+  "meta": {
+    "currency": { "code": "HUF", "symbol": "Ft", "title": "Forint" }
   }
 }
 ```
@@ -131,8 +151,9 @@ Fields: `price`/`sale_price` are net prices (if `sale_price` is set, that is the
 relative upload path or a full URL); `attributes` are the product parameters; `category_ids`
 lists all assigned categories; `related_ids`/`substitute_ids` are the related/substitute
 products; `group_prices` are the customer-group prices keyed by `customer_group_id` (a fixed
-`price` plus an optional `sale_price`). Note: text values that are actual data (product name,
-description, attribute values) are returned as stored and are not translated.
+`price` plus an optional `sale_price`). All amounts are in the primary currency named by
+`meta.currency` — see [Currency](#currency). Note: text values that are actual data (product
+name, description, attribute values) are returned as stored and are not translated.
 
 ### Categories
 
@@ -147,9 +168,48 @@ description, attribute values) are returned as stored and are not translated.
 |---|---|---|
 | GET | `/api/parameter-names` | Parameter names. Filters: `q`, `updated_since` |
 | GET | `/api/units` | Units of measure. Filters: `q`, `updated_since` |
+| GET | `/api/currencies` | Currencies and exchange rates. Filters: `q`, `updated_since` |
 | GET | `/api/customer-groups` | Customer groups. Filters: `q`, `updated_since` |
 | GET | `/api/customer-groups/{id}` | Single customer group |
 | GET | `/api/warehouses` | Warehouses. Filters: `q`, `status`, `updated_since` |
+
+Example response (`GET /api/currencies`):
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Forint",
+      "code": "HUF",
+      "symbol": "Ft",
+      "value": 1,
+      "created_at": "2026-07-25 21:33:16",
+      "updated_at": "2026-07-25 21:33:16",
+      "is_primary": true
+    },
+    {
+      "id": 2,
+      "title": "Euró",
+      "code": "EUR",
+      "symbol": "€",
+      "value": 0.00275687,
+      "created_at": "2026-07-25 21:33:16",
+      "updated_at": "2026-07-25 21:35:24",
+      "is_primary": false
+    }
+  ],
+  "meta": {
+    "page": 1, "per_page": 50, "total": 2, "total_pages": 1,
+    "currency": { "code": "HUF", "symbol": "Ft", "title": "Forint" }
+  }
+}
+```
+
+`value` is the multiplier from the primary currency: **1 primary unit equals `value` of this
+currency**, so converting is `amount * value`. The primary currency always has `value: 1` and
+`is_primary: true`. Rates are maintained in the admin UI, or refreshed from the MNB (Hungarian
+National Bank) mid-rates by the `bin/sync_currency_rates.php` cron script.
 
 ### Stock
 
@@ -174,7 +234,10 @@ Example response (`GET /api/stock`):
       "quantity": "42.000"
     }
   ],
-  "meta": { "page": 1, "per_page": 50, "total": 298, "total_pages": 6 }
+  "meta": {
+    "page": 1, "per_page": 50, "total": 298, "total_pages": 6,
+    "currency": { "code": "HUF", "symbol": "Ft", "title": "Forint" }
+  }
 }
 ```
 
@@ -212,11 +275,15 @@ Example response (`GET /api/invoices/2`):
     "items": [
       { "id": 5, "invoice_id": 2, "product_id": 26, "quantity": "6.000", "unit_price": "6850.00", "line_total": "41100.00", "sku": "PRD-0026", "product_name": "Jóga szőnyeg", "unit": "csomag" }
     ]
+  },
+  "meta": {
+    "currency": { "code": "HUF", "symbol": "Ft", "title": "Forint" }
   }
 }
 ```
 
-`status`: `unpaid` / `paid` / `cancelled`. Invoices are read-only via the API.
+`status`: `unpaid` / `paid` / `cancelled`. Invoices are read-only via the API. All amounts are
+in the currency named by `meta.currency`.
 
 ### Pricing
 
@@ -227,7 +294,10 @@ Example response (`GET /api/invoices/2`):
 Example response (`GET /api/pricing/effective?product_id=1&partner_id=12`):
 
 ```json
-{ "data": { "price": 80910, "is_sale": false } }
+{
+  "data": { "price": 80910, "is_sale": false },
+  "meta": { "currency": { "code": "HUF", "symbol": "Ft", "title": "Forint" } }
+}
 ```
 
 `price` is the net unit price actually applicable to the partner (the partner's customer-group
@@ -341,6 +411,8 @@ Fields:
 - `shipping_address_id`, `billing_address_id` — the id of one of the partner's addresses
   (optional; 0 or omitted = none).
 - `shipping_cost`, `payment_cost` — arbitrary net amounts (default: 0).
+- `unit_price` and the cost fields are interpreted in the primary currency (see
+  [Currency](#currency)); the API does not convert between currencies.
 - The order number is generated automatically; `total_amount` is computed by the server
   (items + `shipping_cost` + `payment_cost`).
 - On PUT, `items` is only replaced if provided; otherwise the line items are kept.
@@ -369,6 +441,9 @@ Example response (`GET /api/orders/19`) — the address fields are resolved from
       { "id": 53, "order_id": 19, "product_id": 47, "quantity": "1.000", "unit_price": "2415.00", "line_total": "2415.00", "sku": "PRD-0047", "product_name": "Öntözőkanna 10L", "unit": "karton" },
       { "id": 54, "order_id": 19, "product_id": 35, "quantity": "9.000", "unit_price": "19990.00", "line_total": "179910.00", "sku": "PRD-0035", "product_name": "Éjjeliszekrény", "unit": "szett" }
     ]
+  },
+  "meta": {
+    "currency": { "code": "HUF", "symbol": "Ft", "title": "Forint" }
   }
 }
 ```
@@ -393,6 +468,13 @@ Only products changed since yesterday:
 ```bash
 curl -H "Authorization: Bearer <token>" \
   "https://cloudexus.levente.net/api/products?updated_since=2026-07-19%2000:00:00"
+```
+
+Currencies and rates (to convert the amounts on your side):
+
+```bash
+curl -H "Authorization: Bearer <token>" \
+  "https://cloudexus.levente.net/api/currencies"
 ```
 
 Create a partner:

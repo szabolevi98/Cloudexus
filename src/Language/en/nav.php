@@ -34,6 +34,7 @@ return [
     'settings_company' => 'Company details',
     'parameters' => 'Parameters',
     'units' => 'Units of measure',
+    'currencies' => 'Currencies',
     'api_users' => 'API users',
     'api_docs' => 'API documentation',
     'profile' => 'Profile',

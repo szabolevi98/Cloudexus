@@ -22,7 +22,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="amount" class="form-label">{{ t('cash.amount_ft') }}</label>
+                        <label for="amount" class="form-label">{{ t('cash.amount_ft', {'currency': currency_symbol()}) }}</label>
                         <input type="number" step="0.01" min="0.01" id="amount" name="amount" class="form-control" required>
                     </div>
                     <div class="col-md-6 mb-3">
@@ -44,7 +44,7 @@
                     <select id="invoice_id" name="invoice_id" class="form-select">
                         <option value="">{{ t('cash.none_option') }}</option>
                         {% for i in unpaid_invoices %}
-                            <option value="{{ i.id }}">{{ i.invoice_number }} — {{ i.partner_name }} ({{ i.total_amount|number_format(0, ',', ' ') }} Ft)</option>
+                            <option value="{{ i.id }}">{{ i.invoice_number }} — {{ i.partner_name }} ({{ i.total_amount|money }})</option>
                         {% endfor %}
                     </select>
                     <div class="form-text">{{ t('cash.auto_paid_hint') }}</div>
@@ -54,7 +54,7 @@
                     <select id="incoming_invoice_id" name="incoming_invoice_id" class="form-select">
                         <option value="">{{ t('cash.none_option') }}</option>
                         {% for i in unpaid_incoming_invoices %}
-                            <option value="{{ i.id }}">{{ i.invoice_number }} — {{ i.partner_name }} ({{ i.total_amount|number_format(0, ',', ' ') }} Ft)</option>
+                            <option value="{{ i.id }}">{{ i.invoice_number }} — {{ i.partner_name }} ({{ i.total_amount|money }})</option>
                         {% endfor %}
                     </select>
                     <div class="form-text">{{ t('cash.auto_paid_hint') }}</div>

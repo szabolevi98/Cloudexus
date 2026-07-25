@@ -38,7 +38,7 @@ class OrderApiController extends ApiController
         if (!$order) {
             $this->error('Order not found.', 404);
         }
-        $this->json(['data' => $order]);
+        $this->resource($order);
     }
 
     public function create(): void
@@ -67,7 +67,7 @@ class OrderApiController extends ApiController
             'created_by' => null,
         ], $items);
 
-        $this->json(['data' => $this->orders()->findById($id)], 201);
+        $this->resource($this->orders()->findById($id), 201);
     }
 
     public function update(int $id): void
@@ -104,7 +104,7 @@ class OrderApiController extends ApiController
             'payment_cost' => (float) ($body['payment_cost'] ?? $order['payment_cost']),
         ], $items);
 
-        $this->json(['data' => $this->orders()->findById($id)]);
+        $this->resource($this->orders()->findById($id));
     }
 
     public function delete(int $id): void

@@ -1,6 +1,7 @@
 <?php
 
 use Cloudexus\Controller\Api\CategoryApiController;
+use Cloudexus\Controller\Api\CurrencyApiController;
 use Cloudexus\Controller\Api\CustomerGroupApiController;
 use Cloudexus\Controller\Api\InvoiceApiController;
 use Cloudexus\Controller\Api\OrderApiController;
@@ -14,6 +15,7 @@ use Cloudexus\Controller\Api\WarehouseApiController;
 use Cloudexus\Controller\ApiUserController;
 use Cloudexus\Controller\CashVoucherController;
 use Cloudexus\Controller\CategoryController;
+use Cloudexus\Controller\CurrencyController;
 use Cloudexus\Controller\CustomerGroupController;
 use Cloudexus\Controller\DashboardController;
 use Cloudexus\Controller\IncomingInvoiceController;
@@ -151,6 +153,13 @@ $router->post('/units/create', fn() => (new UnitController())->create());
 $router->post('/units/{id}', fn($id) => (new UnitController())->update((int) $id));
 $router->post('/units/{id}/delete', fn($id) => (new UnitController())->delete((int) $id));
 
+$router->get('/currencies', fn() => (new CurrencyController())->list());
+$router->post('/currencies/create', fn() => (new CurrencyController())->create());
+$router->post('/currencies/sync', fn() => (new CurrencyController())->syncRates());
+$router->post('/currencies/{id}', fn($id) => (new CurrencyController())->update((int) $id));
+$router->post('/currencies/{id}/primary', fn($id) => (new CurrencyController())->setPrimary((int) $id));
+$router->post('/currencies/{id}/delete', fn($id) => (new CurrencyController())->delete((int) $id));
+
 $router->get('/customer-groups', fn() => (new CustomerGroupController())->list());
 $router->post('/customer-groups/create', fn() => (new CustomerGroupController())->create());
 $router->post('/customer-groups/{id}', fn($id) => (new CustomerGroupController())->update((int) $id));
@@ -235,6 +244,7 @@ $router->get('/api/categories/{id}', fn($id) => (new CategoryApiController())->s
 
 $router->get('/api/parameter-names', fn() => (new ParameterNameApiController())->index());
 $router->get('/api/units', fn() => (new UnitApiController())->index());
+$router->get('/api/currencies', fn() => (new CurrencyApiController())->index());
 
 $router->get('/api/customer-groups', fn() => (new CustomerGroupApiController())->index());
 $router->get('/api/customer-groups/{id}', fn($id) => (new CustomerGroupApiController())->show((int) $id));

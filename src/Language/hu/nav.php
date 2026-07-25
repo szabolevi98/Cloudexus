@@ -34,6 +34,7 @@ return [
     'settings_company' => 'Cégadatok',
     'parameters' => 'Paraméterek',
     'units' => 'Mennyiségi egységek',
+    'currencies' => 'Pénznemek',
     'api_users' => 'API felhasználók',
     'api_docs' => 'API dokumentáció',
     'profile' => 'Profil',

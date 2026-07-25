@@ -1,0 +1,17 @@
+/* Bemásolható parancs/kódrészlet a felületen (pl. crontab sor). */
+.cx-code-block {
+    background: #1c2333;
+    color: #e7e9f2;
+    padding: 10px 12px;
+    border-radius: var(--cx-radius-sm);
+    overflow-x: auto;
+    margin: 0;
+}
+
+.cx-code-block code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: 0.78rem;
+    white-space: pre;
+}

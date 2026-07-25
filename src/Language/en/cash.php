@@ -14,7 +14,7 @@ return [
     'partner' => 'Partner',
     'related_invoice' => 'Related invoice',
     'amount' => 'Amount',
-    'amount_ft' => 'Amount (Ft)',
+    'amount_ft' => 'Amount ({currency})',
     'date' => 'Date',
     'none_found' => 'No vouchers match the filter.',
     'partner_optional' => 'Partner',

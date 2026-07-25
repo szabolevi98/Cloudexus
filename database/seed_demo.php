@@ -43,7 +43,7 @@ foreach ([
     'cash_vouchers', 'incoming_invoice_items', 'incoming_invoices',
     'purchase_order_items', 'purchase_orders', 'invoice_items', 'invoices',
     'order_items', 'orders', 'stock_movements', 'product_group_prices', 'products', 'categories',
-    'partners', 'warehouses', 'customer_groups',
+    'partners', 'warehouses', 'customer_groups', 'currencies',
 ] as $table) {
     $pdo->exec("TRUNCATE TABLE $table");
 }
@@ -60,6 +60,30 @@ $invoiceModel = new InvoiceModel();
 $poModel = new PurchaseOrderModel();
 $incomingInvoiceModel = new IncomingInvoiceModel();
 $cashModel = new CashVoucherModel();
+
+// ---------------------------------------------------------------------------
+// Currencies
+// ---------------------------------------------------------------------------
+// A forint az elsődleges pénznem (value = 1), a másik kettő váltószáma
+// hozzávetőleges MNB-középárfolyam. A "MNB közép árfolyam lekérése" gomb
+// (vagy a bin/sync_currency_rates.php cron szkript) felülírja őket.
+echo "Seeding currencies...\n";
+$currencyStmt = $pdo->prepare(
+    'INSERT INTO currencies (title, code, symbol, value) VALUES (:title, :code, :symbol, :value)'
+);
+foreach ([
+    ['Forint', 'HUF', 'Ft', 1.0],
+    ['Euró', 'EUR', '€', 1 / 395.0],
+    ['USA dollár', 'USD', '$', 1 / 365.0],
+] as [$title, $code, $symbol, $value]) {
+    $currencyStmt->execute(['title' => $title, 'code' => $code, 'symbol' => $symbol, 'value' => $value]);
+}
+$pdo->prepare(
+    'INSERT INTO settings (setting_key, setting_value, updated_at)
+     VALUES (:k, :v, NOW())
+     ON DUPLICATE KEY UPDATE setting_value = :v2, updated_at = NOW()'
+)->execute(['k' => 'currency.primary', 'v' => 'HUF', 'v2' => 'HUF']);
+echo "3 currencies (HUF elsődleges, EUR, USD).\n";
 
 // ---------------------------------------------------------------------------
 // Categories + products

@@ -63,8 +63,8 @@
                             <td>{{ item.sku }}</td>
                             <td>{{ item.product_name }}</td>
                             <td class="text-end">{{ item.quantity|number_format(0, ',', ' ') }} {{ item.unit }}</td>
-                            <td class="text-end">{{ item.unit_price|number_format(0, ',', ' ') }} Ft</td>
-                            <td class="text-end">{{ item.line_total|number_format(0, ',', ' ') }} Ft</td>
+                            <td class="text-end">{{ item.unit_price|money }}</td>
+                            <td class="text-end">{{ item.line_total|money }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -72,18 +72,18 @@
                     {% if order.shipping_cost > 0 %}
                         <tr>
                             <td colspan="4" class="text-end text-muted">{{ t('orders.shipping_cost_row') }}</td>
-                            <td class="text-end text-muted">{{ order.shipping_cost|number_format(0, ',', ' ') }} Ft</td>
+                            <td class="text-end text-muted">{{ order.shipping_cost|money }}</td>
                         </tr>
                     {% endif %}
                     {% if order.payment_cost > 0 %}
                         <tr>
                             <td colspan="4" class="text-end text-muted">{{ t('orders.payment_cost_row') }}</td>
-                            <td class="text-end text-muted">{{ order.payment_cost|number_format(0, ',', ' ') }} Ft</td>
+                            <td class="text-end text-muted">{{ order.payment_cost|money }}</td>
                         </tr>
                     {% endif %}
                     <tr>
                         <td colspan="4" class="text-end fw-medium">{{ t('common.total') }}</td>
-                        <td class="text-end fw-bold">{{ order.total_amount|number_format(0, ',', ' ') }} Ft</td>
+                        <td class="text-end fw-bold">{{ order.total_amount|money }}</td>
                     </tr>
                     </tfoot>
                 </table>

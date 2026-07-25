@@ -15,8 +15,8 @@ return [
     'choose_partner_first' => '— válassz partnert előbb —',
     'address_not_selected' => '— nincs kiválasztva —',
     'partner_no_address' => '— a partnernek nincs rögzített címe —',
-    'shipping_cost' => 'Szállítási költség (Ft)',
-    'payment_cost' => 'Fizetési költség (Ft)',
+    'shipping_cost' => 'Szállítási költség ({currency})',
+    'payment_cost' => 'Fizetési költség ({currency})',
     'payment_cost_hint' => '(pl. utánvét)',
     'create_order' => 'Rendelés létrehozása',
 

@@ -14,7 +14,7 @@ return [
     'partner' => 'Partner',
     'related_invoice' => 'Kapcsolódó számla',
     'amount' => 'Összeg',
-    'amount_ft' => 'Összeg (Ft)',
+    'amount_ft' => 'Összeg ({currency})',
     'date' => 'Dátum',
     'none_found' => 'Nincs a szűrésnek megfelelő bizonylat.',
     'partner_optional' => 'Partner',

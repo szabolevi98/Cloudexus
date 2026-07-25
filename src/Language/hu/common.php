@@ -46,7 +46,7 @@ return [
     'created_by' => 'Rögzítette',
     'line_items' => 'Tételek',
     'choose_product' => 'Válassz terméket…',
-    'unit_price_ft' => 'Egységár (Ft)',
+    'unit_price_ft' => 'Egységár ({currency})',
     'add_line_item' => 'Tétel hozzáadása',
     'invoice_status' => [
         'unpaid' => 'Fizetésre vár',

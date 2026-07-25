@@ -17,6 +17,6 @@ class PricingApiController extends ApiController
             $this->error('The product_id parameter is required.', 422);
         }
 
-        $this->json(['data' => (new ProductModel())->effectivePrice($productId, $partnerId)]);
+        $this->resource((new ProductModel())->effectivePrice($productId, $partnerId));
     }
 }

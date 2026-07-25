@@ -6,7 +6,7 @@
             <tr>
                 <th>{{ t('common.product') }}</th>
                 <th style="width:120px;">{{ t('common.quantity') }}</th>
-                <th style="width:150px;">{{ t('common.unit_price_ft') }}</th>
+                <th style="width:150px;">{{ t('common.unit_price_ft', {'currency': currency_symbol()}) }}</th>
                 <th style="width:150px;" class="text-end">{{ t('common.line_total') }}</th>
                 <th style="width:40px;"></th>
             </tr>
@@ -15,7 +15,7 @@
             <tfoot>
             <tr>
                 <td colspan="3" class="text-end fw-medium">{{ t('common.total') }}</td>
-                <td class="text-end fw-bold" id="line-items-total">0 Ft</td>
+                <td class="text-end fw-bold" id="line-items-total">0 {{ currency_symbol() }}</td>
                 <td></td>
             </tr>
             </tfoot>
@@ -38,7 +38,7 @@
         </td>
         <td><input type="number" step="0.001" min="0.001" name="quantity[]" class="form-control form-control-sm cx-line-item__quantity" required></td>
         <td><input type="number" step="0.01" min="0" name="unit_price[]" class="form-control form-control-sm cx-line-item__price" required></td>
-        <td class="text-end cx-line-item__total">0 Ft</td>
+        <td class="text-end cx-line-item__total">0 {{ currency_symbol() }}</td>
         <td class="text-end">
             <button type="button" class="btn btn-sm btn-outline-danger cx-line-item__remove">
                 <i class="bi bi-x-lg"></i>
@@ -57,7 +57,7 @@
     const partnerSelect = partnerSelectId ? document.getElementById(partnerSelectId) : null;
     const extraCostSelector = {{ extra_cost_selector ? ('"' ~ extra_cost_selector ~ '"')|raw : 'null' }};
     const priceCache = {};
-    const numberFormat = (n) => new Intl.NumberFormat('hu-HU').format(Math.round(n)) + ' Ft';
+    const numberFormat = (n) => new Intl.NumberFormat('hu-HU').format(Math.round(n)) + ' {{ currency_symbol()|e('js') }}';
 
     function currentPartnerId() {
         return partnerSelect ? (parseInt(partnerSelect.value, 10) || 0) : 0;

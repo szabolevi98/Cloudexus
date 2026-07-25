@@ -107,8 +107,8 @@
                                     <thead>
                                     <tr>
                                         <th>{{ t('products.group') }}</th>
-                                        <th>{{ t('products.fixed_price') }}</th>
-                                        <th>{{ t('products.sale_price_col') }}</th>
+                                        <th>{{ t('products.fixed_price', {'currency': currency_symbol()}) }}</th>
+                                        <th>{{ t('products.sale_price_col', {'currency': currency_symbol()}) }}</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -188,7 +188,7 @@
                     <div class="cx-card__body">
                         <div class="row">
                             <div class="col-8 mb-3">
-                                <label for="price" class="form-label">{{ t('products.net_price') }}</label>
+                                <label for="price" class="form-label">{{ t('products.net_price', {'currency': currency_symbol()}) }}</label>
                                 <input type="number" step="0.01" id="price" name="price" class="form-control" value="{{ product.price|default(0) }}">
                             </div>
                             <div class="col-4 mb-3">
@@ -197,7 +197,7 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="sale_price" class="form-label">{{ t('products.sale_price') }} <span class="text-muted small">{{ t('products.sale_price_hint') }}</span></label>
+                            <label for="sale_price" class="form-label">{{ t('products.sale_price', {'currency': currency_symbol()}) }} <span class="text-muted small">{{ t('products.sale_price_hint') }}</span></label>
                             <input type="number" step="0.01" min="0" id="sale_price" name="sale_price" class="form-control" value="{{ product.sale_price|default('') }}">
                         </div>
                         {% if product %}

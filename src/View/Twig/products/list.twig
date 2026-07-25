@@ -87,10 +87,10 @@
                             </td>
                             <td class="text-end text-nowrap">
                                 {% if product.sale_price %}
-                                    <span class="text-muted text-decoration-line-through small">{{ product.price|number_format(0, ',', ' ') }} Ft</span><br>
-                                    <span class="fw-medium text-danger">{{ product.sale_price|number_format(0, ',', ' ') }} Ft</span>
+                                    <span class="text-muted text-decoration-line-through small">{{ product.price|money }}</span><br>
+                                    <span class="fw-medium text-danger">{{ product.sale_price|money }}</span>
                                 {% else %}
-                                    {{ product.price|number_format(0, ',', ' ') }} Ft
+                                    {{ product.price|money }}
                                 {% endif %}
                             </td>
                             <td>

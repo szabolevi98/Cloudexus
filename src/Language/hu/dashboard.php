@@ -30,5 +30,5 @@ return [
     'minimum' => 'Minimum',
     'receive' => 'Bevételezés',
     'all_above_minimum' => 'Minden készlet a minimum felett van.',
-    'orders_value_label' => 'Rendelés érték (Ft)',
+    'orders_value_label' => 'Rendelés érték ({currency})',
 ];

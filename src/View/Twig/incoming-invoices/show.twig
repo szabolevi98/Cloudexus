@@ -39,15 +39,15 @@
                             <td>{{ item.sku }}</td>
                             <td>{{ item.product_name }}</td>
                             <td class="text-end">{{ item.quantity|number_format(0, ',', ' ') }} {{ item.unit }}</td>
-                            <td class="text-end">{{ item.unit_price|number_format(0, ',', ' ') }} Ft</td>
-                            <td class="text-end">{{ item.line_total|number_format(0, ',', ' ') }} Ft</td>
+                            <td class="text-end">{{ item.unit_price|money }}</td>
+                            <td class="text-end">{{ item.line_total|money }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
                     <tfoot>
                     <tr>
                         <td colspan="4" class="text-end fw-medium">{{ t('common.total') }}</td>
-                        <td class="text-end fw-bold">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>
+                        <td class="text-end fw-bold">{{ invoice.total_amount|money }}</td>
                     </tr>
                     </tfoot>
                 </table>

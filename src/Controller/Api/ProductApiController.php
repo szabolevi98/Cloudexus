@@ -28,7 +28,7 @@ class ProductApiController extends ApiController
         if (!$product) {
             $this->error('Product not found.', 404);
         }
-        $this->json(['data' => $product]);
+        $this->resource($product);
     }
 
     public function showBySku(string $sku): void
@@ -39,6 +39,6 @@ class ProductApiController extends ApiController
         if (!$product) {
             $this->error('Product not found.', 404);
         }
-        $this->json(['data' => $product]);
+        $this->resource($product);
     }
 }

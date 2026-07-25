@@ -74,7 +74,7 @@
                                     <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.order_status.cancelled') }}</span>
                                 {% endif %}
                             </td>
-                            <td class="text-end">{{ order.total_amount|number_format(0, ',', ' ') }} Ft</td>
+                            <td class="text-end">{{ order.total_amount|money }}</td>
                             <td class="text-end">
                                 <a href="{{ base_url }}/purchase-orders/{{ order.id }}" class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-eye"></i>

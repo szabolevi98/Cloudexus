@@ -85,7 +85,7 @@
                                     <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.invoice_status.cancelled') }}</span>
                                 {% endif %}
                             </td>
-                            <td class="text-end">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>
+                            <td class="text-end">{{ invoice.total_amount|money }}</td>
                             <td class="text-end">
                                 <a href="{{ base_url }}/invoices/{{ invoice.id }}" class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-eye"></i>

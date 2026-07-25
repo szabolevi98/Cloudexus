@@ -30,6 +30,6 @@ class InvoiceApiController extends ApiController
         if (!$invoice) {
             $this->error('Invoice not found.', 404);
         }
-        $this->json(['data' => $invoice]);
+        $this->resource($invoice);
     }
 }

@@ -111,8 +111,8 @@
                 <td>{{ item.sku }}</td>
                 <td>{{ item.product_name }}</td>
                 <td class="num">{{ item.quantity|number_format(0, ',', ' ') }} {{ item.unit }}</td>
-                <td class="num">{{ item.unit_price|number_format(0, ',', ' ') }} Ft</td>
-                <td class="num">{{ item.line_total|number_format(0, ',', ' ') }} Ft</td>
+                <td class="num">{{ item.unit_price|money }}</td>
+                <td class="num">{{ item.line_total|money }}</td>
             </tr>
         {% endfor %}
         </tbody>
@@ -120,18 +120,18 @@
         {% if invoice.shipping_cost > 0 %}
             <tr>
                 <td colspan="4" class="num" style="font-weight:400;border-top:none;">{{ t('invoices.shipping_cost_row') }}</td>
-                <td class="num" style="font-weight:400;border-top:none;">{{ invoice.shipping_cost|number_format(0, ',', ' ') }} Ft</td>
+                <td class="num" style="font-weight:400;border-top:none;">{{ invoice.shipping_cost|money }}</td>
             </tr>
         {% endif %}
         {% if invoice.payment_cost > 0 %}
             <tr>
                 <td colspan="4" class="num" style="font-weight:400;border-top:none;">{{ t('invoices.payment_cost_row') }}</td>
-                <td class="num" style="font-weight:400;border-top:none;">{{ invoice.payment_cost|number_format(0, ',', ' ') }} Ft</td>
+                <td class="num" style="font-weight:400;border-top:none;">{{ invoice.payment_cost|money }}</td>
             </tr>
         {% endif %}
         <tr>
             <td colspan="4" class="num">{{ t('invoices.total_due') }}</td>
-            <td class="num">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>
+            <td class="num">{{ invoice.total_amount|money }}</td>
         </tr>
         </tfoot>
     </table>

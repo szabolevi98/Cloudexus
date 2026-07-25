@@ -18,8 +18,8 @@ return [
     'warehouse_stockout' => 'Stock issue from warehouse',
     'warehouse_hint' => 'If set, the invoice line items are also booked as a stock issue automatically.',
     'no_auto_issue' => '— no automatic stock issue —',
-    'shipping_cost' => 'Shipping cost (Ft)',
-    'payment_cost' => 'Payment cost (Ft)',
+    'shipping_cost' => 'Shipping cost ({currency})',
+    'payment_cost' => 'Payment cost ({currency})',
     'payment_cost_hint' => '(e.g. cash on delivery)',
     'create_invoice' => 'Issue invoice',
 

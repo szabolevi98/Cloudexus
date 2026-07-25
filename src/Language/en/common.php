@@ -46,7 +46,7 @@ return [
     'created_by' => 'Created by',
     'line_items' => 'Line items',
     'choose_product' => 'Choose a product…',
-    'unit_price_ft' => 'Unit price (Ft)',
+    'unit_price_ft' => 'Unit price ({currency})',
     'add_line_item' => 'Add line item',
     'invoice_status' => [
         'unpaid' => 'Awaiting payment',

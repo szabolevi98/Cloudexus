@@ -15,8 +15,8 @@ return [
     'choose_partner_first' => '— choose a partner first —',
     'address_not_selected' => '— none selected —',
     'partner_no_address' => '— the partner has no saved address —',
-    'shipping_cost' => 'Shipping cost (Ft)',
-    'payment_cost' => 'Payment cost (Ft)',
+    'shipping_cost' => 'Shipping cost ({currency})',
+    'payment_cost' => 'Payment cost ({currency})',
     'payment_cost_hint' => '(e.g. cash on delivery)',
     'create_order' => 'Create order',
 

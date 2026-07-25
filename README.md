@@ -28,6 +28,7 @@ A Cloudexus egy helyen kezeli a teljes kereskedelmi folyamatot: részletes term�
 - Nettó ár + ÁFA, opcionális **akciós ár**, és **vevőcsoportos árazás**: egy partner egy vevőcsoporthoz tartozhat, a csoportnak pedig termékenként saját fix ára (és akciós ára) lehet, amit a rendelés/számla tételsora automatikusan figyelembe vesz
 - Partnertörzs (vevő / szállító / mindkettő) adószámmal, elérhetőségekkel és vevőcsoport-hozzárendeléssel
 - Kereshető, szűrhető, lapozható listák minden modulban, nagy listákhoz (termékek, kategóriák, partnerek) önállóan hosztolt Select2 AJAX kereséssel
+- Pénznemek elsődleges pénznemmel és váltószámokkal; az összegek mindig az elsődleges pénznemben jelennek meg
 
 ### 🏭 Készletkezelés
 - Több raktár és telephely kezelése
@@ -59,6 +60,7 @@ A Cloudexus egy helyen kezeli a teljes kereskedelmi folyamatot: részletes term�
 - Saját profil és jelszóváltás
 - CSRF-védelem minden űrlapon, HttpOnly + SameSite session süti
 - Kétnyelvű felület (magyar / angol) nyelvváltóval, a választás sütiben megjegyezve; az üzleti adatok (terméknevek, leírások) nem fordulnak
+- Pénznemek kezelése elsődleges pénznemmel és váltószámokkal, MNB közép­árfolyam-lekéréssel (gombbal vagy cronból)
 
 ---
 
@@ -113,7 +115,7 @@ php database/seed_demo.php
 
 Ezután nyisd meg a `config.ini`-ben beállított `base_url`-t (pl. `http://localhost/Cloudexus/web`), és jelentkezz be.
 
-> A `database/seed_demo.php` bármikor újrafuttatható: minden üzleti táblát kiürít (a felhasználókat nem), és valósághű magyar demo adatokkal tölti fel — 48 termék (köztük akciós áras és vevőcsoportos áras is), 17 partner, 3 vevőcsoport, 3 raktár, 300+ készletmozgás (köztük raktárközi átadások), 130 rendelés számlákkal és kiegyenlítésekkel.
+> A `database/seed_demo.php` bármikor újrafuttatható: minden üzleti táblát kiürít (a felhasználókat nem), és valósághű magyar demo adatokkal tölti fel — 48 termék (köztük akciós áras és vevőcsoportos áras is), 17 partner, 3 vevőcsoport, 3 raktár, 300+ készletmozgás (köztük raktárközi átadások), 130 rendelés számlákkal és kiegyenlítésekkel, valamint 3 pénznem (forint elsődlegesként, euró, dollár).
 
 ## 📁 Projektstruktúra
 
@@ -121,7 +123,8 @@ Ezután nyisd meg a `config.ini`-ben beállított `base_url`-t (pl. `http://loca
 Cloudexus/
 ├── bin/
 │   ├── build_css.php    # a rétegzett CSS forrásokat egyesíti web/assets/css/app.css-be
-│   └── clear_cache.php  # var/cache kiürítése (opcionálisan log és session is)
+│   ├── clear_cache.php  # var/cache kiürítése (opcionálisan log és session is)
+│   └── sync_currency_rates.php  # MNB közép-árfolyamok frissítése (cronhoz)
 ├── config/              # config.ini (gitignore-olt) + .dist sablon
 ├── database/
 │   ├── core/            # sorszámozott SQL migrációk (01_core.sql, …)
@@ -154,6 +157,33 @@ Cloudexus/
 > elég egy új mappa és a `config.ini`-ben az `available_locales` bővítése — a hiányzó kulcsok az
 > alapnyelvre, majd magára a kulcsra esnek vissza, így a hiányok láthatók, de nem törik el az oldalt.
 
+## 💱 Pénznemek
+
+A **Beállítások → Pénznemek** oldalon vehetők fel a pénznemek (megnevezés, három betűs
+ISO-kód, jelölés, váltószám). Pontosan egy pénznem az **elsődleges**, ezt a `settings`
+táblában a `currency.primary` kulcs tartja.
+
+- Az alkalmazás **minden összeget az elsődleges pénznemben tárol és jelenít meg** — a
+  korábban beégetett `Ft` helyére az elsődleges pénznem jelölése kerül. A sablonokban ez a
+  `{{ összeg|money }}` szűrő, beviteli mezők címkéjéhez a `{{ currency_symbol() }}` függvény.
+- A többi pénznem váltószáma **csak tájékoztató**: nincs pénznemváltó a felületen, és a
+  tárolt adatokat sem írja át semmi.
+- A `value` az OpenCart logikáját követi: **1 elsődleges egység ennyi az adott pénznemben**
+  (az elsődlegesnél mindig `1`). Átszámítás tehát `összeg * value`.
+
+Az **„MNB közép árfolyam lekérése”** gomb az összes nem elsődleges pénznem váltószámát az MNB
+aktuális középárfolyama alapján állítja be. Ugyanez ütemezve is futtatható:
+
+```bash
+# hétköznap reggel 7:10 (az MNB délelőtt teszi közzé az aznapi árfolyamot)
+10 7 * * 1-5 php /var/www/cloudexus/bin/sync_currency_rates.php --quiet
+```
+
+A pontos, bemásolható crontab sort a Pénznemek oldal is kiírja a telepítés valódi útvonalával.
+A szkript `0` kilépési kóddal jelzi a sikert, `1`-gyel a hibát, a részletek a `var/log/` alá
+kerülnek. Az MNB minden árfolyamot forintban jegyez, ezért az átszámítás a forinton keresztül
+történik — így akkor is helyes, ha nem a forint az elsődleges pénznem.
+
 ## 🗺️ Roadmap
 
 **Kész:**
@@ -178,6 +208,7 @@ Cloudexus/
 - [x] Score-alapú Google reCAPTCHA v3 a bejelentkezésen, configból ki-/bekapcsolható
 - [x] REST API (token-alapú auth, olvasható katalógus + teljes CRUD partnerekre/rendelésekre, API-felhasználók admin + dokumentáció)
 - [x] Kétnyelvű felület (magyar / angol): nyelvváltó a topbarban és a bejelentkezésen, teljes UI-fordítás a rendszerüzenetekkel együtt
+- [x] Pénznemek: elsődleges pénznem + váltószámok, MNB közép-árfolyam lekérése gombbal és cronból, `/api/currencies` végpont
 
 **Következő lépcsők:**
 

@@ -2,6 +2,7 @@
 
 namespace Cloudexus\Controller\Api;
 
+use Cloudexus\Core\Currency;
 use Cloudexus\Core\Paginator;
 use Cloudexus\Model\Account\ApiUserModel;
 
@@ -90,8 +91,35 @@ abstract class ApiController
                 'per_page' => $pager->perPage,
                 'total' => $pager->total,
                 'total_pages' => $pager->pages(),
+                'currency' => $this->currencyMeta(),
             ],
         ]);
+    }
+
+    /** Outputs a single resource plus the currency metadata. */
+    protected function resource(array $data, int $status = 200): never
+    {
+        $this->json([
+            'data' => $data,
+            'meta' => ['currency' => $this->currencyMeta()],
+        ], $status);
+    }
+
+    /**
+     * The primary currency every monetary amount in the response is expressed
+     * in. Amounts are never converted; see GET /api/currencies for the rates.
+     *
+     * @return array{code: string, symbol: string, title: string}
+     */
+    protected function currencyMeta(): array
+    {
+        $primary = Currency::primary();
+
+        return [
+            'code' => (string) $primary['code'],
+            'symbol' => Currency::symbol(),
+            'title' => (string) ($primary['title'] ?? ''),
+        ];
     }
 
     /** Common list filter values (q + updated_since) read from the query string. */
