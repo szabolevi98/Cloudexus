@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'new' => 'New to-do',
+    'title_label' => 'Title',
+    'due_date' => 'Due date',
+    'partner' => 'Partner',
+    'optional' => '(optional)',
+    'none_option' => '— none —',
+    'assignee' => 'Assignee',
+    'list_title' => 'To-dos',
+    'status' => 'Status',
+    'all' => 'All',
+    'open' => 'Open',
+    'done' => 'Done',
+    'reopen_title' => 'Reopen',
+    'reopen' => 'Reopen',
+    'mark_done_title' => 'Mark as done',
+    'mark_done' => 'Mark done',
+    'confirm_delete' => 'Delete this to-do?',
+    'none_found' => 'No to-dos match the filter.',
+    'title_required' => 'The to-do title is required.',
+    'created' => 'To-do added.',
+    'deleted' => 'To-do deleted.',
+];

@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'new' => 'Új teendő',
+    'title_label' => 'Megnevezés',
+    'due_date' => 'Határidő',
+    'partner' => 'Partner',
+    'optional' => '(opcionális)',
+    'none_option' => '— nincs —',
+    'assignee' => 'Felelős',
+    'list_title' => 'Teendők',
+    'status' => 'Állapot',
+    'all' => 'Mind',
+    'open' => 'Nyitott',
+    'done' => 'Kész',
+    'reopen_title' => 'Visszaállítás nyitottra',
+    'reopen' => 'Újranyit',
+    'mark_done_title' => 'Késznek jelölés',
+    'mark_done' => 'Késznek jelöl',
+    'confirm_delete' => 'Törlöd a teendőt?',
+    'none_found' => 'Nincs a szűrésnek megfelelő teendő.',
+    'title_required' => 'A teendő megnevezése kötelező.',
+    'created' => 'Teendő hozzáadva.',
+    'deleted' => 'Teendő törölve.',
+];

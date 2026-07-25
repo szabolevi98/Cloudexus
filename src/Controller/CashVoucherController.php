@@ -37,7 +37,7 @@ class CashVoucherController extends BaseController
         ];
         $pager = new \Cloudexus\Core\Paginator(25);
 
-        $this->pageTitle = 'Pénztárbizonylat';
+        $this->pageTitle = $this->t('cash.list_title');
         $this->render('cash/list.twig', [
             'vouchers' => $this->vouchers->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -50,7 +50,7 @@ class CashVoucherController extends BaseController
     {
         $this->requireAuth();
 
-        $this->pageTitle = 'Új pénztárbizonylat';
+        $this->pageTitle = $this->t('cash.new_voucher');
         $this->render('cash/form.twig', [
             'voucher_number' => $this->vouchers->nextVoucherNumber(),
             'partners' => $this->partners->all(),
@@ -66,7 +66,7 @@ class CashVoucherController extends BaseController
         $amount = (float) str_replace(',', '.', $_POST['amount'] ?? '0');
 
         if ($amount <= 0) {
-            $this->flashError('Az összeg megadása kötelező.');
+            $this->flashError($this->t('cash.amount_required'));
             $this->redirect('/cash/create');
         }
 
@@ -82,7 +82,7 @@ class CashVoucherController extends BaseController
             'created_by' => Auth::id(),
         ]);
 
-        $this->flashSuccess('Pénztárbizonylat rögzítve.');
+        $this->flashSuccess($this->t('cash.created'));
         $this->redirect('/cash');
     }
 
@@ -91,7 +91,7 @@ class CashVoucherController extends BaseController
         $this->requireAuth();
 
         $this->vouchers->delete($id);
-        $this->flashSuccess('Pénztárbizonylat törölve.');
+        $this->flashSuccess($this->t('cash.deleted'));
         $this->redirect('/cash');
     }
 }

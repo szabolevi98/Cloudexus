@@ -4,60 +4,60 @@
     <div class="row g-3">
         <div class="col-lg-4">
             <div class="cx-card">
-                <div class="cx-card__header"><h2>Új teendő</h2></div>
+                <div class="cx-card__header"><h2>{{ t('todos.new') }}</h2></div>
                 <div class="cx-card__body">
                     <form method="post" action="{{ base_url }}/todos/create">
                         <div class="mb-3">
-                            <label for="title" class="form-label">Megnevezés</label>
+                            <label for="title" class="form-label">{{ t('todos.title_label') }}</label>
                             <input type="text" id="title" name="title" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label for="due_date" class="form-label">Határidő</label>
+                            <label for="due_date" class="form-label">{{ t('todos.due_date') }}</label>
                             <input type="date" id="due_date" name="due_date" class="form-control">
                         </div>
                         <div class="mb-3">
-                            <label for="partner_id" class="form-label">Partner <span class="text-muted small">(opcionális)</span></label>
+                            <label for="partner_id" class="form-label">{{ t('todos.partner') }} <span class="text-muted small">{{ t('todos.optional') }}</span></label>
                             <select id="partner_id" name="partner_id" class="form-select">
-                                <option value="">— nincs —</option>
+                                <option value="">{{ t('todos.none_option') }}</option>
                                 {% for p in partners %}
                                     <option value="{{ p.id }}">{{ p.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="mb-4">
-                            <label for="assigned_to" class="form-label">Felelős <span class="text-muted small">(opcionális)</span></label>
+                            <label for="assigned_to" class="form-label">{{ t('todos.assignee') }} <span class="text-muted small">{{ t('todos.optional') }}</span></label>
                             <select id="assigned_to" name="assigned_to" class="form-select">
-                                <option value="">— nincs —</option>
+                                <option value="">{{ t('todos.none_option') }}</option>
                                 {% for u in users %}
                                     <option value="{{ u.id }}">{{ u.full_name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>Hozzáadás</button>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>{{ t('common.add') }}</button>
                     </form>
                 </div>
             </div>
         </div>
         <div class="col-lg-8">
             <div class="cx-card">
-                <div class="cx-card__header"><h2>Teendők</h2></div>
+                <div class="cx-card__header"><h2>{{ t('todos.list_title') }}</h2></div>
                 <div class="cx-card__body p-0">
                     <form method="get" class="p-3 border-bottom">
                         <div class="row g-2 align-items-end">
                             <div class="col-sm-5">
-                                <label class="form-label small text-muted mb-1">Keresés</label>
+                                <label class="form-label small text-muted mb-1">{{ t('common.search') }}</label>
                                 <input type="text" name="q" class="form-control form-control-sm" value="{{ filters.q }}">
                             </div>
                             <div class="col-sm-4">
-                                <label class="form-label small text-muted mb-1">Állapot</label>
+                                <label class="form-label small text-muted mb-1">{{ t('todos.status') }}</label>
                                 <select name="status" class="form-select form-select-sm">
-                                    <option value="">Mind</option>
-                                    <option value="open" {{ filters.status == 'open' ? 'selected' : '' }}>Nyitott</option>
-                                    <option value="done" {{ filters.status == 'done' ? 'selected' : '' }}>Kész</option>
+                                    <option value="">{{ t('todos.all') }}</option>
+                                    <option value="open" {{ filters.status == 'open' ? 'selected' : '' }}>{{ t('todos.open') }}</option>
+                                    <option value="done" {{ filters.status == 'done' ? 'selected' : '' }}>{{ t('todos.done') }}</option>
                                 </select>
                             </div>
                             <div class="col-auto">
-                                <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
+                                <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>{{ t('common.filter') }}</button>
                             </div>
                         </div>
                     </form>
@@ -70,12 +70,12 @@
                                         <form method="post" action="{{ base_url }}/todos/{{ todo.id }}/toggle">
                                             <input type="hidden" name="return" value="/todos?{{ filters|url_encode }}">
                                             {% if todo.is_done %}
-                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Visszaállítás nyitottra">
-                                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Újranyit
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="{{ t('todos.reopen_title') }}">
+                                                    <i class="bi bi-arrow-counterclockwise me-1"></i>{{ t('todos.reopen') }}
                                                 </button>
                                             {% else %}
-                                                <button type="submit" class="btn btn-sm btn-success" title="Késznek jelölés">
-                                                    <i class="bi bi-check-lg me-1"></i>Késznek jelöl
+                                                <button type="submit" class="btn btn-sm btn-success" title="{{ t('todos.mark_done_title') }}">
+                                                    <i class="bi bi-check-lg me-1"></i>{{ t('todos.mark_done') }}
                                                 </button>
                                             {% endif %}
                                         </form>
@@ -99,13 +99,13 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-end" style="width:56px;">
-                                        <form method="post" action="{{ base_url }}/todos/{{ todo.id }}/delete" onsubmit="return confirm('Törlöd a teendőt?');">
+                                        <form method="post" action="{{ base_url }}/todos/{{ todo.id }}/delete" onsubmit="return confirm('{{ t('todos.confirm_delete')|e('js') }}');">
                                             <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                                         </form>
                                     </td>
                                 </tr>
                             {% else %}
-                                <tr><td class="text-center text-muted py-4">Nincs a szűrésnek megfelelő teendő.</td></tr>
+                                <tr><td class="text-center text-muted py-4">{{ t('todos.none_found') }}</td></tr>
                             {% endfor %}
                             </tbody>
                         </table>

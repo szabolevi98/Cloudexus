@@ -30,7 +30,7 @@ class TodoController extends BaseController
         ];
         $pager = new Paginator(25);
 
-        $this->pageTitle = 'Teendők';
+        $this->pageTitle = $this->t('todos.list_title');
         $this->render('todos/list.twig', [
             'todos' => $this->todos->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -47,7 +47,7 @@ class TodoController extends BaseController
 
         $title = trim($_POST['title'] ?? '');
         if ($title === '') {
-            $this->flashError('A teendő megnevezése kötelező.');
+            $this->flashError($this->t('todos.title_required'));
             $this->redirect('/todos');
         }
 
@@ -59,7 +59,7 @@ class TodoController extends BaseController
             'created_by' => Auth::id(),
         ]);
 
-        $this->flashSuccess('Teendő hozzáadva.');
+        $this->flashSuccess($this->t('todos.created'));
         $this->redirect('/todos');
     }
 
@@ -74,7 +74,7 @@ class TodoController extends BaseController
     {
         $this->requireAuth();
         $this->todos->delete($id);
-        $this->flashSuccess('Teendő törölve.');
+        $this->flashSuccess($this->t('todos.deleted'));
         $this->redirect('/todos');
     }
 }
