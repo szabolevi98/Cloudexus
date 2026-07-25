@@ -59,15 +59,8 @@ CREATE TABLE IF NOT EXISTS product_images (
     CONSTRAINT fk_pi_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Termékparaméterek (név/érték párok)
-CREATE TABLE IF NOT EXISTS product_attributes (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    product_id INT UNSIGNED NOT NULL,
-    attr_name VARCHAR(120) NOT NULL,
-    attr_value VARCHAR(255) NOT NULL,
-    sort_order INT NOT NULL DEFAULT 0,
-    CONSTRAINT fk_pa_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- A termékparaméterek (product_parameters) a 15-es migrációban jönnek létre,
+-- mert a parameters törzsre hivatkoznak.
 
 -- Kapcsolódó és helyettesítő termékek (egy táblában, típussal)
 CREATE TABLE IF NOT EXISTS product_links (

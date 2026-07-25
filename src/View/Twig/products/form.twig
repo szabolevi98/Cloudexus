@@ -18,10 +18,11 @@
                                 <input type="text" id="barcode" name="barcode" class="form-control" value="{{ product.barcode|default('') }}">
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="unit" class="form-label">{{ t('products.unit') }}</label>
-                                <select id="unit" name="unit" class="form-select cx-select2">
+                                <label for="unit_id" class="form-label">{{ t('products.unit') }}</label>
+                                <select id="unit_id" name="unit_id" class="form-select cx-select2">
+                                    <option value="">{{ t('common.choose') }}</option>
                                     {% for u in units %}
-                                        <option value="{{ u.code }}" {{ (product.unit|default('db')) == u.code ? 'selected' : '' }}>{{ u.name }} ({{ u.code }})</option>
+                                        <option value="{{ u.id }}" {{ product.unit_id|default(null) == u.id ? 'selected' : '' }}>{{ u.name }} ({{ u.code }})</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -49,11 +50,11 @@
                             {% for attr in product.attributes|default([]) %}
                                 <div class="row g-2 mb-2 attr-row">
                                     <div class="col-md-5">
-                                        <select name="attr_name[]" class="form-select form-select-sm cx-ajax-select" data-url="{{ base_url }}/param-names/search" data-placeholder="{{ t('products.param_name_placeholder') }}">
-                                            <option value="{{ attr.attr_name }}" selected>{{ attr.attr_name }}</option>
+                                        <select name="parameter_id[]" class="form-select form-select-sm cx-ajax-select" data-url="{{ base_url }}/parameters/search" data-placeholder="{{ t('products.param_name_placeholder') }}">
+                                            <option value="{{ attr.parameter_id }}" selected>{{ attr.attr_name }}</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-6"><input type="text" name="attr_value[]" class="form-control form-control-sm" placeholder="{{ t('products.value_placeholder') }}" value="{{ attr.attr_value }}"></div>
+                                    <div class="col-md-6"><input type="text" name="parameter_value[]" class="form-control form-control-sm" placeholder="{{ t('products.value_placeholder') }}" value="{{ attr.attr_value }}"></div>
                                     <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger attr-remove"><i class="bi bi-x-lg"></i></button></div>
                                 </div>
                             {% endfor %}
@@ -62,9 +63,9 @@
                         <template id="attr-template">
                             <div class="row g-2 mb-2 attr-row">
                                 <div class="col-md-5">
-                                    <select name="attr_name[]" class="form-select form-select-sm cx-ajax-select" data-url="{{ base_url }}/param-names/search" data-placeholder="{{ t('products.param_name_placeholder') }}"></select>
+                                    <select name="parameter_id[]" class="form-select form-select-sm cx-ajax-select" data-url="{{ base_url }}/parameters/search" data-placeholder="{{ t('products.param_name_placeholder') }}"></select>
                                 </div>
-                                <div class="col-md-6"><input type="text" name="attr_value[]" class="form-control form-control-sm" placeholder="{{ t('products.value_placeholder') }}"></div>
+                                <div class="col-md-6"><input type="text" name="parameter_value[]" class="form-control form-control-sm" placeholder="{{ t('products.value_placeholder') }}"></div>
                                 <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger attr-remove"><i class="bi bi-x-lg"></i></button></div>
                             </div>
                         </template>

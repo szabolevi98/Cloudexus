@@ -157,6 +157,24 @@ Cloudexus/
 > elég egy új mappa és a `config.ini`-ben az `available_locales` bővítése — a hiányzó kulcsok az
 > alapnyelvre, majd magára a kulcsra esnek vissza, így a hiányok láthatók, de nem törik el az oldalt.
 
+## 🧩 Adatmodell-elvek
+
+- **A törzsadatokra mindig külső kulcs mutat, nem szöveg.** A termék mértékegysége
+  `products.unit_id` → `units`, a termékparaméterek neve
+  `product_parameters.parameter_id` → `parameters`; szabad szöveg csak az érték
+  (`product_parameters.value`). A listák és a REST API a feloldott nevet is visszaadják
+  (`unit`, `attr_name`), így a felület és az integrációk nem látják a normalizálást.
+- **Egységes szókincs**: a paraméter-törzs táblája `parameters`, a kapcsolótábla
+  `product_parameters` — nincs többé „attribute" és „parameter_names" kettősség.
+- **Minden táblán van `created_at` és `updated_at`**, `DEFAULT CURRENT_TIMESTAMP`
+  illetve `ON UPDATE CURRENT_TIMESTAMP` beállítással, tehát az adatbázis tartja
+  karban őket, PHP-oldali kód nélkül. Erre épül a REST API `updated_since` szűrője.
+
+> A `database/migrate.php` **minden migrációt minden futtatáskor újra lefuttat**, ezért
+> minden migrációnak idempotensnek kell lennie (`IF [NOT] EXISTS`, `INSERT IGNORE`, illetve
+> `information_schema`-ellenőrzés mögé tett `PREPARE`/`EXECUTE`, ha egy már eldobott táblára
+> kellene hivatkozni). Új migráció írásakor ezt tartsd szem előtt.
+
 ## 💱 Pénznemek
 
 A **Beállítások → Pénznemek** oldalon vehetők fel a pénznemek (megnevezés, három betűs

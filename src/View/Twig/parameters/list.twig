@@ -6,7 +6,7 @@
             <div class="cx-card">
                 <div class="cx-card__header"><h2>{{ t('parameters.new') }}</h2></div>
                 <div class="cx-card__body">
-                    <form method="post" action="{{ base_url }}/parameter-names/create">
+                    <form method="post" action="{{ base_url }}/parameters/create">
                         <div class="mb-3">
                             <label for="name" class="form-label">{{ t('common.name') }}</label>
                             <input type="text" id="name" name="name" class="form-control" required>
@@ -31,7 +31,7 @@
                             </div>
                             <div class="col-auto">
                                 <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>{{ t('common.filter') }}</button>
-                                <a href="{{ base_url }}/parameter-names" class="btn btn-sm btn-outline-secondary">{{ t('common.clear') }}</a>
+                                <a href="{{ base_url }}/parameters" class="btn btn-sm btn-outline-secondary">{{ t('common.clear') }}</a>
                             </div>
                         </div>
                     </form>
@@ -42,13 +42,13 @@
                             {% for n in names %}
                                 <tr>
                                     <td>
-                                        <form method="post" action="{{ base_url }}/parameter-names/{{ n.id }}" class="d-flex gap-2" style="max-width:400px;">
+                                        <form method="post" action="{{ base_url }}/parameters/{{ n.id }}" class="d-flex gap-2" style="max-width:400px;">
                                             <input type="text" name="name" class="form-control form-control-sm" value="{{ n.name }}">
                                             <button type="submit" class="btn btn-sm btn-outline-primary">{{ t('common.save') }}</button>
                                         </form>
                                     </td>
                                     <td class="text-end">
-                                        <form method="post" action="{{ base_url }}/parameter-names/{{ n.id }}/delete" class="d-inline" onsubmit="return confirm('{{ t('common.confirm_delete')|e('js') }}');">
+                                        <form method="post" action="{{ base_url }}/parameters/{{ n.id }}/delete" class="d-inline" onsubmit="return confirm('{{ t('common.confirm_delete')|e('js') }}');">
                                             <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                                         </form>
                                     </td>

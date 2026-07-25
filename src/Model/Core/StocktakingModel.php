@@ -71,9 +71,10 @@ class StocktakingModel
         }
 
         $itemStmt = DatabaseConnection::get()->prepare(
-            'SELECT si.*, p.sku, p.name AS product_name, p.unit
+            'SELECT si.*, p.sku, p.name AS product_name, un.code AS unit
              FROM stocktaking_items si
              JOIN products p ON p.id = si.product_id
+             LEFT JOIN units un ON un.id = p.unit_id
              WHERE si.stocktaking_id = :id
              ORDER BY p.name ASC'
         );

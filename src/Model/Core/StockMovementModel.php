@@ -44,10 +44,11 @@ class StockMovementModel
         $pager->clamp();
 
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT m.*, p.sku, p.name AS product_name, p.unit, w.name AS warehouse_name,
+            "SELECT m.*, p.sku, p.name AS product_name, un.code AS unit, w.name AS warehouse_name,
                     l.code AS location_code, u.full_name AS created_by_name
              FROM stock_movements m
              JOIN products p ON p.id = m.product_id
+             LEFT JOIN units un ON un.id = p.unit_id
              JOIN warehouses w ON w.id = m.warehouse_id
              LEFT JOIN warehouse_locations l ON l.id = m.location_id
              LEFT JOIN users u ON u.id = m.created_by
@@ -152,10 +153,11 @@ class StockMovementModel
         $pager->clamp();
 
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT m.*, p.sku, p.name AS product_name, p.unit, w.name AS warehouse_name,
+            "SELECT m.*, p.sku, p.name AS product_name, un.code AS unit, w.name AS warehouse_name,
                     l.code AS location_code, u.full_name AS created_by_name
              FROM stock_movements m
              JOIN products p ON p.id = m.product_id
+             LEFT JOIN units un ON un.id = p.unit_id
              JOIN warehouses w ON w.id = m.warehouse_id
              LEFT JOIN warehouse_locations l ON l.id = m.location_id
              LEFT JOIN users u ON u.id = m.created_by
@@ -213,11 +215,12 @@ class StockMovementModel
         // melyik polcon mennyi van (a tárhely nélküli mozgások "—" alatt gyűlnek).
         $baseSql = "SELECT w.id AS warehouse_id, w.name AS warehouse_name,
                            l.id AS location_id, l.code AS location_code,
-                           p.id AS product_id, p.sku, p.name AS product_name, p.unit,
+                           p.id AS product_id, p.sku, p.name AS product_name, un.code AS unit,
                            SUM(CASE WHEN m.type = 'in' THEN m.quantity ELSE -m.quantity END) AS quantity
                     FROM stock_movements m
                     JOIN warehouses w ON w.id = m.warehouse_id
                     JOIN products p ON p.id = m.product_id
+                    LEFT JOIN units un ON un.id = p.unit_id
                     LEFT JOIN warehouse_locations l ON l.id = m.location_id
                     $whereSql
                     GROUP BY w.id, l.id, p.id
@@ -243,9 +246,10 @@ class StockMovementModel
     public function stockSheet(int $warehouseId): array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT p.id AS product_id, p.sku, p.name AS product_name, p.unit,
+            "SELECT p.id AS product_id, p.sku, p.name AS product_name, un.code AS unit,
                     COALESCE(m.qty, 0) AS book_quantity
              FROM products p
+             LEFT JOIN units un ON un.id = p.unit_id
              LEFT JOIN (
                  SELECT product_id, SUM(CASE WHEN type = 'in' THEN quantity ELSE -quantity END) AS qty
                  FROM stock_movements WHERE warehouse_id = :wid GROUP BY product_id

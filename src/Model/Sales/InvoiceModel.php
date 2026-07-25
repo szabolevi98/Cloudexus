@@ -96,9 +96,10 @@ class InvoiceModel
     public function items(int $invoiceId): array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT ii.*, pr.sku, pr.name AS product_name, pr.unit
+            'SELECT ii.*, pr.sku, pr.name AS product_name, un.code AS unit
              FROM invoice_items ii
              JOIN products pr ON pr.id = ii.product_id
+             LEFT JOIN units un ON un.id = pr.unit_id
              WHERE ii.invoice_id = :invoice_id'
         );
         $stmt->execute(['invoice_id' => $invoiceId]);

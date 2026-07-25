@@ -69,7 +69,8 @@ Available on every list endpoint:
 
 - `?q=` — free-text search (searched fields vary per endpoint)
 - `?updated_since=YYYY-MM-DD HH:MM:SS` — only records changed since the given time
-  (for delta sync; every record has an `updated_at` field)
+  (for delta sync; every record has both a `created_at` and an `updated_at` field, maintained
+  automatically by the database)
 
 ## Error format
 
@@ -111,7 +112,9 @@ Example response (`GET /api/products/1`) — all fields of the detailed product:
     "short_description": "Short product description.",
     "description": "Detailed (HTML) product description.",
     "category_id": 1,
+    "unit_id": 2,
     "unit": "doboz",
+    "unit_name": "doboz",
     "price": "89900.00",
     "sale_price": null,
     "vat_rate": "27.00",
@@ -129,8 +132,8 @@ Example response (`GET /api/products/1`) — all fields of the detailed product:
       { "id": 10, "product_id": 1, "path": "assets/uploads/products/abc.jpg", "is_primary": 1, "sort_order": 0 }
     ],
     "attributes": [
-      { "id": 1886, "product_id": 1, "attr_name": "Gyártó", "attr_value": "Generic", "sort_order": 0 },
-      { "id": 1887, "product_id": 1, "attr_name": "Garancia", "attr_value": "36 hónap", "sort_order": 1 }
+      { "id": 1886, "product_id": 1, "parameter_id": 1, "attr_name": "Gyártó", "attr_value": "Generic", "sort_order": 0 },
+      { "id": 1887, "product_id": 1, "parameter_id": 3, "attr_name": "Garancia", "attr_value": "36 hónap", "sort_order": 1 }
     ],
     "category_ids": [1, 5],
     "related_ids": [4, 6],
@@ -148,12 +151,24 @@ Example response (`GET /api/products/1`) — all fields of the detailed product:
 
 Fields: `price`/`sale_price` are net prices (if `sale_price` is set, that is the active price);
 `stock_qty` is the aggregated current stock; `images` are the product images (`path` may be a
-relative upload path or a full URL); `attributes` are the product parameters; `category_ids`
+relative upload path or a full URL); `category_ids`
 lists all assigned categories; `related_ids`/`substitute_ids` are the related/substitute
 products; `group_prices` are the customer-group prices keyed by `customer_group_id` (a fixed
 `price` plus an optional `sale_price`). All amounts are in the primary currency named by
 `meta.currency` — see [Currency](#currency). Note: text values that are actual data (product
 name, description, attribute values) are returned as stored and are not translated.
+
+**Master-data references.** The unit of measure and the product parameters are foreign keys to
+their own master tables, and the response carries both the id and the resolved text:
+
+- `unit_id` points at [`/api/units`](#other-master-data); `unit` is that unit's code and
+  `unit_name` its full name. `unit_id` may be `null` if no unit is set.
+- Inside `attributes`, `parameter_id` points at [`/api/parameters`](#other-master-data) and
+  `attr_name` is that parameter's name; `attr_value` is the free-text value. A product can
+  carry a given parameter only once.
+
+The `unit`, `attr_name` and `attr_value` keys are unchanged from earlier versions, so existing
+integrations keep working — `unit_id` and `parameter_id` are additions.
 
 ### Categories
 
@@ -166,7 +181,8 @@ name, description, attribute values) are returned as stored and are not translat
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/parameter-names` | Parameter names. Filters: `q`, `updated_since` |
+| GET | `/api/parameters` | Parameters (the master list product parameters pick their name from). Filters: `q`, `updated_since` |
+| GET | `/api/parameter-names` | Deprecated alias of `/api/parameters`, kept so existing integrations keep working |
 | GET | `/api/units` | Units of measure. Filters: `q`, `updated_since` |
 | GET | `/api/currencies` | Currencies and exchange rates. Filters: `q`, `updated_since` |
 | GET | `/api/customer-groups` | Customer groups. Filters: `q`, `updated_since` |

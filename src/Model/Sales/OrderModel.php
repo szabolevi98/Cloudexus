@@ -46,9 +46,10 @@ class OrderModel
     public function items(int $orderId): array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT oi.*, pr.sku, pr.name AS product_name, pr.unit
+            'SELECT oi.*, pr.sku, pr.name AS product_name, un.code AS unit
              FROM order_items oi
              JOIN products pr ON pr.id = oi.product_id
+             LEFT JOIN units un ON un.id = pr.unit_id
              WHERE oi.order_id = :order_id'
         );
         $stmt->execute(['order_id' => $orderId]);

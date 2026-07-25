@@ -42,7 +42,11 @@ foreach ([
     'partner_activities', 'partner_addresses', 'todos', 'warehouse_locations', 'stocktaking_items', 'stocktakings',
     'cash_vouchers', 'incoming_invoice_items', 'incoming_invoices',
     'purchase_order_items', 'purchase_orders', 'invoice_items', 'invoices',
-    'order_items', 'orders', 'stock_movements', 'product_group_prices', 'products', 'categories',
+    'order_items', 'orders', 'stock_movements', 'product_group_prices',
+    // A termékhez kötött kapcsolótáblák is, különben az újraseedelés után árva
+    // sorok maradnának (a TRUNCATE nem futtatja a CASCADE-et).
+    'product_parameters', 'product_categories', 'product_images', 'product_links',
+    'products', 'categories',
     'partners', 'warehouses', 'customer_groups', 'currencies',
 ] as $table) {
     $pdo->exec("TRUNCATE TABLE $table");
@@ -138,10 +142,18 @@ $products = [];
 $productIdsByParent = []; // parentName => [productId, ...]
 $skuCounter = 1;
 
+// A termék a units és a parameters törzsre hivatkozik, ezért id-kal dolgozunk.
+$unitIds = $pdo->query(
+    "SELECT id FROM units WHERE code IN ('db', 'doboz', 'csomag', 'szett', 'karton')"
+)->fetchAll(PDO::FETCH_COLUMN);
+$parameterIds = $pdo->query(
+    "SELECT id FROM parameters WHERE name IN ('Gyártó', 'Garancia', 'Származási ország')
+     ORDER BY FIELD(name, 'Gyártó', 'Garancia', 'Származási ország')"
+)->fetchAll(PDO::FETCH_COLUMN);
+
 foreach ($catalog as $categoryName => $items) {
     $categoryIds[$categoryName] = $categoryModel->create(['name' => $categoryName, 'parent_id' => null]);
 
-    $units = ['db', 'doboz', 'csomag', 'szett', 'karton'];
     foreach ($items as [$name, $price]) {
         $sku = 'PRD-' . str_pad((string) $skuCounter++, 4, '0', STR_PAD_LEFT);
         // Minden negyedik termékre akciós ár kerül (10-25% kedvezmény).
@@ -155,7 +167,7 @@ foreach ($catalog as $categoryName => $items) {
             'description' => "A(z) $name részletes leírása. Tartós, megbízható termék, amely megfelel a piaci elvárásoknak. "
                 . 'Ideális választás vállalati és lakossági felhasználásra egyaránt.',
             'category_id' => $categoryIds[$categoryName],
-            'unit' => $units[array_rand($units)],
+            'unit_id' => $unitIds[array_rand($unitIds)],
             'price' => $price,
             'sale_price' => $salePrice ?? '',
             'vat_rate' => 27,
@@ -167,8 +179,8 @@ foreach ($catalog as $categoryName => $items) {
             'weight_g' => rand(100, 20000),
             'is_active' => 1,
             'is_webshop' => rand(1, 100) <= 85 ? 1 : 0,
-            'attr_name' => ['Gyártó', 'Garancia', 'Származási ország'],
-            'attr_value' => [
+            'parameter_id' => $parameterIds,
+            'parameter_value' => [
                 ['Bosch', 'Makita', 'Samsung', 'Generic', 'Xiaomi'][array_rand([0, 1, 2, 3, 4])],
                 [12, 24, 36][array_rand([0, 1, 2])] . ' hónap',
                 ['Magyarország', 'Németország', 'Kína', 'Lengyelország'][array_rand([0, 1, 2, 3])],

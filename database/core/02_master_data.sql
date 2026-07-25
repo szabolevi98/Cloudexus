@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS products (
     sku VARCHAR(64) NOT NULL,
     name VARCHAR(200) NOT NULL,
     category_id INT UNSIGNED NULL,
-    unit VARCHAR(20) NOT NULL DEFAULT 'db',
+    -- A units törzsre hivatkozik; a külső kulcsot a 23-as migráció adja hozzá,
+    -- mert a units tábla csak a 12-esben jön létre.
+    unit_id INT UNSIGNED NULL,
     price DECIMAL(14, 2) NOT NULL DEFAULT 0,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at DATETIME NOT NULL,

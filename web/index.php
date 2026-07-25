@@ -5,7 +5,7 @@ use Cloudexus\Controller\Api\CurrencyApiController;
 use Cloudexus\Controller\Api\CustomerGroupApiController;
 use Cloudexus\Controller\Api\InvoiceApiController;
 use Cloudexus\Controller\Api\OrderApiController;
-use Cloudexus\Controller\Api\ParameterNameApiController;
+use Cloudexus\Controller\Api\ParameterApiController;
 use Cloudexus\Controller\Api\PartnerApiController;
 use Cloudexus\Controller\Api\PricingApiController;
 use Cloudexus\Controller\Api\ProductApiController;
@@ -25,7 +25,7 @@ use Cloudexus\Controller\LocationController;
 use Cloudexus\Controller\LoginController;
 use Cloudexus\Controller\OrderController;
 use Cloudexus\Controller\PartnerController;
-use Cloudexus\Controller\ParameterNameController;
+use Cloudexus\Controller\ParameterController;
 use Cloudexus\Controller\PricingController;
 use Cloudexus\Controller\ProductController;
 use Cloudexus\Controller\ProfileController;
@@ -121,7 +121,7 @@ $router->get('/products/export', fn() => (new ProductController())->export());
 $router->get('/products/search', fn() => (new ProductController())->search());
 $router->get('/partners/export', fn() => (new PartnerController())->export());
 $router->get('/categories/search', fn() => (new CategoryController())->search());
-$router->get('/param-names/search', fn() => (new ParameterNameController())->search());
+$router->get('/parameters/search', fn() => (new ParameterController())->search());
 $router->get('/pricing/effective', fn() => (new PricingController())->effective());
 
 $router->post('/products/{id}/images/{imageId}/delete', fn($id, $imageId) => (new ProductController())->deleteImage((int) $id, (int) $imageId));
@@ -143,10 +143,10 @@ registerCrud($router, '/locations', LocationController::class);
 $router->get('/settings/company', fn() => (new SettingsController())->company());
 $router->post('/settings/company', fn() => (new SettingsController())->companyUpdate());
 
-$router->get('/parameter-names', fn() => (new ParameterNameController())->list());
-$router->post('/parameter-names/create', fn() => (new ParameterNameController())->create());
-$router->post('/parameter-names/{id}', fn($id) => (new ParameterNameController())->update((int) $id));
-$router->post('/parameter-names/{id}/delete', fn($id) => (new ParameterNameController())->delete((int) $id));
+$router->get('/parameters', fn() => (new ParameterController())->list());
+$router->post('/parameters/create', fn() => (new ParameterController())->create());
+$router->post('/parameters/{id}', fn($id) => (new ParameterController())->update((int) $id));
+$router->post('/parameters/{id}/delete', fn($id) => (new ParameterController())->delete((int) $id));
 
 $router->get('/units', fn() => (new UnitController())->list());
 $router->post('/units/create', fn() => (new UnitController())->create());
@@ -242,7 +242,9 @@ $router->get('/api/products/{id}', fn($id) => (new ProductApiController())->show
 $router->get('/api/categories', fn() => (new CategoryApiController())->index());
 $router->get('/api/categories/{id}', fn($id) => (new CategoryApiController())->show((int) $id));
 
-$router->get('/api/parameter-names', fn() => (new ParameterNameApiController())->index());
+$router->get('/api/parameters', fn() => (new ParameterApiController())->index());
+// Backwards-compatible alias so existing API consumers keep working.
+$router->get('/api/parameter-names', fn() => (new ParameterApiController())->index());
 $router->get('/api/units', fn() => (new UnitApiController())->index());
 $router->get('/api/currencies', fn() => (new CurrencyApiController())->index());
 

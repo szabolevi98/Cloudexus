@@ -2,16 +2,16 @@
 
 namespace Cloudexus\Controller\Api;
 
-use Cloudexus\Model\Core\ParameterNameModel;
+use Cloudexus\Model\Core\ParameterModel;
 
-class ParameterNameApiController extends ApiController
+class ParameterApiController extends ApiController
 {
     public function index(): void
     {
         $this->authenticate();
 
         $pager = $this->paginator();
-        $rows = (new ParameterNameModel())->paginate($this->baseFilters(), $pager);
+        $rows = (new ParameterModel())->paginate($this->baseFilters(), $pager);
 
         $this->collection($rows, $pager);
     }

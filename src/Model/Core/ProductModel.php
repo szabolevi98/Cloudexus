@@ -9,17 +9,26 @@ class ProductModel
     /** All product columns written by create()/update(). */
     private const FIELDS = [
         'sku', 'barcode', 'name', 'short_description', 'description',
-        'category_id', 'unit', 'price', 'sale_price', 'vat_rate', 'min_stock',
+        'category_id', 'unit_id', 'price', 'sale_price', 'vat_rate', 'min_stock',
         'width_mm', 'height_mm', 'depth_mm', 'weight_g',
         'is_active', 'is_webshop',
     ];
 
+    /**
+     * A mértékegység kódja a units törzsből, `unit` néven. A termék csak
+     * unit_id-t tárol, de a lekérdezések a feloldott kódot is visszaadják, hogy
+     * a listák és a REST API változatlan `unit` mezőt kapjanak.
+     */
+    private const UNIT_JOIN = 'LEFT JOIN units un ON un.id = p.unit_id';
+    private const UNIT_SELECT = 'un.code AS unit, un.name AS unit_name';
+
     public function all(): array
     {
         return DatabaseConnection::get()->query(
-            'SELECT p.*, c.name AS category_name
+            'SELECT p.*, c.name AS category_name, ' . self::UNIT_SELECT . '
              FROM products p
              LEFT JOIN categories c ON c.id = p.category_id
+             ' . self::UNIT_JOIN . '
              ORDER BY p.name ASC'
         )->fetchAll();
     }
@@ -82,7 +91,11 @@ class ProductModel
 
     public function findById(int $id): ?array
     {
-        $stmt = DatabaseConnection::get()->prepare('SELECT * FROM products WHERE id = :id LIMIT 1');
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT p.*, ' . self::UNIT_SELECT . '
+             FROM products p ' . self::UNIT_JOIN . '
+             WHERE p.id = :id LIMIT 1'
+        );
         $stmt->execute(['id' => $id]);
         return $stmt->fetch() ?: null;
     }
@@ -206,10 +219,20 @@ class ProductModel
         return $stmt->fetchAll();
     }
 
+    /**
+     * A termék paraméterei. A név a parameters törzsből oldódik fel; a kifelé
+     * adott kulcsok (attr_name / attr_value) szándékosan a korábbiak, hogy a
+     * REST API válasza ne változzon — a parameter_id új mezőként jön mellé.
+     */
     public function attributes(int $productId): array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT * FROM product_attributes WHERE product_id = :id ORDER BY sort_order ASC, id ASC'
+            'SELECT pp.id, pp.product_id, pp.parameter_id, pa.name AS attr_name,
+                    pp.value AS attr_value, pp.sort_order, pp.created_at, pp.updated_at
+             FROM product_parameters pp
+             JOIN parameters pa ON pa.id = pp.parameter_id
+             WHERE pp.product_id = :id
+             ORDER BY pp.sort_order ASC, pp.id ASC'
         );
         $stmt->execute(['id' => $productId]);
         return $stmt->fetchAll();
@@ -280,10 +303,11 @@ class ProductModel
         $pager->clamp();
 
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT p.*, c.name AS category_name, COALESCE(s.qty, 0) AS stock_qty,
+            "SELECT p.*, c.name AS category_name, " . self::UNIT_SELECT . ", COALESCE(s.qty, 0) AS stock_qty,
                     (SELECT path FROM product_images pi WHERE pi.product_id = p.id ORDER BY is_primary DESC, sort_order ASC, id ASC LIMIT 1) AS thumb
              FROM products p
              LEFT JOIN categories c ON c.id = p.category_id
+             " . self::UNIT_JOIN . "
              LEFT JOIN (
                  SELECT product_id, SUM(CASE WHEN type = 'in' THEN quantity ELSE -quantity END) AS qty
                  FROM stock_movements GROUP BY product_id
@@ -350,7 +374,9 @@ class ProductModel
     public function findByCode(string $code): ?array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT * FROM products WHERE (barcode = :c1 OR sku = :c2) AND is_active = 1 LIMIT 1'
+            'SELECT p.*, ' . self::UNIT_SELECT . '
+             FROM products p ' . self::UNIT_JOIN . '
+             WHERE (p.barcode = :c1 OR p.sku = :c2) AND p.is_active = 1 LIMIT 1'
         );
         $stmt->execute(['c1' => $code, 'c2' => $code]);
 
@@ -361,8 +387,9 @@ class ProductModel
     public function lowStock(int $limit = 10): array
     {
         return DatabaseConnection::get()->query(
-            "SELECT p.id, p.sku, p.name, p.unit, p.min_stock, COALESCE(s.qty, 0) AS stock_qty
+            "SELECT p.id, p.sku, p.name, " . self::UNIT_SELECT . ", p.min_stock, COALESCE(s.qty, 0) AS stock_qty
              FROM products p
+             " . self::UNIT_JOIN . "
              LEFT JOIN (
                  SELECT product_id, SUM(CASE WHEN type = 'in' THEN quantity ELSE -quantity END) AS qty
                  FROM stock_movements GROUP BY product_id
@@ -433,7 +460,7 @@ class ProductModel
             'short_description' => ($data['short_description'] ?? '') !== '' ? $data['short_description'] : null,
             'description' => ($data['description'] ?? '') !== '' ? $data['description'] : null,
             'category_id' => $data['category_id'] ?: null,
-            'unit' => $data['unit'],
+            'unit_id' => ($data['unit_id'] ?? null) ?: null,
             'price' => $data['price'],
             'sale_price' => ($data['sale_price'] ?? '') !== '' ? $data['sale_price'] : null,
             'vat_rate' => $data['vat_rate'] ?? 27,
@@ -463,19 +490,22 @@ class ProductModel
             $catStmt->execute(['p' => $id, 'c' => $catId]);
         }
 
-        // Attributes: parallel arrays attr_name[] / attr_value[].
-        $pdo->prepare('DELETE FROM product_attributes WHERE product_id = :id')->execute(['id' => $id]);
-        $names = $data['attr_name'] ?? [];
-        $values = $data['attr_value'] ?? [];
-        $attrStmt = $pdo->prepare(
-            'INSERT INTO product_attributes (product_id, attr_name, attr_value, sort_order) VALUES (:p, :n, :v, :s)'
+        // Paraméterek: párhuzamos tömbök, parameter_id[] / parameter_value[].
+        // Ugyanaz a paraméter egy terméken csak egyszer szerepelhet (uniq kulcs),
+        // ezért az ismételt választást az INSERT IGNORE eldobja.
+        $pdo->prepare('DELETE FROM product_parameters WHERE product_id = :id')->execute(['id' => $id]);
+        $parameterIds = $data['parameter_id'] ?? [];
+        $values = $data['parameter_value'] ?? [];
+        $paramStmt = $pdo->prepare(
+            'INSERT IGNORE INTO product_parameters (product_id, parameter_id, value, sort_order)
+             VALUES (:p, :pid, :v, :s)'
         );
         $sort = 0;
-        foreach ($names as $i => $name) {
-            $name = trim((string) $name);
+        foreach ($parameterIds as $i => $parameterId) {
+            $parameterId = (int) $parameterId;
             $value = trim((string) ($values[$i] ?? ''));
-            if ($name !== '') {
-                $attrStmt->execute(['p' => $id, 'n' => $name, 'v' => $value, 's' => $sort++]);
+            if ($parameterId > 0 && $value !== '') {
+                $paramStmt->execute(['p' => $id, 'pid' => $parameterId, 'v' => $value, 's' => $sort++]);
             }
         }
 

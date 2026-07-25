@@ -3,17 +3,17 @@
 namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Paginator;
-use Cloudexus\Model\Core\ParameterNameModel;
+use Cloudexus\Model\Core\ParameterModel;
 
-class ParameterNameController extends BaseController
+class ParameterController extends BaseController
 {
-    private ParameterNameModel $names;
+    private ParameterModel $names;
 
     public function __construct()
     {
         parent::__construct();
-        $this->names = new ParameterNameModel();
-        $this->activeMenu = 'parameter-names';
+        $this->names = new ParameterModel();
+        $this->activeMenu = 'parameters';
     }
 
     /** Select2 AJAX endpoint (any authenticated user). */
@@ -31,7 +31,7 @@ class ParameterNameController extends BaseController
         $pager = new Paginator(30);
 
         $this->pageTitle = $this->t('parameters.list_title');
-        $this->render('parameter-names/list.twig', [
+        $this->render('parameters/list.twig', [
             'names' => $this->names->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
@@ -51,7 +51,7 @@ class ParameterNameController extends BaseController
             $this->names->create($name);
             $this->flashSuccess($this->t('parameters.created'));
         }
-        $this->redirect('/parameter-names');
+        $this->redirect('/parameters');
     }
 
     public function update(int $id): void
@@ -67,7 +67,7 @@ class ParameterNameController extends BaseController
             $this->names->update($id, $name);
             $this->flashSuccess($this->t('parameters.updated'));
         }
-        $this->redirect('/parameter-names');
+        $this->redirect('/parameters');
     }
 
     public function delete(int $id): void
@@ -76,6 +76,6 @@ class ParameterNameController extends BaseController
 
         $this->names->delete($id);
         $this->flashSuccess($this->t('parameters.deleted'));
-        $this->redirect('/parameter-names');
+        $this->redirect('/parameters');
     }
 }
