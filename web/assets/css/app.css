@@ -517,6 +517,82 @@ a {
     margin-bottom: 24px;
 }
 
+/* Language switcher in the card's top-right corner. Built on <details> rather
+   than a Bootstrap dropdown, because the login page loads Bootstrap's CSS but
+   not its JS — this way the menu opens without any JavaScript. */
+.cx-auth-lang {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+
+.cx-auth-lang__toggle {
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--cx-border);
+    border-radius: var(--cx-radius-sm);
+    color: var(--cx-muted);
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.cx-auth-lang__toggle::-webkit-details-marker,
+.cx-auth-lang__toggle::marker {
+    display: none;
+    content: "";
+}
+
+.cx-auth-lang__toggle:hover,
+.cx-auth-lang[open] .cx-auth-lang__toggle {
+    color: var(--cx-primary);
+    border-color: var(--cx-primary);
+}
+
+.cx-auth-lang__toggle:focus-visible {
+    outline: 2px solid var(--cx-primary);
+    outline-offset: 2px;
+}
+
+.cx-auth-lang__menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 5;
+    min-width: 136px;
+    padding: 4px;
+    background: var(--cx-surface);
+    border: 1px solid var(--cx-border);
+    border-radius: var(--cx-radius-sm);
+    box-shadow: var(--cx-shadow-lg);
+}
+
+.cx-auth-lang__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    font-size: 0.86rem;
+    color: var(--cx-text);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.cx-auth-lang__item:hover {
+    background: var(--cx-bg);
+    color: var(--cx-text);
+}
+
+.cx-auth-lang__item.is-active {
+    color: var(--cx-primary);
+    font-weight: 600;
+}
+
 .markdown-body h1 {
     font-size: 1.6rem;
     font-weight: 700;
