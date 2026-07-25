@@ -3,48 +3,48 @@
 {% block content %}
     <div class="cx-card">
         <div class="cx-card__header">
-            <h2>Bejövő számlák</h2>
+            <h2>{{ t('incoming_invoices.list_title') }}</h2>
             <a href="{{ base_url }}/incoming-invoices/create" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg me-1"></i>Új bejövő számla
+                <i class="bi bi-plus-lg me-1"></i>{{ t('incoming_invoices.new') }}
             </a>
         </div>
         <div class="cx-card__body p-0">
             <form method="get" class="p-3 border-bottom">
                 <div class="row g-2 align-items-end">
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Számlaszám</label>
+                        <label class="form-label small text-muted mb-1">{{ t('incoming_invoices.invoice_number') }}</label>
                         <input type="text" name="q" class="form-control form-control-sm" placeholder="BSZLA-…" value="{{ filters.q }}">
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Szállító</label>
+                        <label class="form-label small text-muted mb-1">{{ t('incoming_invoices.supplier') }}</label>
                         <select name="partner_id" class="form-select form-select-sm">
-                            <option value="">Mind</option>
+                            <option value="">{{ t('common.all') }}</option>
                             {% for p in partners %}
                                 <option value="{{ p.id }}" {{ filters.partner_id == p.id ? 'selected' : '' }}>{{ p.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Állapot</label>
+                        <label class="form-label small text-muted mb-1">{{ t('common.status') }}</label>
                         <select name="status" class="form-select form-select-sm">
-                            <option value="">Mind</option>
-                            <option value="unpaid" {{ filters.status == 'unpaid' ? 'selected' : '' }}>Fizetésre vár</option>
-                            <option value="overdue" {{ filters.status == 'overdue' ? 'selected' : '' }}>Lejárt</option>
-                            <option value="paid" {{ filters.status == 'paid' ? 'selected' : '' }}>Kifizetve</option>
-                            <option value="cancelled" {{ filters.status == 'cancelled' ? 'selected' : '' }}>Stornózva</option>
+                            <option value="">{{ t('common.all') }}</option>
+                            <option value="unpaid" {{ filters.status == 'unpaid' ? 'selected' : '' }}>{{ t('common.invoice_status.unpaid') }}</option>
+                            <option value="overdue" {{ filters.status == 'overdue' ? 'selected' : '' }}>{{ t('common.invoice_status.overdue') }}</option>
+                            <option value="paid" {{ filters.status == 'paid' ? 'selected' : '' }}>{{ t('common.invoice_status.paid') }}</option>
+                            <option value="cancelled" {{ filters.status == 'cancelled' ? 'selected' : '' }}>{{ t('common.invoice_status.cancelled') }}</option>
                         </select>
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Kiállítástól</label>
+                        <label class="form-label small text-muted mb-1">{{ t('incoming_invoices.issued_from') }}</label>
                         <input type="date" name="date_from" class="form-control form-control-sm" value="{{ filters.date_from }}">
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Kiállításig</label>
+                        <label class="form-label small text-muted mb-1">{{ t('incoming_invoices.issued_to') }}</label>
                         <input type="date" name="date_to" class="form-control form-control-sm" value="{{ filters.date_to }}">
                     </div>
                     <div class="col-auto">
-                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
-                        <a href="{{ base_url }}/incoming-invoices" class="btn btn-sm btn-outline-secondary">Törlés</a>
+                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>{{ t('common.filter') }}</button>
+                        <a href="{{ base_url }}/incoming-invoices" class="btn btn-sm btn-outline-secondary">{{ t('common.clear') }}</a>
                     </div>
                 </div>
             </form>
@@ -52,12 +52,12 @@
                 <table class="table table-hover align-middle mb-0 cx-table">
                     <thead>
                     <tr>
-                        <th>Számlaszám</th>
-                        <th>Szállító</th>
-                        <th>Kiállítás</th>
-                        <th>Fizetési határidő</th>
-                        <th>Állapot</th>
-                        <th class="text-end">Összeg</th>
+                        <th>{{ t('incoming_invoices.invoice_number') }}</th>
+                        <th>{{ t('incoming_invoices.supplier') }}</th>
+                        <th>{{ t('incoming_invoices.issue_date') }}</th>
+                        <th>{{ t('incoming_invoices.due_date') }}</th>
+                        <th>{{ t('common.status') }}</th>
+                        <th class="text-end">{{ t('incoming_invoices.amount') }}</th>
                         <th></th>
                     </tr>
                     </thead>
@@ -71,13 +71,13 @@
                             <td class="text-muted">{{ invoice.due_date }}</td>
                             <td>
                                 {% if invoice.status == 'unpaid' and invoice.due_date < today %}
-                                    <span class="badge rounded-pill text-bg-danger">Lejárt</span>
+                                    <span class="badge rounded-pill text-bg-danger">{{ t('common.invoice_status.overdue') }}</span>
                                 {% elseif invoice.status == 'unpaid' %}
-                                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">Fizetésre vár</span>
+                                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">{{ t('common.invoice_status.unpaid') }}</span>
                                 {% elseif invoice.status == 'paid' %}
-                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Kifizetve</span>
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('common.invoice_status.paid') }}</span>
                                 {% else %}
-                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Stornózva</span>
+                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.invoice_status.cancelled') }}</span>
                                 {% endif %}
                             </td>
                             <td class="text-end">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>
@@ -88,7 +88,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="7" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő számla.</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted py-4">{{ t('incoming_invoices.none_found') }}</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

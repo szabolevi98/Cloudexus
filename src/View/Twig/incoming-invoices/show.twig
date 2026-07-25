@@ -7,17 +7,17 @@
                 <h2>{{ invoice.invoice_number }}</h2>
                 <div class="text-muted small">
                     {{ invoice.partner_name }}
-                    {% if invoice.tax_number %} · Adószám: {{ invoice.tax_number }}{% endif %}
-                    {% if invoice.warehouse_name %} · Bevét raktára: {{ invoice.warehouse_name }}{% endif %}
+                    {% if invoice.tax_number %} · {{ t('incoming_invoices.tax_number') }}: {{ invoice.tax_number }}{% endif %}
+                    {% if invoice.warehouse_name %} · {{ t('incoming_invoices.receipt_warehouse') }}: {{ invoice.warehouse_name }}{% endif %}
                 </div>
             </div>
             <div>
                 {% if invoice.status == 'unpaid' %}
-                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">Fizetésre vár</span>
+                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">{{ t('common.invoice_status.unpaid') }}</span>
                 {% elseif invoice.status == 'paid' %}
-                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Kifizetve</span>
+                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('common.invoice_status.paid') }}</span>
                 {% else %}
-                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Stornózva</span>
+                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.invoice_status.cancelled') }}</span>
                 {% endif %}
             </div>
         </div>
@@ -26,11 +26,11 @@
                 <table class="table cx-table align-middle mb-0">
                     <thead>
                     <tr>
-                        <th>Cikkszám</th>
-                        <th>Megnevezés</th>
-                        <th class="text-end">Mennyiség</th>
-                        <th class="text-end">Egységár</th>
-                        <th class="text-end">Sor összesen</th>
+                        <th>{{ t('common.sku') }}</th>
+                        <th>{{ t('incoming_invoices.product_name') }}</th>
+                        <th class="text-end">{{ t('common.quantity') }}</th>
+                        <th class="text-end">{{ t('common.unit_price') }}</th>
+                        <th class="text-end">{{ t('common.line_total') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -46,7 +46,7 @@
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td colspan="4" class="text-end fw-medium">Végösszeg</td>
+                        <td colspan="4" class="text-end fw-medium">{{ t('common.total') }}</td>
                         <td class="text-end fw-bold">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>
                     </tr>
                     </tfoot>
@@ -57,17 +57,17 @@
 
     <div class="d-flex gap-2">
         <a href="{{ base_url }}/incoming-invoices" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Vissza a listához
+            <i class="bi bi-arrow-left me-1"></i>{{ t('common.back_to_list') }}
         </a>
         {% if invoice.status == 'unpaid' %}
             <form method="post" action="{{ base_url }}/incoming-invoices/{{ invoice.id }}/mark-paid">
                 <button type="submit" class="btn btn-success">
-                    <i class="bi bi-check-circle me-1"></i>Kifizetve jelölés
+                    <i class="bi bi-check-circle me-1"></i>{{ t('incoming_invoices.mark_paid') }}
                 </button>
             </form>
-            <form method="post" action="{{ base_url }}/incoming-invoices/{{ invoice.id }}/cancel" onsubmit="return confirm('Biztosan stornózod a számlát?');">
+            <form method="post" action="{{ base_url }}/incoming-invoices/{{ invoice.id }}/cancel" onsubmit="return confirm('{{ t('incoming_invoices.confirm_void')|e('js') }}');">
                 <button type="submit" class="btn btn-outline-danger">
-                    <i class="bi bi-x-circle me-1"></i>Stornózás
+                    <i class="bi bi-x-circle me-1"></i>{{ t('incoming_invoices.void') }}
                 </button>
             </form>
         {% endif %}

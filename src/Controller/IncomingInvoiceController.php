@@ -41,7 +41,7 @@ class IncomingInvoiceController extends BaseController
         ];
         $pager = new \Cloudexus\Core\Paginator(25);
 
-        $this->pageTitle = 'Bejövő számlák';
+        $this->pageTitle = $this->t('incoming_invoices.list_title');
         $this->render('incoming-invoices/list.twig', [
             'invoices' => $this->invoices->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -59,7 +59,7 @@ class IncomingInvoiceController extends BaseController
             $fromOrder = $this->orders->findById((int) $_GET['order_id']);
         }
 
-        $this->pageTitle = 'Új bejövő számla';
+        $this->pageTitle = $this->t('incoming_invoices.new');
         $this->render('incoming-invoices/form.twig', [
             'invoice_number' => $this->invoices->nextInvoiceNumber(),
             'partners' => $this->partners->suppliersAndBoth(),
@@ -76,7 +76,7 @@ class IncomingInvoiceController extends BaseController
         $items = $this->collectItems();
 
         if (empty($_POST['partner_id']) || empty($items)) {
-            $this->flashError('A szállító és legalább egy tétel megadása kötelező.');
+            $this->flashError($this->t('incoming_invoices.required'));
             $this->redirect('/incoming-invoices/create');
         }
 
@@ -90,7 +90,9 @@ class IncomingInvoiceController extends BaseController
             'created_by' => Auth::id(),
         ], $items);
 
-        $this->flashSuccess('Bejövő számla rögzítve.' . (!empty($_POST['warehouse_id']) ? ' A tételek raktári bevétként is könyvelve.' : ''));
+        $this->flashSuccess(!empty($_POST['warehouse_id'])
+            ? $this->t('incoming_invoices.created_with_stock')
+            : $this->t('incoming_invoices.created'));
         $this->redirect('/incoming-invoices/' . $id);
     }
 
@@ -103,7 +105,7 @@ class IncomingInvoiceController extends BaseController
             $this->redirect('/incoming-invoices');
         }
 
-        $this->pageTitle = 'Számla: ' . $invoice['invoice_number'];
+        $this->pageTitle = $this->t('incoming_invoices.title_prefix') . ': ' . $invoice['invoice_number'];
         $this->render('incoming-invoices/show.twig', ['invoice' => $invoice]);
     }
 
@@ -112,7 +114,7 @@ class IncomingInvoiceController extends BaseController
         $this->requireAuth();
 
         $this->invoices->updateStatus($id, 'paid');
-        $this->flashSuccess('Számla kifizetve jelölve.');
+        $this->flashSuccess($this->t('incoming_invoices.marked_paid'));
         $this->redirect('/incoming-invoices/' . $id);
     }
 
@@ -121,7 +123,7 @@ class IncomingInvoiceController extends BaseController
         $this->requireAuth();
 
         $this->invoices->updateStatus($id, 'cancelled');
-        $this->flashSuccess('Számla stornózva.');
+        $this->flashSuccess($this->t('incoming_invoices.cancelled'));
         $this->redirect('/incoming-invoices/' . $id);
     }
 
@@ -130,7 +132,7 @@ class IncomingInvoiceController extends BaseController
         $this->requireAuth();
 
         $this->invoices->delete($id);
-        $this->flashSuccess('Számla törölve.');
+        $this->flashSuccess($this->t('incoming_invoices.deleted'));
         $this->redirect('/incoming-invoices');
     }
 
