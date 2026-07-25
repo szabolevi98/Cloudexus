@@ -62,6 +62,9 @@ class StockController extends BaseController
             'warehouses' => $this->warehouses->activeList(),
             'products' => $this->products->all(),
             'locations' => $this->locations->activeWithWarehouse(),
+            // ?product_id=… -val előre kiválasztható a termék (pl. a vezérlőpult
+            // alacsony készlet listájának "Bevételezés" gombjáról érkezve)
+            'selected_product_id' => (int) ($_GET['product_id'] ?? 0),
         ]);
     }
 
@@ -86,6 +89,7 @@ class StockController extends BaseController
             'warehouses' => $this->warehouses->activeList(),
             'products' => $this->products->all(),
             'locations' => $this->locations->activeWithWarehouse(),
+            'selected_product_id' => (int) ($_GET['product_id'] ?? 0),
         ]);
     }
 

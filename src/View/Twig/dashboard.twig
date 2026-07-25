@@ -210,7 +210,7 @@
                                     </td>
                                     <td class="text-end text-muted text-nowrap">{{ p.min_stock|number_format(0, ',', ' ') }} {{ p.unit }}</td>
                                     <td class="text-end">
-                                        <a href="{{ base_url }}/stock/in" class="btn btn-sm btn-outline-primary">{{ t('dashboard.receive') }}</a>
+                                        <a href="{{ base_url }}/stock/in?product_id={{ p.id }}" class="btn btn-sm btn-outline-primary">{{ t('dashboard.receive') }}</a>
                                     </td>
                                 </tr>
                             {% else %}
