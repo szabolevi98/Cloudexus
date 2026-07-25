@@ -37,7 +37,7 @@ class StockController extends BaseController
         $pager = new Paginator(25);
 
         $this->activeMenu = 'stock-overview';
-        $this->pageTitle = 'Raktárkészlet';
+        $this->pageTitle = $this->t('stock.overview_title');
         $this->render('stock/overview.twig', [
             'rows' => $this->movements->overview($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -54,7 +54,7 @@ class StockController extends BaseController
         [$filters, $pager, $rows] = $this->movementListData('in');
 
         $this->activeMenu = 'stock-in';
-        $this->pageTitle = 'Raktári bevét';
+        $this->pageTitle = $this->t('stock.in_title');
         $this->render('stock/in.twig', [
             'movements' => $rows,
             'pager' => $pager->toTwig($filters),
@@ -78,7 +78,7 @@ class StockController extends BaseController
         [$filters, $pager, $rows] = $this->movementListData('out');
 
         $this->activeMenu = 'stock-out';
-        $this->pageTitle = 'Raktári kiadás';
+        $this->pageTitle = $this->t('stock.out_title');
         $this->render('stock/out.twig', [
             'movements' => $rows,
             'pager' => $pager->toTwig($filters),
@@ -108,7 +108,7 @@ class StockController extends BaseController
         $pager = new Paginator(20);
 
         $this->activeMenu = 'stock-transfer';
-        $this->pageTitle = 'Raktárközi átadás';
+        $this->pageTitle = $this->t('stock.transfer_title');
         $this->render('stock/transfer.twig', [
             'warehouses' => $this->warehouses->activeList(),
             'products' => $this->products->all(),
@@ -130,18 +130,21 @@ class StockController extends BaseController
         $note = trim($_POST['note'] ?? '');
 
         if ($fromId <= 0 || $toId <= 0 || $productId <= 0 || $quantity <= 0) {
-            $this->flashError('Forrás- és célraktár, termék és pozitív mennyiség megadása kötelező.');
+            $this->flashError($this->t('stock.transfer_required'));
             $this->redirect('/stock/transfer');
         }
 
         if ($fromId === $toId) {
-            $this->flashError('A forrás- és célraktár nem lehet azonos.');
+            $this->flashError($this->t('stock.transfer_same_warehouse'));
             $this->redirect('/stock/transfer');
         }
 
         $available = $this->movements->availableQuantity($productId, $fromId);
         if ($quantity > $available) {
-            $this->flashError(sprintf('Nincs elég készlet a forrásraktárban: elérhető %s, kért %s.', $available, $quantity));
+            $this->flashError($this->t('stock.transfer_not_enough', [
+                'available' => $available,
+                'requested' => $quantity,
+            ]));
             $this->redirect('/stock/transfer');
         }
 
@@ -159,7 +162,7 @@ class StockController extends BaseController
             (int) ($_POST['to_location_id'] ?? 0) ?: null
         );
 
-        $this->flashSuccess('Raktárközi átadás rögzítve.');
+        $this->flashSuccess($this->t('stock.transfer_created'));
         $this->redirect('/stock/transfer');
     }
 
@@ -168,7 +171,7 @@ class StockController extends BaseController
         $this->requireAuth();
 
         $this->activeMenu = 'stock-barcode';
-        $this->pageTitle = 'Vonalkód gyűjtő';
+        $this->pageTitle = $this->t('stock.barcode_title');
         $this->render('stock/barcode.twig', [
             'warehouses' => $this->warehouses->activeList(),
             'locations' => $this->locations->activeWithWarehouse(),
@@ -215,7 +218,7 @@ class StockController extends BaseController
         }
 
         if ($warehouseId <= 0 || empty($items)) {
-            $this->flashError('Raktár és legalább egy beolvasott tétel szükséges.');
+            $this->flashError($this->t('stock.barcode_required'));
             $this->redirect('/stock/barcode');
         }
 
@@ -224,7 +227,11 @@ class StockController extends BaseController
                 $available = $this->movements->availableQuantity($productId, $warehouseId);
                 if ($quantity > $available) {
                     $product = $this->products->findById($productId);
-                    $this->flashError(sprintf('Nincs elég készlet: %s (elérhető %s, kért %s).', $product['sku'] ?? $productId, $available, $quantity));
+                    $this->flashError($this->t('stock.barcode_not_enough', [
+                        'sku' => $product['sku'] ?? $productId,
+                        'available' => $available,
+                        'requested' => $quantity,
+                    ]));
                     $this->redirect('/stock/barcode');
                 }
             }
@@ -243,7 +250,10 @@ class StockController extends BaseController
             ]);
         }
 
-        $this->flashSuccess(sprintf('%d tétel %s könyvelve a vonalkód gyűjtőből.', count($items), $direction === 'in' ? 'bevétként' : 'kiadásként'));
+        $this->flashSuccess($this->t('stock.barcode_booked', [
+            'count' => count($items),
+            'direction' => $this->t($direction === 'in' ? 'stock.barcode_booked_as_in' : 'stock.barcode_booked_as_out'),
+        ]));
         $this->redirect('/stock/barcode');
     }
 
@@ -269,7 +279,7 @@ class StockController extends BaseController
         $note = trim($_POST['note'] ?? '');
 
         if ($warehouseId <= 0 || $productId <= 0 || $quantity <= 0) {
-            $this->flashError('Raktár, termék és pozitív mennyiség megadása kötelező.');
+            $this->flashError($this->t('stock.movement_required'));
             $this->redirect($redirectPath);
         }
 
@@ -277,7 +287,10 @@ class StockController extends BaseController
             $available = $this->movements->availableQuantity($productId, $warehouseId);
 
             if ($quantity > $available) {
-                $this->flashError(sprintf('Nincs elég készlet: elérhető %s db, kért %s db.', $available, $quantity));
+                $this->flashError($this->t('stock.not_enough', [
+                    'available' => $available,
+                    'requested' => $quantity,
+                ]));
                 $this->redirect($redirectPath);
             }
         }
@@ -292,7 +305,7 @@ class StockController extends BaseController
             'created_by' => Auth::id(),
         ]);
 
-        $this->flashSuccess($type === 'in' ? 'Raktári bevét rögzítve.' : 'Raktári kiadás rögzítve.');
+        $this->flashSuccess($this->t($type === 'in' ? 'stock.in_created' : 'stock.out_created'));
         $this->redirect($redirectPath);
     }
 }

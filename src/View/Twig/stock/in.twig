@@ -5,44 +5,44 @@
         <div class="col-lg-4">
             <div class="cx-card">
                 <div class="cx-card__header">
-                    <h2>Új bevét</h2>
+                    <h2>{{ t('stock.in_new') }}</h2>
                 </div>
                 <div class="cx-card__body">
                     <form method="post" action="{{ base_url }}/stock/in/create">
                         <div class="mb-3">
-                            <label for="warehouse_id" class="form-label">Raktár</label>
+                            <label for="warehouse_id" class="form-label">{{ t('common.warehouse') }}</label>
                             <select id="warehouse_id" name="warehouse_id" class="form-select" required>
-                                <option value="">Válassz raktárat…</option>
+                                <option value="">{{ t('stock.choose_warehouse') }}</option>
                                 {% for w in warehouses %}
                                     <option value="{{ w.id }}">{{ w.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="location_id" class="form-label">Tárhely <span class="text-muted small">(opcionális)</span></label>
+                            <label for="location_id" class="form-label">{{ t('stock.location') }} <span class="text-muted small">{{ t('common.optional') }}</span></label>
                             <select id="location_id" name="location_id" class="form-select">
-                                <option value="">— tárhely nélkül —</option>
+                                <option value="">{{ t('stock.no_location') }}</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="product_id" class="form-label">Termék</label>
+                            <label for="product_id" class="form-label">{{ t('common.product') }}</label>
                             <select id="product_id" name="product_id" class="form-select" required>
-                                <option value="">Válassz terméket…</option>
+                                <option value="">{{ t('common.choose_product') }}</option>
                                 {% for p in products %}
                                     <option value="{{ p.id }}">{{ p.sku }} — {{ p.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="quantity" class="form-label">Mennyiség</label>
+                            <label for="quantity" class="form-label">{{ t('common.quantity') }}</label>
                             <input type="number" step="0.001" min="0" id="quantity" name="quantity" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label for="note" class="form-label">Megjegyzés</label>
+                            <label for="note" class="form-label">{{ t('common.note') }}</label>
                             <input type="text" id="note" name="note" class="form-control">
                         </div>
                         <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-box-arrow-in-down me-1"></i>Bevét rögzítése
+                            <i class="bi bi-box-arrow-in-down me-1"></i>{{ t('stock.in_submit') }}
                         </button>
                     </form>
                 </div>
@@ -51,27 +51,27 @@
         <div class="col-lg-8">
             <div class="cx-card">
                 <div class="cx-card__header">
-                    <h2>Bevétek</h2>
+                    <h2>{{ t('stock.in_list_title') }}</h2>
                 </div>
                 <div class="cx-card__body p-0">
                     <form method="get" class="p-3 border-bottom">
                         <div class="row g-2 align-items-end">
                             <div class="col-sm-4 col-lg-3">
-                                <label class="form-label small text-muted mb-1">Termék</label>
-                                <input type="text" name="q" class="form-control form-control-sm" placeholder="Cikkszám vagy név…" value="{{ filters.q }}">
+                                <label class="form-label small text-muted mb-1">{{ t('common.product') }}</label>
+                                <input type="text" name="q" class="form-control form-control-sm" placeholder="{{ t('stock.product_search_placeholder') }}" value="{{ filters.q }}">
                             </div>
                             <div class="col-sm-3 col-lg-3">
-                                <label class="form-label small text-muted mb-1">Raktár</label>
+                                <label class="form-label small text-muted mb-1">{{ t('common.warehouse') }}</label>
                                 <select name="warehouse_id" class="form-select form-select-sm">
-                                    <option value="">Mind</option>
+                                    <option value="">{{ t('common.all') }}</option>
                                     {% for w in warehouses %}
                                         <option value="{{ w.id }}" {{ filters.warehouse_id == w.id ? 'selected' : '' }}>{{ w.name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                             <div class="col-auto">
-                                <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
-                                <a href="{{ base_url }}/stock/in" class="btn btn-sm btn-outline-secondary">Törlés</a>
+                                <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>{{ t('common.filter') }}</button>
+                                <a href="{{ base_url }}/stock/in" class="btn btn-sm btn-outline-secondary">{{ t('common.clear') }}</a>
                             </div>
                         </div>
                     </form>
@@ -79,12 +79,12 @@
                         <table class="table table-hover align-middle mb-0 cx-table">
                             <thead>
                             <tr>
-                                <th>Dátum</th>
-                                <th>Raktár</th>
-                                <th>Tárhely</th>
-                                <th>Termék</th>
-                                <th class="text-end">Mennyiség</th>
-                                <th>Rögzítette</th>
+                                <th>{{ t('common.date') }}</th>
+                                <th>{{ t('common.warehouse') }}</th>
+                                <th>{{ t('stock.location') }}</th>
+                                <th>{{ t('common.product') }}</th>
+                                <th class="text-end">{{ t('common.quantity') }}</th>
+                                <th>{{ t('common.created_by') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -98,7 +98,7 @@
                                     <td class="text-muted">{{ m.created_by_name ?: '—' }}</td>
                                 </tr>
                             {% else %}
-                                <tr><td colspan="6" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő bevét.</td></tr>
+                                <tr><td colspan="6" class="text-center text-muted py-4">{{ t('stock.in_none_found') }}</td></tr>
                             {% endfor %}
                             </tbody>
                         </table>
@@ -116,7 +116,7 @@
             const loc = document.getElementById('location_id');
             function fill() {
                 const w = parseInt(wh.value, 10);
-                loc.innerHTML = '<option value="">— tárhely nélkül —</option>';
+                loc.innerHTML = '<option value="">{{ t('stock.no_location')|e('js') }}</option>';
                 locs.filter(l => l.warehouse_id == w).forEach(l => {
                     const o = document.createElement('option');
                     o.value = l.id; o.textContent = l.code;

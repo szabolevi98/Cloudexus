@@ -3,65 +3,65 @@
 {% block content %}
     <div class="cx-card" style="max-width: 860px;">
         <div class="cx-card__header">
-            <h2><i class="bi bi-upc-scan me-2"></i>Vonalkód gyűjtő</h2>
-            <span class="text-muted small">Olvasd be a tételeket, majd könyveld egyben</span>
+            <h2><i class="bi bi-upc-scan me-2"></i>{{ t('stock.barcode_title') }}</h2>
+            <span class="text-muted small">{{ t('stock.barcode_subtitle') }}</span>
         </div>
         <div class="cx-card__body">
             <form method="post" action="{{ base_url }}/stock/barcode" id="barcode-form">
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
-                        <label for="warehouse_id" class="form-label">Raktár</label>
+                        <label for="warehouse_id" class="form-label">{{ t('common.warehouse') }}</label>
                         <select id="warehouse_id" name="warehouse_id" class="form-select" required>
-                            <option value="">Válassz raktárat…</option>
+                            <option value="">{{ t('stock.choose_warehouse') }}</option>
                             {% for w in warehouses %}
                                 <option value="{{ w.id }}">{{ w.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label for="location_id" class="form-label">Tárhely <span class="text-muted small">(opcionális)</span></label>
+                        <label for="location_id" class="form-label">{{ t('stock.location') }} <span class="text-muted small">{{ t('common.optional') }}</span></label>
                         <select id="location_id" name="location_id" class="form-select">
-                            <option value="">— tárhely nélkül —</option>
+                            <option value="">{{ t('stock.no_location') }}</option>
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label d-block">Irány</label>
+                        <label class="form-label d-block">{{ t('stock.direction') }}</label>
                         <div class="btn-group" role="group">
                             <input type="radio" class="btn-check" name="direction" id="dir-in" value="in" checked>
-                            <label class="btn btn-outline-success" for="dir-in"><i class="bi bi-box-arrow-in-down me-1"></i>Bevét</label>
+                            <label class="btn btn-outline-success" for="dir-in"><i class="bi bi-box-arrow-in-down me-1"></i>{{ t('stock.direction_in') }}</label>
                             <input type="radio" class="btn-check" name="direction" id="dir-out" value="out">
-                            <label class="btn btn-outline-danger" for="dir-out"><i class="bi bi-box-arrow-up me-1"></i>Kiadás</label>
+                            <label class="btn btn-outline-danger" for="dir-out"><i class="bi bi-box-arrow-up me-1"></i>{{ t('stock.direction_out') }}</label>
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label for="scan-input" class="form-label">Vonalkód / cikkszám</label>
+                    <label for="scan-input" class="form-label">{{ t('stock.barcode_scan_label') }}</label>
                     <div class="input-group input-group-lg">
                         <span class="input-group-text"><i class="bi bi-upc"></i></span>
-                        <input type="text" id="scan-input" class="form-control" placeholder="Olvass be egy kódot, majd Enter…" autofocus autocomplete="off">
+                        <input type="text" id="scan-input" class="form-control" placeholder="{{ t('stock.barcode_scan_placeholder') }}" autofocus autocomplete="off">
                     </div>
-                    <div class="form-text" id="scan-feedback">Minden beolvasás +1 mennyiséget ad a tételhez.</div>
+                    <div class="form-text" id="scan-feedback">{{ t('stock.barcode_scan_hint') }}</div>
                 </div>
 
                 <div class="table-responsive mb-3">
                     <table class="table cx-table align-middle" id="scan-table">
                         <thead>
                         <tr>
-                            <th>Cikkszám</th>
-                            <th>Megnevezés</th>
-                            <th style="width: 130px;">Mennyiség</th>
+                            <th>{{ t('common.sku') }}</th>
+                            <th>{{ t('stock.col_product_name') }}</th>
+                            <th style="width: 130px;">{{ t('common.quantity') }}</th>
                             <th style="width: 40px;"></th>
                         </tr>
                         </thead>
                         <tbody id="scan-body">
-                        <tr id="scan-empty"><td colspan="4" class="text-center text-muted py-4">Még nincs beolvasott tétel.</td></tr>
+                        <tr id="scan-empty"><td colspan="4" class="text-center text-muted py-4">{{ t('stock.barcode_empty') }}</td></tr>
                         </tbody>
                     </table>
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="scan-submit" disabled>
-                    <i class="bi bi-check-lg me-1"></i>Tételek könyvelése
+                    <i class="bi bi-check-lg me-1"></i>{{ t('stock.barcode_submit') }}
                 </button>
             </form>
         </div>
@@ -74,7 +74,7 @@
             const loc = document.getElementById('location_id');
             function fill() {
                 const w = parseInt(wh.value, 10);
-                loc.innerHTML = '<option value="">— tárhely nélkül —</option>';
+                loc.innerHTML = '<option value="">{{ t('stock.no_location')|e('js') }}</option>';
                 locs.filter(l => l.warehouse_id == w).forEach(l => {
                     const o = document.createElement('option');
                     o.value = l.id; o.textContent = l.code;
@@ -139,11 +139,11 @@
                         feedback.textContent = '✓ ' + data.product.sku + ' — ' + data.product.name;
                         feedback.className = 'form-text text-success';
                     } else {
-                        feedback.textContent = '✗ Ismeretlen kód: ' + code;
+                        feedback.textContent = '✗ {{ t('stock.barcode_unknown_code')|e('js') }} ' + code;
                         feedback.className = 'form-text text-danger';
                     }
                 } catch {
-                    feedback.textContent = 'Hálózati hiba a kereséskor.';
+                    feedback.textContent = '{{ t('stock.barcode_lookup_error')|e('js') }}';
                     feedback.className = 'form-text text-danger';
                 }
 
