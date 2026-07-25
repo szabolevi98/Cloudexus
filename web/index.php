@@ -66,7 +66,7 @@ set_error_handler(function (int $level, string $message, string $file, int $line
 set_exception_handler(function (\Throwable $e): void {
     \Cloudexus\Core\Logger::error('Uncaught: ' . $e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
     http_response_code(500);
-    echo 'Váratlan hiba történt. Kérjük, próbáld újra később.';
+    echo \Cloudexus\Core\Lang::get('errors.unexpected');
 });
 
 // The REST API (/api/*) authenticates with a bearer token, not the session
@@ -83,7 +83,7 @@ if (!$isApiRequest) {
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !Csrf::validate($_POST['_token'] ?? null)) {
         http_response_code(403);
-        exit('Érvénytelen vagy lejárt munkamenet. Frissítsd az oldalt, majd próbáld újra.');
+        exit(\Cloudexus\Core\Lang::get('errors.invalid_session'));
     }
 }
 

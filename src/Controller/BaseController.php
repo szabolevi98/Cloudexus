@@ -96,7 +96,7 @@ abstract class BaseController
         $this->requireAuth();
         if (!Auth::isAdmin()) {
             http_response_code(403);
-            echo 'Nincs jogosultságod ehhez a felülethez.';
+            echo $this->t('errors.forbidden');
             exit;
         }
     }
