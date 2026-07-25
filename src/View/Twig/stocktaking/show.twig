@@ -13,9 +13,9 @@
             </div>
             <div>
                 {% if stocktaking.diff_count > 0 %}
-                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">{{ stocktaking.diff_count }} eltérés korrigálva</span>
+                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">{{ t('stocktaking.variance_corrected', {'count': stocktaking.diff_count}) }}</span>
                 {% else %}
-                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Nem volt eltérés</span>
+                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('stocktaking.no_variance') }}</span>
                 {% endif %}
             </div>
         </div>
@@ -24,11 +24,11 @@
                 <table class="table cx-table align-middle mb-0">
                     <thead>
                     <tr>
-                        <th>Cikkszám</th>
-                        <th>Megnevezés</th>
-                        <th class="text-end">Könyv szerint</th>
-                        <th class="text-end">Megszámolt</th>
-                        <th class="text-end">Eltérés</th>
+                        <th>{{ t('common.sku') }}</th>
+                        <th>{{ t('stocktaking.col_name') }}</th>
+                        <th class="text-end">{{ t('stocktaking.col_book_quantity') }}</th>
+                        <th class="text-end">{{ t('stocktaking.col_counted_quantity') }}</th>
+                        <th class="text-end">{{ t('stocktaking.col_variance') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -50,6 +50,6 @@
     </div>
 
     <a href="{{ base_url }}/stocktaking" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Vissza a listához
+        <i class="bi bi-arrow-left me-1"></i>{{ t('common.back_to_list') }}
     </a>
 {% endblock %}

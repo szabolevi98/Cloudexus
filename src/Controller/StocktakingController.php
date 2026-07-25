@@ -33,7 +33,7 @@ class StocktakingController extends BaseController
         ];
         $pager = new Paginator(30);
 
-        $this->pageTitle = 'Leltározás';
+        $this->pageTitle = $this->t('stocktaking.page_title');
         $this->render('stocktaking/list.twig', [
             'stocktakings' => $this->stocktakings->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -49,7 +49,7 @@ class StocktakingController extends BaseController
         $warehouseId = (int) ($_GET['warehouse_id'] ?? 0);
         $sheet = $warehouseId > 0 ? $this->stock->stockSheet($warehouseId) : [];
 
-        $this->pageTitle = 'Új leltár';
+        $this->pageTitle = $this->t('stocktaking.new');
         $this->render('stocktaking/form.twig', [
             'warehouses' => $this->warehouses->activeList(),
             'warehouse_id' => $warehouseId,
@@ -68,7 +68,7 @@ class StocktakingController extends BaseController
         $countedQtys = $_POST['counted_quantity'] ?? [];
 
         if ($warehouseId <= 0 || empty($productIds)) {
-            $this->flashError('Válassz raktárat és töltsd ki a leltárívet.');
+            $this->flashError($this->t('stocktaking.warehouse_and_sheet_required'));
             $this->redirect('/stocktaking/create');
         }
 
@@ -86,13 +86,13 @@ class StocktakingController extends BaseController
         }
 
         if (empty($items)) {
-            $this->flashError('Legalább egy termékhez adj meg leltározott mennyiséget.');
+            $this->flashError($this->t('stocktaking.counted_quantity_required'));
             $this->redirect('/stocktaking/create?warehouse_id=' . $warehouseId);
         }
 
         $id = $this->stocktakings->book($warehouseId, $note, $items, Auth::id());
 
-        $this->flashSuccess('Leltár rögzítve, az eltérések készletkorrekcióként könyvelve.');
+        $this->flashSuccess($this->t('stocktaking.booked'));
         $this->redirect('/stocktaking/' . $id);
     }
 
@@ -105,7 +105,7 @@ class StocktakingController extends BaseController
             $this->redirect('/stocktaking');
         }
 
-        $this->pageTitle = 'Leltár: ' . $stocktaking['stocktaking_number'];
+        $this->pageTitle = $this->t('stocktaking.show_title', ['number' => $stocktaking['stocktaking_number']]);
         $this->render('stocktaking/show.twig', ['stocktaking' => $stocktaking]);
     }
 }

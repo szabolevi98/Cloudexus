@@ -3,22 +3,22 @@
 {% block content %}
     <div class="cx-card">
         <div class="cx-card__header">
-            <h2>Új leltár</h2>
+            <h2>{{ t('stocktaking.new') }}</h2>
         </div>
         <div class="cx-card__body">
             {# 1. lépés: raktárválasztás (GET) #}
             <form method="get" action="{{ base_url }}/stocktaking/create" class="row g-2 align-items-end mb-2">
                 <div class="col-sm-5 col-lg-4">
-                    <label for="warehouse_id" class="form-label">Raktár</label>
+                    <label for="warehouse_id" class="form-label">{{ t('common.warehouse') }}</label>
                     <select id="warehouse_id" name="warehouse_id" class="form-select" onchange="this.form.submit()">
-                        <option value="">Válassz raktárat…</option>
+                        <option value="">{{ t('stocktaking.choose_warehouse') }}</option>
                         {% for w in warehouses %}
                             <option value="{{ w.id }}" {{ warehouse_id == w.id ? 'selected' : '' }}>{{ w.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="col-auto">
-                    <button class="btn btn-outline-secondary">Leltárív betöltése</button>
+                    <button class="btn btn-outline-secondary">{{ t('stocktaking.load_sheet') }}</button>
                 </div>
             </form>
         </div>
@@ -29,20 +29,20 @@
                 <input type="hidden" name="warehouse_id" value="{{ warehouse_id }}">
                 <div class="cx-card__body pt-0">
                     <div class="mb-3">
-                        <label for="note" class="form-label">Megjegyzés</label>
-                        <input type="text" id="note" name="note" class="form-control" placeholder="pl. Év végi leltár">
+                        <label for="note" class="form-label">{{ t('common.note') }}</label>
+                        <input type="text" id="note" name="note" class="form-control" placeholder="{{ t('stocktaking.note_placeholder') }}">
                     </div>
-                    <p class="text-muted small">Írd be a ténylegesen megszámolt mennyiséget. Az üresen hagyott sorokat kihagyjuk. Az eltéréseket a rendszer készletkorrekcióként könyveli.</p>
+                    <p class="text-muted small">{{ t('stocktaking.sheet_hint') }}</p>
                 </div>
                 <div class="table-responsive">
                     <table class="table cx-table align-middle mb-0">
                         <thead>
                         <tr>
-                            <th>Cikkszám</th>
-                            <th>Megnevezés</th>
-                            <th class="text-end">Könyv szerint</th>
-                            <th class="text-end" style="width:160px;">Megszámolt</th>
-                            <th class="text-end" style="width:120px;">Eltérés</th>
+                            <th>{{ t('common.sku') }}</th>
+                            <th>{{ t('stocktaking.col_name') }}</th>
+                            <th class="text-end">{{ t('stocktaking.col_book_quantity') }}</th>
+                            <th class="text-end" style="width:160px;">{{ t('stocktaking.col_counted_quantity') }}</th>
+                            <th class="text-end" style="width:120px;">{{ t('stocktaking.col_variance') }}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -64,12 +64,12 @@
                     </table>
                 </div>
                 <div class="cx-card__body d-flex justify-content-between align-items-center">
-                    <a href="{{ base_url }}/stocktaking" class="btn btn-outline-secondary">Mégse</a>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Leltár könyvelése</button>
+                    <a href="{{ base_url }}/stocktaking" class="btn btn-outline-secondary">{{ t('common.cancel') }}</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>{{ t('stocktaking.submit') }}</button>
                 </div>
             </form>
         {% elseif warehouse_id %}
-            <div class="cx-card__body text-muted">Ebben a raktárban nincs aktív termék a leltározáshoz.</div>
+            <div class="cx-card__body text-muted">{{ t('stocktaking.no_products') }}</div>
         {% endif %}
     </div>
 
@@ -85,7 +85,7 @@
                     return;
                 }
                 const diff = (parseFloat(input.value) || 0) - book;
-                diffCell.textContent = (diff > 0 ? '+' : '') + new Intl.NumberFormat('hu-HU').format(diff);
+                diffCell.textContent = (diff > 0 ? '+' : '') + new Intl.NumberFormat('{{ current_locale == 'hu' ? 'hu-HU' : 'en-US' }}').format(diff);
                 diffCell.className = 'text-end cx-diff fw-medium ' + (diff === 0 ? 'text-muted' : (diff > 0 ? 'text-success' : 'text-danger'));
             });
         });
