@@ -23,7 +23,7 @@ class UserController extends BaseController
         $filters = ['q' => trim($_GET['q'] ?? '')];
         $pager = new \Cloudexus\Core\Paginator(25);
 
-        $this->pageTitle = 'Felhasználók';
+        $this->pageTitle = $this->t('users.list_title');
         $this->render('users/list.twig', [
             'users' => $this->users->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -35,7 +35,7 @@ class UserController extends BaseController
     {
         $this->requireAdmin();
 
-        $this->pageTitle = 'Új felhasználó';
+        $this->pageTitle = $this->t('users.new');
         $this->render('users/form.twig', ['user' => null]);
     }
 
@@ -52,7 +52,7 @@ class UserController extends BaseController
         }
 
         $this->users->create($data);
-        $this->flashSuccess('Felhasználó létrehozva.');
+        $this->flashSuccess($this->t('users.created'));
         $this->redirect('/users');
     }
 
@@ -65,7 +65,7 @@ class UserController extends BaseController
             $this->redirect('/users');
         }
 
-        $this->pageTitle = 'Felhasználó szerkesztése';
+        $this->pageTitle = $this->t('users.edit');
         $this->render('users/form.twig', ['user' => $user]);
     }
 
@@ -82,7 +82,7 @@ class UserController extends BaseController
         }
 
         $this->users->update($id, $data);
-        $this->flashSuccess('Felhasználó frissítve.');
+        $this->flashSuccess($this->t('users.updated'));
         $this->redirect('/users');
     }
 
@@ -91,12 +91,12 @@ class UserController extends BaseController
         $this->requireAdmin();
 
         if ($id === Auth::id()) {
-            $this->flashError('Saját fiókodat nem törölheted.');
+            $this->flashError($this->t('users.cannot_delete_self'));
             $this->redirect('/users');
         }
 
         $this->users->delete($id);
-        $this->flashSuccess('Felhasználó törölve.');
+        $this->flashSuccess($this->t('users.deleted'));
         $this->redirect('/users');
     }
 
@@ -117,19 +117,19 @@ class UserController extends BaseController
         $errors = [];
 
         if ($data['username'] === '' || $data['email'] === '' || $data['full_name'] === '') {
-            $errors[] = 'A felhasználónév, e-mail és név megadása kötelező.';
+            $errors[] = $this->t('users.required_fields');
         }
 
         if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Érvénytelen e-mail cím.';
+            $errors[] = $this->t('users.invalid_email');
         }
 
         if ($excludeId === null && $data['password'] === '') {
-            $errors[] = 'Új felhasználóhoz jelszó megadása kötelező.';
+            $errors[] = $this->t('users.password_required');
         }
 
         if (!$errors && $this->users->usernameOrEmailExists($data['username'], $data['email'], $excludeId)) {
-            $errors[] = 'A felhasználónév vagy e-mail cím már foglalt.';
+            $errors[] = $this->t('users.username_email_taken');
         }
 
         return $errors;

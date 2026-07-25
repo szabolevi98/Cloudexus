@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'list_title' => 'Felhasználók',
+    'new' => 'Új felhasználó',
+    'edit' => 'Felhasználó szerkesztése',
+    'search_placeholder' => 'Felhasználónév, név vagy e-mail…',
+    'username' => 'Felhasználónév',
+    'email' => 'E-mail',
+    'role' => 'Szerepkör',
+    'last_login' => 'Utolsó belépés',
+    'admin' => 'Admin',
+    'user' => 'Felhasználó',
+    'confirm_delete' => 'Biztosan törlöd ezt a felhasználót?',
+    'none_found' => 'Nincs a szűrésnek megfelelő felhasználó.',
+    'full_name' => 'Teljes név',
+    'password' => 'Jelszó',
+    'password_unchanged_hint' => '(üresen hagyva nem változik)',
+    'created' => 'Felhasználó létrehozva.',
+    'updated' => 'Felhasználó frissítve.',
+    'deleted' => 'Felhasználó törölve.',
+    'cannot_delete_self' => 'Saját fiókodat nem törölheted.',
+    'required_fields' => 'A felhasználónév, e-mail és név megadása kötelező.',
+    'invalid_email' => 'Érvénytelen e-mail cím.',
+    'password_required' => 'Új felhasználóhoz jelszó megadása kötelező.',
+    'username_email_taken' => 'A felhasználónév vagy e-mail cím már foglalt.',
+];

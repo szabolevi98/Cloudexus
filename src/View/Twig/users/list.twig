@@ -3,21 +3,21 @@
 {% block content %}
     <div class="cx-card">
         <div class="cx-card__header">
-            <h2>Felhasználók</h2>
+            <h2>{{ t('users.list_title') }}</h2>
             <a href="{{ base_url }}/users/create" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg me-1"></i>Új felhasználó
+                <i class="bi bi-plus-lg me-1"></i>{{ t('users.new') }}
             </a>
         </div>
         <div class="cx-card__body p-0">
             <form method="get" class="p-3 border-bottom">
                 <div class="row g-2 align-items-end">
                     <div class="col-sm-4 col-lg-3">
-                        <label class="form-label small text-muted mb-1">Keresés</label>
-                        <input type="text" name="q" class="form-control form-control-sm" placeholder="Felhasználónév, név vagy e-mail…" value="{{ filters.q }}">
+                        <label class="form-label small text-muted mb-1">{{ t('common.search') }}</label>
+                        <input type="text" name="q" class="form-control form-control-sm" placeholder="{{ t('users.search_placeholder') }}" value="{{ filters.q }}">
                     </div>
                     <div class="col-auto">
-                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
-                        <a href="{{ base_url }}/users" class="btn btn-sm btn-outline-secondary">Törlés</a>
+                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>{{ t('common.filter') }}</button>
+                        <a href="{{ base_url }}/users" class="btn btn-sm btn-outline-secondary">{{ t('common.clear') }}</a>
                     </div>
                 </div>
             </form>
@@ -25,13 +25,13 @@
                 <table class="table table-hover align-middle mb-0 cx-table">
                     <thead>
                     <tr>
-                        <th>Felhasználónév</th>
-                        <th>Név</th>
-                        <th>E-mail</th>
-                        <th>Szerepkör</th>
-                        <th>Állapot</th>
-                        <th>Utolsó belépés</th>
-                        <th class="text-end">Műveletek</th>
+                        <th>{{ t('users.username') }}</th>
+                        <th>{{ t('common.name') }}</th>
+                        <th>{{ t('users.email') }}</th>
+                        <th>{{ t('users.role') }}</th>
+                        <th>{{ t('common.status') }}</th>
+                        <th>{{ t('users.last_login') }}</th>
+                        <th class="text-end">{{ t('common.actions') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -42,16 +42,16 @@
                             <td class="text-muted">{{ user.email }}</td>
                             <td>
                                 {% if user.role == 'admin' %}
-                                    <span class="badge rounded-pill text-bg-primary">Admin</span>
+                                    <span class="badge rounded-pill text-bg-primary">{{ t('users.admin') }}</span>
                                 {% else %}
-                                    <span class="badge rounded-pill text-bg-secondary">Felhasználó</span>
+                                    <span class="badge rounded-pill text-bg-secondary">{{ t('users.user') }}</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if user.is_active %}
-                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Aktív</span>
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('common.active') }}</span>
                                 {% else %}
-                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Inaktív</span>
+                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.inactive') }}</span>
                                 {% endif %}
                             </td>
                             <td class="text-muted">{{ user.last_login_at ?: '—' }}</td>
@@ -60,7 +60,7 @@
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 {% if user.id != auth_user_id %}
-                                    <form method="post" action="{{ base_url }}/users/{{ user.id }}/delete" class="d-inline" onsubmit="return confirm('Biztosan törlöd ezt a felhasználót?');">
+                                    <form method="post" action="{{ base_url }}/users/{{ user.id }}/delete" class="d-inline" onsubmit="return confirm('{{ t('users.confirm_delete')|e('js') }}');">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
                                             <i class="bi bi-trash"></i>
                                         </button>
@@ -69,7 +69,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="7" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő felhasználó.</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted py-4">{{ t('users.none_found') }}</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

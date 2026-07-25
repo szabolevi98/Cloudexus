@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'list_title' => 'Users',
+    'new' => 'New user',
+    'edit' => 'Edit user',
+    'search_placeholder' => 'Username, name or email…',
+    'username' => 'Username',
+    'email' => 'Email',
+    'role' => 'Role',
+    'last_login' => 'Last login',
+    'admin' => 'Admin',
+    'user' => 'User',
+    'confirm_delete' => 'Are you sure you want to delete this user?',
+    'none_found' => 'No users match the filter.',
+    'full_name' => 'Full name',
+    'password' => 'Password',
+    'password_unchanged_hint' => '(leave blank to keep unchanged)',
+    'created' => 'User created.',
+    'updated' => 'User updated.',
+    'deleted' => 'User deleted.',
+    'cannot_delete_self' => 'You cannot delete your own account.',
+    'required_fields' => 'The username, email and name are required.',
+    'invalid_email' => 'Invalid email address.',
+    'password_required' => 'A password is required for a new user.',
+    'username_email_taken' => 'The username or email address is already taken.',
+];
