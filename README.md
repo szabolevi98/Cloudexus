@@ -58,7 +58,7 @@ A Cloudexus egy helyen kezeli a teljes kereskedelmi folyamatot: részletes term�
 - Szerepkör-alapú jogosultságok (admin / felhasználó), admin felhasználókezelés
 - Saját profil és jelszóváltás
 - CSRF-védelem minden űrlapon, HttpOnly + SameSite session süti
-- Magyar nyelvű felület
+- Kétnyelvű felület (magyar / angol) nyelvváltóval, a választás sütiben megjegyezve; az üzleti adatok (terméknevek, leírások) nem fordulnak
 
 ---
 
@@ -128,8 +128,9 @@ Cloudexus/
 │   ├── create_admin.php # kezdő admin létrehozása
 │   └── seed_demo.php    # újrafuttatható demo-adat generátor
 ├── src/
-│   ├── Core/            # Config, DB, Router, Session, Auth, Csrf, Paginator, …
+│   ├── Core/            # Config, DB, Router, Session, Auth, Csrf, Paginator, Lang, …
 │   ├── Controller/      # egy controller / erőforrás
+│   ├── Language/        # hu/ és en/, szekciónkénti nyelvi fájlok (common, nav, products, …)
 │   ├── Model/           # modulonként: Core, Account, Sales, Purchasing, Cash
 │   └── View/
 │       ├── Twig/        # sablonok (közös layout + modul-nézetek)
@@ -141,6 +142,11 @@ Cloudexus/
 > A CSS-t nem Sass/bundler építi: a `src/View/Css/` alatti fájlokat a `php bin/build_css.php`
 > fűzi össze egyetlen `web/assets/css/app.css`-be, fix sorrendben. CSS-módosításnál mindig a
 > forrásfájlokat szerkeszd, utána futtasd a scriptet — az `app.css`-t sose kézzel.
+
+> A feliratokat a sablonok `{{ t('domain.kulcs') }}`, a controllerek `$this->t('domain.kulcs')`
+> hívással kérik; a szövegek a `src/Language/<nyelv>/<domain>.php` fájlokból jönnek. Új nyelvhez
+> elég egy új mappa és a `config.ini`-ben az `available_locales` bővítése — a hiányzó kulcsok az
+> alapnyelvre, majd magára a kulcsra esnek vissza, így a hiányok láthatók, de nem törik el az oldalt.
 
 ## 🗺️ Roadmap
 
@@ -165,6 +171,7 @@ Cloudexus/
 - [x] Akciós ár és vevőcsoportos árazás (partnerenkénti, csoportonkénti fix ár + akciós ár)
 - [x] Score-alapú Google reCAPTCHA v3 a bejelentkezésen, configból ki-/bekapcsolható
 - [x] REST API (token-alapú auth, olvasható katalógus + teljes CRUD partnerekre/rendelésekre, API-felhasználók admin + dokumentáció)
+- [x] Kétnyelvű felület (magyar / angol): nyelvváltó a topbarban és a bejelentkezésen, teljes UI-fordítás a rendszerüzenetekkel együtt
 
 **Következő lépcsők:**
 
