@@ -45,7 +45,7 @@ class InvoiceController extends BaseController
         ];
         $pager = new Paginator(25);
 
-        $this->pageTitle = 'Számlázás';
+        $this->pageTitle = $this->t('invoices.list_title');
         $this->render('invoices/list.twig', [
             'invoices' => $this->invoices->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -68,11 +68,18 @@ class InvoiceController extends BaseController
         $pager = new Paginator(1000000);
         $rows = $this->invoices->paginate($filters, $pager);
 
-        $statusLabels = ['unpaid' => 'fizetésre vár', 'paid' => 'kifizetve', 'cancelled' => 'stornózva'];
+        $statusLabels = [
+            'unpaid' => $this->t('invoices.csv_status.unpaid'),
+            'paid' => $this->t('invoices.csv_status.paid'),
+            'cancelled' => $this->t('invoices.csv_status.cancelled'),
+        ];
 
         \Cloudexus\Core\CsvExporter::download(
             'szamlak',
-            ['Számlaszám', 'Partner', 'Kiállítás', 'Fizetési határidő', 'Állapot', 'Végösszeg'],
+            [
+                $this->t('invoices.csv.number'), $this->t('invoices.csv.partner'), $this->t('invoices.csv.issue_date'),
+                $this->t('invoices.csv.due_date'), $this->t('invoices.csv.status'), $this->t('invoices.csv.total'),
+            ],
             array_map(fn($i) => [
                 $i['invoice_number'], $i['partner_name'], $i['issue_date'], $i['due_date'],
                 $statusLabels[$i['status']] ?? $i['status'], $i['total_amount'],
@@ -89,7 +96,7 @@ class InvoiceController extends BaseController
             $fromOrder = $this->orders->findById((int) $_GET['order_id']);
         }
 
-        $this->pageTitle = 'Új számla';
+        $this->pageTitle = $this->t('invoices.new');
         $this->render('invoices/form.twig', [
             'invoice_number' => $this->invoices->nextInvoiceNumber(),
             'partners' => $this->partners->customersAndBoth(),
@@ -106,7 +113,7 @@ class InvoiceController extends BaseController
         $items = $this->collectItems();
 
         if (empty($_POST['partner_id']) || empty($items)) {
-            $this->flashError('A partner és legalább egy tétel megadása kötelező.');
+            $this->flashError($this->t('invoices.required'));
             $this->redirect('/invoices/create');
         }
 
@@ -115,7 +122,7 @@ class InvoiceController extends BaseController
         if ($warehouseId > 0) {
             $shortages = $this->findShortages($items, $warehouseId);
             if ($shortages) {
-                $this->flashError('Nincs elég készlet a kiadáshoz: ' . implode(', ', $shortages));
+                $this->flashError($this->t('invoices.shortage', ['items' => implode(', ', $shortages)]));
                 $this->redirect('/invoices/create');
             }
         }
@@ -133,7 +140,7 @@ class InvoiceController extends BaseController
             'created_by' => Auth::id(),
         ], $items);
 
-        $this->flashSuccess('Számla kiállítva.' . ($warehouseId ? ' A tételek raktári kiadásként is könyvelve.' : ''));
+        $this->flashSuccess($warehouseId ? $this->t('invoices.created_with_stock') : $this->t('invoices.created'));
         $this->redirect('/invoices/' . $id);
     }
 
@@ -146,7 +153,7 @@ class InvoiceController extends BaseController
             $this->redirect('/invoices');
         }
 
-        $this->pageTitle = 'Számla: ' . $invoice['invoice_number'];
+        $this->pageTitle = $this->t('invoices.title_prefix') . ': ' . $invoice['invoice_number'];
         $this->render('invoices/show.twig', ['invoice' => $invoice]);
     }
 
@@ -171,7 +178,7 @@ class InvoiceController extends BaseController
         $this->requireAuth();
 
         $this->invoices->updateStatus($id, 'paid');
-        $this->flashSuccess('Számla kifizetve jelölve.');
+        $this->flashSuccess($this->t('invoices.marked_paid'));
         $this->redirect('/invoices/' . $id);
     }
 
@@ -180,7 +187,7 @@ class InvoiceController extends BaseController
         $this->requireAuth();
 
         $this->invoices->updateStatus($id, 'cancelled');
-        $this->flashSuccess('Számla stornózva.');
+        $this->flashSuccess($this->t('invoices.cancelled'));
         $this->redirect('/invoices/' . $id);
     }
 
@@ -189,7 +196,7 @@ class InvoiceController extends BaseController
         $this->requireAuth();
 
         $this->invoices->delete($id);
-        $this->flashSuccess('Számla törölve.');
+        $this->flashSuccess($this->t('invoices.deleted'));
         $this->redirect('/invoices');
     }
 
@@ -206,7 +213,11 @@ class InvoiceController extends BaseController
             $available = $this->stock->availableQuantity($productId, $warehouseId);
             if ($quantity > $available) {
                 $product = $this->products->findById($productId);
-                $shortages[] = sprintf('%s (elérhető: %s, kért: %s)', $product['sku'] ?? $productId, $available, $quantity);
+                $shortages[] = $this->t('invoices.shortage_item', [
+                    'sku' => $product['sku'] ?? $productId,
+                    'available' => $available,
+                    'requested' => $quantity,
+                ]);
             }
         }
 

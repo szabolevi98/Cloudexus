@@ -7,31 +7,31 @@
                 <h2>{{ invoice.invoice_number }}</h2>
                 <div class="text-muted small">
                     {{ invoice.partner_name }}
-                    {% if invoice.tax_number %} · Adószám: {{ invoice.tax_number }}{% endif %}
+                    {% if invoice.tax_number %} · {{ t('invoices.tax_number') }}: {{ invoice.tax_number }}{% endif %}
                 </div>
             </div>
             <div>
                 {% if invoice.status == 'unpaid' %}
-                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">Fizetésre vár</span>
+                    <span class="badge rounded-pill text-bg-warning-subtle text-warning-emphasis">{{ t('common.invoice_status.unpaid') }}</span>
                 {% elseif invoice.status == 'paid' %}
-                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Kifizetve</span>
+                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('common.invoice_status.paid') }}</span>
                 {% else %}
-                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Stornózva</span>
+                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.invoice_status.cancelled') }}</span>
                 {% endif %}
             </div>
         </div>
         <div class="cx-card__body">
             <div class="row mb-3">
                 <div class="col-md-4">
-                    <div class="text-muted small">Kiállítás dátuma</div>
+                    <div class="text-muted small">{{ t('invoices.issue_date_label') }}</div>
                     <div class="fw-medium">{{ invoice.issue_date }}</div>
                 </div>
                 <div class="col-md-4">
-                    <div class="text-muted small">Fizetési határidő</div>
+                    <div class="text-muted small">{{ t('invoices.due_date') }}</div>
                     <div class="fw-medium">{{ invoice.due_date }}</div>
                 </div>
                 <div class="col-md-4">
-                    <div class="text-muted small">Cím</div>
+                    <div class="text-muted small">{{ t('invoices.address') }}</div>
                     <div class="fw-medium">{{ invoice.address ?: '—' }}</div>
                 </div>
             </div>
@@ -41,11 +41,11 @@
                 <table class="table cx-table align-middle mb-0">
                     <thead>
                     <tr>
-                        <th>Cikkszám</th>
-                        <th>Megnevezés</th>
-                        <th class="text-end">Mennyiség</th>
-                        <th class="text-end">Egységár</th>
-                        <th class="text-end">Sor összesen</th>
+                        <th>{{ t('common.sku') }}</th>
+                        <th>{{ t('invoices.product_name') }}</th>
+                        <th class="text-end">{{ t('common.quantity') }}</th>
+                        <th class="text-end">{{ t('common.unit_price') }}</th>
+                        <th class="text-end">{{ t('common.line_total') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -62,18 +62,18 @@
                     <tfoot>
                     {% if invoice.shipping_cost > 0 %}
                         <tr>
-                            <td colspan="4" class="text-end text-muted">Szállítási költség</td>
+                            <td colspan="4" class="text-end text-muted">{{ t('invoices.shipping_cost_row') }}</td>
                             <td class="text-end text-muted">{{ invoice.shipping_cost|number_format(0, ',', ' ') }} Ft</td>
                         </tr>
                     {% endif %}
                     {% if invoice.payment_cost > 0 %}
                         <tr>
-                            <td colspan="4" class="text-end text-muted">Fizetési költség</td>
+                            <td colspan="4" class="text-end text-muted">{{ t('invoices.payment_cost_row') }}</td>
                             <td class="text-end text-muted">{{ invoice.payment_cost|number_format(0, ',', ' ') }} Ft</td>
                         </tr>
                     {% endif %}
                     <tr>
-                        <td colspan="4" class="text-end fw-medium">Végösszeg</td>
+                        <td colspan="4" class="text-end fw-medium">{{ t('common.total') }}</td>
                         <td class="text-end fw-bold">{{ invoice.total_amount|number_format(0, ',', ' ') }} Ft</td>
                     </tr>
                     </tfoot>
@@ -84,20 +84,20 @@
 
     <div class="d-flex gap-2">
         <a href="{{ base_url }}/invoices" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Vissza a listához
+            <i class="bi bi-arrow-left me-1"></i>{{ t('common.back_to_list') }}
         </a>
         <a href="{{ base_url }}/invoices/{{ invoice.id }}/print" target="_blank" class="btn btn-outline-secondary">
-            <i class="bi bi-printer me-1"></i>Nyomtatás
+            <i class="bi bi-printer me-1"></i>{{ t('common.print') }}
         </a>
         {% if invoice.status == 'unpaid' %}
             <form method="post" action="{{ base_url }}/invoices/{{ invoice.id }}/mark-paid">
                 <button type="submit" class="btn btn-success">
-                    <i class="bi bi-check-circle me-1"></i>Kifizetve jelölés
+                    <i class="bi bi-check-circle me-1"></i>{{ t('invoices.mark_paid') }}
                 </button>
             </form>
-            <form method="post" action="{{ base_url }}/invoices/{{ invoice.id }}/cancel" onsubmit="return confirm('Biztosan stornózod a számlát?');">
+            <form method="post" action="{{ base_url }}/invoices/{{ invoice.id }}/cancel" onsubmit="return confirm('{{ t('invoices.confirm_void')|e('js') }}');">
                 <button type="submit" class="btn btn-outline-danger">
-                    <i class="bi bi-x-circle me-1"></i>Stornózás
+                    <i class="bi bi-x-circle me-1"></i>{{ t('invoices.void') }}
                 </button>
             </form>
         {% endif %}
