@@ -19,7 +19,7 @@ class SettingsController extends BaseController
     {
         $this->requireAdmin();
 
-        $this->pageTitle = 'Cégadatok';
+        $this->pageTitle = $this->t('settings.company_title');
         $this->render('settings/company.twig', [
             'company' => $this->settings->company(),
         ]);
@@ -36,12 +36,12 @@ class SettingsController extends BaseController
         }
 
         if ($pairs['company.name'] === '') {
-            $this->flashError('A cégnév megadása kötelező.');
+            $this->flashError($this->t('settings.company_name_required'));
             $this->redirect('/settings/company');
         }
 
         $this->settings->setMany($pairs);
-        $this->flashSuccess('Cégadatok mentve.');
+        $this->flashSuccess($this->t('settings.company_saved'));
         $this->redirect('/settings/company');
     }
 }

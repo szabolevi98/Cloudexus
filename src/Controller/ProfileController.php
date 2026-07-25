@@ -19,7 +19,7 @@ class ProfileController extends BaseController
     {
         $this->requireAuth();
 
-        $this->pageTitle = 'Profil';
+        $this->pageTitle = $this->t('profile.title');
         $this->render('profile.twig', [
             'user' => $this->users->findById(Auth::id()),
         ]);
@@ -37,27 +37,27 @@ class ProfileController extends BaseController
         $newPasswordConfirm = (string) ($_POST['new_password_confirm'] ?? '');
 
         if ($fullName === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->flashError('A név és érvényes e-mail cím megadása kötelező.');
+            $this->flashError($this->t('profile.name_email_required'));
             $this->redirect('/profile');
         }
 
         if ($this->users->usernameOrEmailExists($user['username'], $email, (int) $user['id'])) {
-            $this->flashError('Ez az e-mail cím már foglalt.');
+            $this->flashError($this->t('profile.email_taken'));
             $this->redirect('/profile');
         }
 
         $password = '';
         if ($newPassword !== '') {
             if (!password_verify($currentPassword, $user['password_hash'])) {
-                $this->flashError('A jelenlegi jelszó nem megfelelő.');
+                $this->flashError($this->t('profile.current_password_wrong'));
                 $this->redirect('/profile');
             }
             if (strlen($newPassword) < 8) {
-                $this->flashError('Az új jelszónak legalább 8 karakteresnek kell lennie.');
+                $this->flashError($this->t('profile.new_password_too_short'));
                 $this->redirect('/profile');
             }
             if ($newPassword !== $newPasswordConfirm) {
-                $this->flashError('Az új jelszó és a megerősítés nem egyezik.');
+                $this->flashError($this->t('profile.new_password_mismatch'));
                 $this->redirect('/profile');
             }
             $password = $newPassword;
@@ -74,7 +74,7 @@ class ProfileController extends BaseController
 
         \Cloudexus\Core\Session::set('user_name', $fullName);
 
-        $this->flashSuccess('Profil frissítve.' . ($password !== '' ? ' Az új jelszó a következő belépéstől érvényes.' : ''));
+        $this->flashSuccess($this->t('profile.updated') . ($password !== '' ? ' ' . $this->t('profile.password_note') : ''));
         $this->redirect('/profile');
     }
 }

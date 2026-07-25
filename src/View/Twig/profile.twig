@@ -3,40 +3,40 @@
 {% block content %}
     <div class="cx-card" style="max-width: 560px;">
         <div class="cx-card__header">
-            <h2>Profil</h2>
+            <h2>{{ t('profile.title') }}</h2>
         </div>
         <div class="cx-card__body">
             <form method="post" action="{{ base_url }}/profile">
                 <div class="mb-3">
-                    <label class="form-label">Felhasználónév</label>
+                    <label class="form-label">{{ t('profile.username') }}</label>
                     <input type="text" class="form-control" value="{{ user.username }}" disabled>
                 </div>
                 <div class="mb-3">
-                    <label for="full_name" class="form-label">Teljes név</label>
+                    <label for="full_name" class="form-label">{{ t('profile.full_name') }}</label>
                     <input type="text" id="full_name" name="full_name" class="form-control" value="{{ user.full_name }}" required>
                 </div>
                 <div class="mb-4">
-                    <label for="email" class="form-label">E-mail</label>
+                    <label for="email" class="form-label">{{ t('profile.email') }}</label>
                     <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" required>
                 </div>
 
-                <h3 class="fs-6 fw-semibold border-top pt-4">Jelszó módosítása <span class="text-muted small fw-normal">(csak ha változtatni szeretnéd)</span></h3>
+                <h3 class="fs-6 fw-semibold border-top pt-4">{{ t('profile.change_password') }} <span class="text-muted small fw-normal">{{ t('profile.change_password_hint') }}</span></h3>
                 <div class="mb-3">
-                    <label for="current_password" class="form-label">Jelenlegi jelszó</label>
+                    <label for="current_password" class="form-label">{{ t('profile.current_password') }}</label>
                     <input type="password" id="current_password" name="current_password" class="form-control" autocomplete="current-password">
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-4">
-                        <label for="new_password" class="form-label">Új jelszó</label>
+                        <label for="new_password" class="form-label">{{ t('profile.new_password') }}</label>
                         <input type="password" id="new_password" name="new_password" class="form-control" autocomplete="new-password" minlength="8">
                     </div>
                     <div class="col-md-6 mb-4">
-                        <label for="new_password_confirm" class="form-label">Új jelszó megerősítése</label>
+                        <label for="new_password_confirm" class="form-label">{{ t('profile.new_password_confirm') }}</label>
                         <input type="password" id="new_password_confirm" name="new_password_confirm" class="form-control" autocomplete="new-password">
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Mentés</button>
+                <button type="submit" class="btn btn-primary">{{ t('common.save') }}</button>
             </form>
         </div>
     </div>
