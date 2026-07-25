@@ -74,7 +74,7 @@
                             <div class="d-flex justify-content-between small mb-1">
                                 {% if cat.category_id %}
                                     {# A kategóriára szűrt terméklista #}
-                                    <a href="{{ base_url }}/products?q=&amp;category_id={{ cat.category_id }}&amp;status=" class="fw-medium text-decoration-none">{{ cat.name }}</a>
+                                    <a href="{{ base_url }}/products?q=&amp;category_id={{ cat.category_id }}&amp;status=" class="fw-medium text-body text-decoration-none">{{ cat.name }}</a>
                                 {% else %}
                                     <span class="fw-medium">{{ cat.name }}</span>
                                 {% endif %}
