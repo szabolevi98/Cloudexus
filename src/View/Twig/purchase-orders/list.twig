@@ -3,47 +3,47 @@
 {% block content %}
     <div class="cx-card">
         <div class="cx-card__header">
-            <h2>Szállítói rendelések</h2>
+            <h2>{{ t('purchase_orders.list_title') }}</h2>
             <a href="{{ base_url }}/purchase-orders/create" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg me-1"></i>Új rendelés
+                <i class="bi bi-plus-lg me-1"></i>{{ t('purchase_orders.new') }}
             </a>
         </div>
         <div class="cx-card__body p-0">
             <form method="get" class="p-3 border-bottom">
                 <div class="row g-2 align-items-end">
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Rendelésszám</label>
+                        <label class="form-label small text-muted mb-1">{{ t('purchase_orders.order_number') }}</label>
                         <input type="text" name="q" class="form-control form-control-sm" placeholder="BESZ-…" value="{{ filters.q }}">
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Szállító</label>
+                        <label class="form-label small text-muted mb-1">{{ t('purchase_orders.supplier') }}</label>
                         <select name="partner_id" class="form-select form-select-sm">
-                            <option value="">Mind</option>
+                            <option value="">{{ t('common.all') }}</option>
                             {% for p in partners %}
                                 <option value="{{ p.id }}" {{ filters.partner_id == p.id ? 'selected' : '' }}>{{ p.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Állapot</label>
+                        <label class="form-label small text-muted mb-1">{{ t('common.status') }}</label>
                         <select name="status" class="form-select form-select-sm">
-                            <option value="">Mind</option>
-                            <option value="confirmed" {{ filters.status == 'confirmed' ? 'selected' : '' }}>Visszaigazolt</option>
-                            <option value="invoiced" {{ filters.status == 'invoiced' ? 'selected' : '' }}>Számlázva</option>
-                            <option value="cancelled" {{ filters.status == 'cancelled' ? 'selected' : '' }}>Törölve</option>
+                            <option value="">{{ t('common.all') }}</option>
+                            <option value="confirmed" {{ filters.status == 'confirmed' ? 'selected' : '' }}>{{ t('common.order_status.confirmed') }}</option>
+                            <option value="invoiced" {{ filters.status == 'invoiced' ? 'selected' : '' }}>{{ t('common.order_status.invoiced') }}</option>
+                            <option value="cancelled" {{ filters.status == 'cancelled' ? 'selected' : '' }}>{{ t('common.order_status.cancelled') }}</option>
                         </select>
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Dátumtól</label>
+                        <label class="form-label small text-muted mb-1">{{ t('common.date_from') }}</label>
                         <input type="date" name="date_from" class="form-control form-control-sm" value="{{ filters.date_from }}">
                     </div>
                     <div class="col-sm-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1">Dátumig</label>
+                        <label class="form-label small text-muted mb-1">{{ t('common.date_to') }}</label>
                         <input type="date" name="date_to" class="form-control form-control-sm" value="{{ filters.date_to }}">
                     </div>
                     <div class="col-auto">
-                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Szűrés</button>
-                        <a href="{{ base_url }}/purchase-orders" class="btn btn-sm btn-outline-secondary">Törlés</a>
+                        <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>{{ t('common.filter') }}</button>
+                        <a href="{{ base_url }}/purchase-orders" class="btn btn-sm btn-outline-secondary">{{ t('common.clear') }}</a>
                     </div>
                 </div>
             </form>
@@ -51,11 +51,11 @@
                 <table class="table table-hover align-middle mb-0 cx-table">
                     <thead>
                     <tr>
-                        <th>Rendelésszám</th>
-                        <th>Szállító</th>
-                        <th>Dátum</th>
-                        <th>Állapot</th>
-                        <th class="text-end">Összeg</th>
+                        <th>{{ t('purchase_orders.order_number') }}</th>
+                        <th>{{ t('purchase_orders.supplier') }}</th>
+                        <th>{{ t('common.date') }}</th>
+                        <th>{{ t('common.status') }}</th>
+                        <th class="text-end">{{ t('common.total') }}</th>
                         <th></th>
                     </tr>
                     </thead>
@@ -67,11 +67,11 @@
                             <td class="text-muted">{{ order.order_date }}</td>
                             <td>
                                 {% if order.status == 'confirmed' %}
-                                    <span class="badge rounded-pill text-bg-primary">Visszaigazolt</span>
+                                    <span class="badge rounded-pill text-bg-primary">{{ t('common.order_status.confirmed') }}</span>
                                 {% elseif order.status == 'invoiced' %}
-                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Számlázva</span>
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('common.order_status.invoiced') }}</span>
                                 {% else %}
-                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Törölve</span>
+                                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.order_status.cancelled') }}</span>
                                 {% endif %}
                             </td>
                             <td class="text-end">{{ order.total_amount|number_format(0, ',', ' ') }} Ft</td>
@@ -82,7 +82,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="6" class="text-center text-muted py-4">Nincs a szűrésnek megfelelő rendelés.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-4">{{ t('purchase_orders.none_found') }}</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

@@ -35,7 +35,7 @@ class PurchaseOrderController extends BaseController
         ];
         $pager = new \Cloudexus\Core\Paginator(25);
 
-        $this->pageTitle = 'Szállítói rendelések';
+        $this->pageTitle = $this->t('purchase_orders.list_title');
         $this->render('purchase-orders/list.twig', [
             'orders' => $this->orders->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -48,7 +48,7 @@ class PurchaseOrderController extends BaseController
     {
         $this->requireAuth();
 
-        $this->pageTitle = 'Új szállítói rendelés';
+        $this->pageTitle = $this->t('purchase_orders.new_full');
         $this->render('purchase-orders/form.twig', [
             'po_number' => $this->orders->nextPoNumber(),
             'partners' => $this->partners->suppliersAndBoth(),
@@ -63,7 +63,7 @@ class PurchaseOrderController extends BaseController
         $items = $this->collectItems();
 
         if (empty($_POST['partner_id']) || empty($items)) {
-            $this->flashError('A szállító és legalább egy tétel megadása kötelező.');
+            $this->flashError($this->t('purchase_orders.required'));
             $this->redirect('/purchase-orders/create');
         }
 
@@ -75,7 +75,7 @@ class PurchaseOrderController extends BaseController
             'created_by' => Auth::id(),
         ], $items);
 
-        $this->flashSuccess('Szállítói rendelés létrehozva.');
+        $this->flashSuccess($this->t('purchase_orders.created'));
         $this->redirect('/purchase-orders/' . $id);
     }
 
@@ -88,7 +88,7 @@ class PurchaseOrderController extends BaseController
             $this->redirect('/purchase-orders');
         }
 
-        $this->pageTitle = 'Rendelés: ' . $order['po_number'];
+        $this->pageTitle = $this->t('purchase_orders.title_prefix') . ': ' . $order['po_number'];
         $this->render('purchase-orders/show.twig', ['order' => $order]);
     }
 
@@ -97,7 +97,7 @@ class PurchaseOrderController extends BaseController
         $this->requireAuth();
 
         $this->orders->updateStatus($id, 'cancelled');
-        $this->flashSuccess('Rendelés stornózva.');
+        $this->flashSuccess($this->t('purchase_orders.cancelled'));
         $this->redirect('/purchase-orders/' . $id);
     }
 
@@ -106,7 +106,7 @@ class PurchaseOrderController extends BaseController
         $this->requireAuth();
 
         $this->orders->delete($id);
-        $this->flashSuccess('Rendelés törölve.');
+        $this->flashSuccess($this->t('purchase_orders.deleted'));
         $this->redirect('/purchase-orders');
     }
 

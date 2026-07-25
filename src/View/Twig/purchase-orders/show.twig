@@ -9,11 +9,11 @@
             </div>
             <div>
                 {% if order.status == 'confirmed' %}
-                    <span class="badge rounded-pill text-bg-primary">Visszaigazolt</span>
+                    <span class="badge rounded-pill text-bg-primary">{{ t('common.order_status.confirmed') }}</span>
                 {% elseif order.status == 'invoiced' %}
-                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Számlázva</span>
+                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('common.order_status.invoiced') }}</span>
                 {% else %}
-                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">Törölve</span>
+                    <span class="badge rounded-pill text-bg-danger-subtle text-danger-emphasis">{{ t('common.order_status.cancelled') }}</span>
                 {% endif %}
             </div>
         </div>
@@ -22,11 +22,11 @@
                 <table class="table cx-table align-middle mb-0">
                     <thead>
                     <tr>
-                        <th>Cikkszám</th>
-                        <th>Megnevezés</th>
-                        <th class="text-end">Mennyiség</th>
-                        <th class="text-end">Egységár</th>
-                        <th class="text-end">Sor összesen</th>
+                        <th>{{ t('common.sku') }}</th>
+                        <th>{{ t('purchase_orders.product_name') }}</th>
+                        <th class="text-end">{{ t('common.quantity') }}</th>
+                        <th class="text-end">{{ t('common.unit_price') }}</th>
+                        <th class="text-end">{{ t('common.line_total') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -42,7 +42,7 @@
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td colspan="4" class="text-end fw-medium">Végösszeg</td>
+                        <td colspan="4" class="text-end fw-medium">{{ t('common.total') }}</td>
                         <td class="text-end fw-bold">{{ order.total_amount|number_format(0, ',', ' ') }} Ft</td>
                     </tr>
                     </tfoot>
@@ -53,15 +53,15 @@
 
     <div class="d-flex gap-2">
         <a href="{{ base_url }}/purchase-orders" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Vissza a listához
+            <i class="bi bi-arrow-left me-1"></i>{{ t('common.back_to_list') }}
         </a>
         {% if order.status == 'confirmed' %}
             <a href="{{ base_url }}/incoming-invoices/create?order_id={{ order.id }}" class="btn btn-primary">
-                <i class="bi bi-receipt me-1"></i>Bejövő számla rögzítése
+                <i class="bi bi-receipt me-1"></i>{{ t('purchase_orders.make_incoming_invoice') }}
             </a>
-            <form method="post" action="{{ base_url }}/purchase-orders/{{ order.id }}/cancel" onsubmit="return confirm('Biztosan stornózod a rendelést?');">
+            <form method="post" action="{{ base_url }}/purchase-orders/{{ order.id }}/cancel" onsubmit="return confirm('{{ t('purchase_orders.confirm_void')|e('js') }}');">
                 <button type="submit" class="btn btn-outline-danger">
-                    <i class="bi bi-x-circle me-1"></i>Stornózás
+                    <i class="bi bi-x-circle me-1"></i>{{ t('purchase_orders.void') }}
                 </button>
             </form>
         {% endif %}
