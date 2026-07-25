@@ -120,7 +120,8 @@ Ezután nyisd meg a `config.ini`-ben beállított `base_url`-t (pl. `http://loca
 ```
 Cloudexus/
 ├── bin/
-│   └── build_css.php    # a rétegzett CSS forrásokat egyesíti web/assets/css/app.css-be
+│   ├── build_css.php    # a rétegzett CSS forrásokat egyesíti web/assets/css/app.css-be
+│   └── clear_cache.php  # var/cache kiürítése (opcionálisan log és session is)
 ├── config/              # config.ini (gitignore-olt) + .dist sablon
 ├── database/
 │   ├── core/            # sorszámozott SQL migrációk (01_core.sql, …)
@@ -142,6 +143,11 @@ Cloudexus/
 > A CSS-t nem Sass/bundler építi: a `src/View/Css/` alatti fájlokat a `php bin/build_css.php`
 > fűzi össze egyetlen `web/assets/css/app.css`-be, fix sorrendben. CSS-módosításnál mindig a
 > forrásfájlokat szerkeszd, utána futtasd a scriptet — az `app.css`-t sose kézzel.
+
+> Éles környezetben (`debug = 0`) a Twig a lefordított sablonokat a `var/cache/` alá írja.
+> Sablon- vagy fordításmódosítás után a `php bin/clear_cache.php` üríti ezt. Alapból csak a
+> cache-t törli; a `--logs` a naplókat, a `--sessions` a session fájlokat is (utóbbi mindenkit
+> kiléptet), a `--all` mindhármat, a `--dry-run` pedig csak kilistázza, mit törölne.
 
 > A feliratokat a sablonok `{{ t('domain.kulcs') }}`, a controllerek `$this->t('domain.kulcs')`
 > hívással kérik; a szövegek a `src/Language/<nyelv>/<domain>.php` fájlokból jönnek. Új nyelvhez
