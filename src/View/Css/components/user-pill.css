@@ -22,4 +22,19 @@
     justify-content: center;
     font-weight: 700;
     font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+/* Telefonon csak a monogram marad, hogy a topbar tartalma kiférjen; a név a
+   lenyíló menüből és az aria-label-ből továbbra is elérhető. */
+@media (max-width: 575.98px) {
+    .cx-user-pill {
+        gap: 0;
+        padding: 6px;
+    }
+
+    .cx-user-pill__name,
+    .cx-user-pill__caret {
+        display: none;
+    }
 }

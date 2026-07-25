@@ -104,6 +104,12 @@
     font-size: 1.2rem;
     font-weight: 600;
     margin: 0;
+    /* A hosszú oldalcím inkább levágódjon, mint hogy kitolja a sávból a
+       nyelvválasztót és a profilt. */
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .cx-topbar__toggle {
@@ -133,6 +139,19 @@
 
     .cx-backdrop.is-visible {
         display: block;
+    }
+}
+
+/* Telefonon a menü ikon + cím + nyelv + profil nem fér ki egy 64px-es sávba,
+   ezért a nyelvválasztóból csak a földgömb ikon marad (a kód és a lenyíló
+   nyilacska elrejtve). A profil-pill lásd components/user-pill.css. */
+@media (max-width: 575.98px) {
+    .cx-lang-btn__code {
+        display: none;
+    }
+
+    .cx-lang-btn.dropdown-toggle::after {
+        display: none;
     }
 }
 

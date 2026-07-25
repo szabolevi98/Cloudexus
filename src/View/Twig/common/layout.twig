@@ -128,8 +128,8 @@
             <div class="ms-auto d-flex align-items-center gap-2">
                 {% set locale_names = {'hu': 'Magyar', 'en': 'English'} %}
                 <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="{{ t('nav.language') }}">
-                        <i class="bi bi-translate me-1"></i>{{ current_locale|upper }}
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle cx-lang-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="{{ t('nav.language') }}" aria-label="{{ t('nav.language') }}">
+                        <i class="bi bi-translate" aria-hidden="true"></i><span class="cx-lang-btn__code ms-1">{{ current_locale|upper }}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                         {% for loc in available_locales %}
@@ -144,10 +144,10 @@
 
                 {% if auth_user_id %}
                     <div class="dropdown">
-                        <button class="cx-user-pill" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="cx-user-pill" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ auth_user_name }}">
                             <span class="cx-user-pill__avatar">{{ auth_user_name|slice(0, 1)|upper }}</span>
                             <span class="cx-user-pill__name">{{ auth_user_name }}</span>
-                            <i class="bi bi-chevron-down"></i>
+                            <i class="bi bi-chevron-down cx-user-pill__caret" aria-hidden="true"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                             <li><a class="dropdown-item" href="{{ base_url }}/profile"><i class="bi bi-person me-2"></i>{{ t('nav.profile') }}</a></li>
