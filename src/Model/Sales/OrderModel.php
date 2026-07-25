@@ -140,7 +140,7 @@ class OrderModel
     public function topCategories(int $days = 30, int $limit = 6): array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT COALESCE(c.name, :uncategorized) AS name, SUM(oi.line_total) AS value
+            "SELECT c.id AS category_id, COALESCE(c.name, :uncategorized) AS name, SUM(oi.line_total) AS value
              FROM order_items oi
              JOIN orders o ON o.id = oi.order_id AND o.status != 'cancelled'
              JOIN products p ON p.id = oi.product_id

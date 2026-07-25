@@ -37,6 +37,40 @@
     box-shadow: var(--cx-shadow);
     padding: 18px 20px;
     height: 100%;
+    position: relative;
+}
+
+/*
+ * Az egész kártyát kattinthatóvá tevő, átfedő link. Külön elemként fedi a
+ * kártyát, nem pedig körbezárja — így a kártyán belüli saját linkek (pl. a
+ * lejárt összeg) nem kerülnek linkbe linkként, ami érvénytelen HTML lenne.
+ */
+.cx-stat__link {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: 1;
+}
+
+/* A kártyán belüli valódi linkek az átfedés fölé kerülnek. */
+.cx-stat a:not(.cx-stat__link) {
+    position: relative;
+    z-index: 2;
+}
+
+.cx-stat:has(.cx-stat__link) {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.cx-stat:has(.cx-stat__link:hover) {
+    border-color: var(--cx-primary);
+    box-shadow: 0 6px 18px rgba(79, 91, 213, 0.16);
+    transform: translateY(-1px);
+}
+
+.cx-stat__link:focus-visible {
+    outline: 2px solid var(--cx-primary);
+    outline-offset: 2px;
 }
 
 .cx-stat__icon {

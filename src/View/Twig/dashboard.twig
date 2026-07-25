@@ -4,6 +4,7 @@
     <div class="row g-3 mb-3">
         <div class="col-sm-6 col-xl-3">
             <div class="cx-stat cx-stat--primary">
+                <a href="{{ base_url }}/orders" class="cx-stat__link" aria-label="{{ t('dashboard.orders_10_days') }}"></a>
                 <div class="cx-stat__icon"><i class="bi bi-cart-check"></i></div>
                 <div>
                     <div class="cx-stat__label">{{ t('dashboard.orders_10_days') }}</div>
@@ -13,6 +14,7 @@
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="cx-stat cx-stat--warning">
+                <a href="{{ base_url }}/invoices?status=unpaid" class="cx-stat__link" aria-label="{{ t('dashboard.receivables') }}"></a>
                 <div class="cx-stat__icon"><i class="bi bi-hourglass-split"></i></div>
                 <div>
                     <div class="cx-stat__label">{{ t('dashboard.receivables') }}</div>
@@ -25,6 +27,7 @@
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="cx-stat cx-stat--danger">
+                <a href="{{ base_url }}/incoming-invoices?status=unpaid" class="cx-stat__link" aria-label="{{ t('dashboard.payables') }}"></a>
                 <div class="cx-stat__icon"><i class="bi bi-exclamation-circle"></i></div>
                 <div>
                     <div class="cx-stat__label">{{ t('dashboard.payables') }}</div>
@@ -37,6 +40,7 @@
         </div>
         <div class="col-sm-6 col-lg-3">
             <div class="cx-stat cx-stat--success">
+                <a href="{{ base_url }}/products" class="cx-stat__link" aria-label="{{ t('dashboard.products') }}"></a>
                 <div class="cx-stat__icon"><i class="bi bi-box-seam"></i></div>
                 <div>
                     <div class="cx-stat__label">{{ t('dashboard.products') }}</div>
@@ -68,7 +72,12 @@
                     {% for cat in top_categories %}
                         <div class="mb-3">
                             <div class="d-flex justify-content-between small mb-1">
-                                <span class="fw-medium">{{ cat.name }}</span>
+                                {% if cat.category_id %}
+                                    {# A kategóriára szűrt terméklista #}
+                                    <a href="{{ base_url }}/products?q=&amp;category_id={{ cat.category_id }}&amp;status=" class="fw-medium text-decoration-none">{{ cat.name }}</a>
+                                {% else %}
+                                    <span class="fw-medium">{{ cat.name }}</span>
+                                {% endif %}
                                 <span class="text-muted">{{ cat.value|money }}</span>
                             </div>
                             <div class="progress" style="height: 6px;">
@@ -110,7 +119,7 @@
                             {% for invoice in recent_invoices %}
                                 <tr>
                                     <td class="text-nowrap"><a href="{{ base_url }}/invoices/{{ invoice.id }}" class="fw-medium">{{ invoice.invoice_number }}</a></td>
-                                    <td>{{ invoice.partner_name }}</td>
+                                    <td><a href="{{ base_url }}/partners/{{ invoice.partner_id }}" class="text-body">{{ invoice.partner_name }}</a></td>
                                     <td class="text-muted text-nowrap">{{ invoice.issue_date }}</td>
                                     <td class="text-muted text-nowrap">{{ invoice.due_date }}</td>
                                     <td>
@@ -146,8 +155,14 @@
                         <div class="d-flex align-items-center gap-2 px-3 py-2 {{ not loop.last ? 'border-bottom' : '' }}">
                             <i class="bi bi-circle text-muted"></i>
                             <div class="flex-grow-1">
-                                <div class="small fw-medium">{{ todo.title }}</div>
-                                {% if todo.partner_name %}<div class="text-muted" style="font-size:.75rem;">{{ todo.partner_name }}</div>{% endif %}
+                                <div class="small fw-medium">
+                                    <a href="{{ base_url }}/todos?q={{ todo.title|url_encode }}&status=open" class="text-body text-decoration-none">{{ todo.title }}</a>
+                                </div>
+                                {% if todo.partner_name %}
+                                    <div style="font-size:.75rem;">
+                                        <a href="{{ base_url }}/partners/{{ todo.partner_id }}" class="text-muted text-decoration-none">{{ todo.partner_name }}</a>
+                                    </div>
+                                {% endif %}
                             </div>
                             {% if todo.due_date %}
                                 <span class="small text-nowrap {{ todo.due_date < today ? 'text-danger fw-medium' : 'text-muted' }}">{{ todo.due_date }}</span>
@@ -186,8 +201,8 @@
                             <tbody>
                             {% for p in low_stock %}
                                 <tr>
-                                    <td class="fw-medium text-nowrap">{{ p.sku }}</td>
-                                    <td>{{ p.name }}</td>
+                                    <td class="text-nowrap"><a href="{{ base_url }}/products/{{ p.id }}/edit" class="fw-medium">{{ p.sku }}</a></td>
+                                    <td><a href="{{ base_url }}/products/{{ p.id }}/edit" class="text-body">{{ p.name }}</a></td>
                                     <td class="text-end">
                                         <span class="badge rounded-pill {{ p.stock_qty <= 0 ? 'text-bg-danger' : 'text-bg-warning-subtle text-warning-emphasis' }}">
                                             {{ p.stock_qty|number_format(0, ',', ' ') }} {{ p.unit }}
