@@ -176,6 +176,35 @@
 <script src="{{ base_url }}/assets/vendor/select2/select2.min.js"></script>
 <script src="{{ base_url }}/assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
 <script>
+    // Select2 csak angol üzeneteket tartalmaz, ezért a sajátjainkat adjuk át neki.
+    // A {n} helyőrzőket itt, JS-ben cseréljük, mert a darabszám csak futásidőben ismert.
+    window.cxSelect2Lang = {
+        errorLoading: () => '{{ t('select2.error_loading')|e('js') }}',
+        inputTooLong: (args) => {
+            const n = args.input.length - args.maximum;
+            const tpl = n === 1
+                ? '{{ t('select2.input_too_long_one')|e('js') }}'
+                : '{{ t('select2.input_too_long_other')|e('js') }}';
+            return tpl.replace('{n}', n);
+        },
+        inputTooShort: (args) => {
+            const n = args.minimum - args.input.length;
+            return '{{ t('select2.input_too_short')|e('js') }}'.replace('{n}', n);
+        },
+        loadingMore: () => '{{ t('select2.loading_more')|e('js') }}',
+        maximumSelected: (args) => {
+            const tpl = args.maximum === 1
+                ? '{{ t('select2.maximum_selected_one')|e('js') }}'
+                : '{{ t('select2.maximum_selected_other')|e('js') }}';
+            return tpl.replace('{n}', args.maximum);
+        },
+        noResults: () => '{{ t('select2.no_results')|e('js') }}',
+        searching: () => '{{ t('select2.searching')|e('js') }}',
+        removeAllItems: () => '{{ t('select2.remove_all_items')|e('js') }}',
+        removeItem: () => '{{ t('select2.remove_item')|e('js') }}',
+        search: () => '{{ t('select2.search')|e('js') }}',
+    };
+
     // Select2: helyi (kis lista) és AJAX-os (nagy adathalmaz, pl. 20.000 termék) mezők.
     // Újrahasználható, hogy a dinamikusan hozzáadott mezőkre is meghívható legyen.
     window.cxInitSelect2 = function (root) {
@@ -188,6 +217,7 @@
                 theme: 'bootstrap-5',
                 width: '100%',
                 placeholder: jQuery(this).data('placeholder') || '{{ t('common.choose_placeholder')|e('js') }}',
+                language: window.cxSelect2Lang,
                 allowClear: !jQuery(this).prop('multiple') && !this.hasAttribute('required'),
             });
         });
@@ -199,6 +229,7 @@
                 theme: 'bootstrap-5',
                 width: '100%',
                 placeholder: $el.data('placeholder') || '{{ t('common.search_placeholder')|e('js') }}',
+                language: window.cxSelect2Lang,
                 allowClear: !$el.prop('multiple') && !this.hasAttribute('required'),
                 minimumInputLength: 0,
                 ajax: {
