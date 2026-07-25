@@ -3,15 +3,15 @@
 {% block content %}
     <div class="cx-card">
         <div class="cx-card__header">
-            <h2>API dokumentáció</h2>
+            <h2>{{ t('api_users.docs_title') }}</h2>
             <a href="{{ base_url }}/API.md" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-filetype-md me-1"></i>Nyers markdown megnyitása
+                <i class="bi bi-filetype-md me-1"></i>{{ t('api_users.docs_open_raw') }}
             </a>
         </div>
         <div class="cx-card__body">
-            <p class="text-muted">This documentation is sourced from an MD file, therefore it is available in English only. / Ez a dokumentáció egy MD-fájlból származik, ezért kizárólag angol nyelven érhető el.</p>
+            <p class="text-muted">{{ t('api_users.docs_english_only') }}</p>
             <div id="markdown-content" class="markdown-body">
-                <p class="text-muted">Betöltés…</p>
+                <p class="text-muted">{{ t('api_users.docs_loading') }}</p>
             </div>
         </div>
     </div>
@@ -24,7 +24,7 @@
                 .then((r) => r.text())
                 .then((md) => { target.innerHTML = marked.parse(md); })
                 .catch(() => {
-                    target.innerHTML = '<p class="text-danger">A dokumentáció nem tölthető be. Nézd meg a nyers markdown fájlt.</p>';
+                    target.innerHTML = '<p class="text-danger">{{ t('api_users.docs_load_failed')|e('js') }}</p>';
                 });
         })();
     </script>

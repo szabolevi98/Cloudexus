@@ -26,6 +26,8 @@ return [
     'confirm_delete' => 'Are you sure you want to delete this?',
     'none' => 'None',
     'choose' => '— choose —',
+    'choose_placeholder' => 'Choose…',
+    'search_placeholder' => 'Search…',
     'pcs' => 'pcs',
     'count_suffix' => 'items',
     'pagination_results' => '{from}–{to} of {total} results',

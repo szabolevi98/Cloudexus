@@ -3,6 +3,7 @@
 namespace Cloudexus\Model\Sales;
 
 use Cloudexus\Core\DatabaseConnection;
+use Cloudexus\Core\Lang;
 
 class OrderModel
 {
@@ -138,7 +139,7 @@ class OrderModel
     public function topCategories(int $days = 30, int $limit = 6): array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT COALESCE(c.name, 'Kategorizálatlan') AS name, SUM(oi.line_total) AS value
+            "SELECT COALESCE(c.name, :uncategorized) AS name, SUM(oi.line_total) AS value
              FROM order_items oi
              JOIN orders o ON o.id = oi.order_id AND o.status != 'cancelled'
              JOIN products p ON p.id = oi.product_id
@@ -148,7 +149,10 @@ class OrderModel
              ORDER BY value DESC
              LIMIT " . (int) $limit
         );
-        $stmt->execute(['from' => date('Y-m-d', strtotime("-$days days"))]);
+        $stmt->execute([
+            'from' => date('Y-m-d', strtotime("-$days days")),
+            'uncategorized' => Lang::get('dashboard.uncategorized'),
+        ]);
 
         return $stmt->fetchAll();
     }

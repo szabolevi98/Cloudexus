@@ -10,6 +10,7 @@ return [
     'orders_chart' => 'Sales orders',
     'last_10_days' => 'Last 10 days',
     'top_categories' => 'Top categories',
+    'uncategorized' => 'Uncategorized',
     'days_30' => '30 days',
     'no_sales_data' => 'No sales data yet.',
     'recent_invoices' => 'Recent invoices',

@@ -25,4 +25,8 @@ return [
     'token_regenerated' => 'Új token generálva. A régi token azonnal érvénytelen.',
     'deleted' => 'API-felhasználó törölve.',
     'docs_title' => 'API dokumentáció',
+    'docs_open_raw' => 'Nyers markdown megnyitása',
+    'docs_english_only' => 'Ez a dokumentáció egy MD-fájlból származik, ezért kizárólag angol nyelven érhető el.',
+    'docs_loading' => 'Betöltés…',
+    'docs_load_failed' => 'A dokumentáció nem tölthető be. Nézd meg a nyers markdown fájlt.',
 ];

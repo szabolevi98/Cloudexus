@@ -26,6 +26,8 @@ return [
     'confirm_delete' => 'Biztosan törlöd?',
     'none' => 'Nincs',
     'choose' => '— válassz —',
+    'choose_placeholder' => 'Válassz…',
+    'search_placeholder' => 'Keresés…',
     'pcs' => 'db',
     'count_suffix' => 'db',
     'pagination_results' => '{from}–{to} / {total} találat',

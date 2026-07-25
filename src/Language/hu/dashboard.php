@@ -10,6 +10,7 @@ return [
     'orders_chart' => 'Vevői rendelések',
     'last_10_days' => 'Elmúlt 10 nap',
     'top_categories' => 'Top kategóriák',
+    'uncategorized' => 'Kategorizálatlan',
     'days_30' => '30 nap',
     'no_sales_data' => 'Még nincs értékesítési adat.',
     'recent_invoices' => 'Legutóbbi számlák',
