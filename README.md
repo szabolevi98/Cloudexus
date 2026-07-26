@@ -171,14 +171,10 @@ Cloudexus/
 - **A fordítható szöveg nincs a base táblán.** A `products`, `categories`, `units` és
   `parameters` táblák nem tartalmaznak nevet/leírást — azok a `*_description` táblákban
   vannak, nyelvenként egy sorral (lásd [Adatok nyelvesítése](#-adatok-nyelvesítése)).
-- **Egységes szókincs**: a paraméter-törzs táblája `parameters`, a kapcsolótábla
-  `product_parameters` — nincs többé „attribute" és „parameter_names" kettősség.
 - **A kiállított bizonylat nem hivatkozik élő szövegre.** A tételsorok rögzítéskor
   eltárolják a termék akkori nevét, cikkszámát és mértékegységét (`product_name`,
   `product_sku`, `unit_code`), így egy átnevezés vagy nyelvváltás nem írja át a régi
   bizonylatokat. A készletmozgás és a leltár szándékosan élőben old fel.
-- A `categories` a névvel és leírással együtt megkapta az `is_active` jelzőt is (a ház
-  konvenciója `is_active`, nem `status` — így egyezik a `products`/`partners` táblákkal).
 - **Minden táblán van `created_at` és `updated_at`**, `DEFAULT CURRENT_TIMESTAMP`
   illetve `ON UPDATE CURRENT_TIMESTAMP` beállítással, tehát az adatbázis tartja
   karban őket, PHP-oldali kód nélkül. Erre épül a REST API `updated_since` szűrője.
