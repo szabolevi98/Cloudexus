@@ -209,6 +209,29 @@ integrations keep working — `unit_id` and `parameter_id` are additions.
 | GET | `/api/categories` | Category list (tree, `parent_id`). Filters: `q`, `updated_since` |
 | GET | `/api/categories/{id}` | Single category |
 
+A category carries a translated `name` and `description`, a `parent_id` (`null` at the top
+level) and an `is_active` flag. Example response (`GET /api/categories/1?language=en`):
+
+```json
+{
+  "data": {
+    "id": 1,
+    "parent_id": null,
+    "name": "Bicycle",
+    "description": "Products in the Bicycle category.",
+    "is_active": 1,
+    "created_at": "2026-07-26 07:53:20",
+    "updated_at": "2026-07-26 07:53:20"
+  },
+  "meta": {
+    "currency": { "code": "HUF", "symbol": "Ft", "title": "Forint" },
+    "language": { "code": "en", "name": "English", "default": "hu" }
+  }
+}
+```
+
+Category lists are ordered by the **translated** name, so the order differs per language.
+
 ### Other master data
 
 | Method | Path | Description |
@@ -517,6 +540,19 @@ Only products changed since yesterday:
 ```bash
 curl -H "Authorization: Bearer <token>" \
   "https://cloudexus.levente.net/api/products?updated_since=2026-07-19%2000:00:00"
+```
+
+Products in English (translatable text falls back to the default language where a
+translation is missing):
+
+```bash
+curl -H "Authorization: Bearer <token>"   "https://cloudexus.levente.net/api/products?language=en"
+```
+
+The configured languages, with which one is the default:
+
+```bash
+curl -H "Authorization: Bearer <token>"   "https://cloudexus.levente.net/api/languages"
 ```
 
 Currencies and rates (to convert the amounts on your side):

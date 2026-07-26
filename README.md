@@ -62,6 +62,7 @@ A Cloudexus egy helyen kezeli a teljes kereskedelmi folyamatot: részletes term�
 - CSRF-védelem minden űrlapon, HttpOnly + SameSite session süti
 - Kétnyelvű felület (magyar / angol) nyelvváltóval, a választás sütiben megjegyezve; a nyelvválasztás a törzsadatok szövegeire is érvényes (lásd [Adatok nyelvesítése](#-adatok-nyelvesítése)), a partner- és rendelésadatok viszont nem fordulnak
 - Pénznemek kezelése elsődleges pénznemmel és váltószámokkal, MNB közép­árfolyam-lekéréssel (gombbal vagy cronból)
+- Nyelvek kezelése alapnyelv-kijelöléssel; a fordítható törzsadatok nyelvenként tárolódnak, hiányzó fordítás esetén az alapnyelv jelenik meg
 
 ---
 
@@ -128,12 +129,14 @@ Cloudexus/
 │   └── sync_currency_rates.php  # MNB közép-árfolyamok frissítése (cronhoz)
 ├── config/              # config.ini (gitignore-olt) + .dist sablon
 ├── database/
-│   ├── core/            # sorszámozott SQL migrációk (01_core.sql, …)
+│   ├── core/            # sorszámozott SQL migrációk (01_core.sql, …); a 23-as
+│   │                    #   normalizál, a 24-es vezeti be a nyelveket
 │   ├── migrate.php      # migrációfuttató
 │   ├── create_admin.php # kezdő admin létrehozása
 │   └── seed_demo.php    # újrafuttatható demo-adat generátor
 ├── src/
-│   ├── Core/            # Config, DB, Router, Session, Auth, Csrf, Paginator, Lang, …
+│   ├── Core/            # Config, DB, Router, Session, Auth, Csrf, Paginator,
+│   │                    #   Lang (feliratok), Language + Translation (adatnyelv), Currency, …
 │   ├── Controller/      # egy controller / erőforrás
 │   ├── Language/        # hu/ és en/, szekciónkénti nyelvi fájlok (common, nav, products, …)
 │   ├── Model/           # modulonként: Core, Account, Sales, Purchasing, Cash
@@ -170,6 +173,12 @@ Cloudexus/
   vannak, nyelvenként egy sorral (lásd [Adatok nyelvesítése](#-adatok-nyelvesítése)).
 - **Egységes szókincs**: a paraméter-törzs táblája `parameters`, a kapcsolótábla
   `product_parameters` — nincs többé „attribute" és „parameter_names" kettősség.
+- **A kiállított bizonylat nem hivatkozik élő szövegre.** A tételsorok rögzítéskor
+  eltárolják a termék akkori nevét, cikkszámát és mértékegységét (`product_name`,
+  `product_sku`, `unit_code`), így egy átnevezés vagy nyelvváltás nem írja át a régi
+  bizonylatokat. A készletmozgás és a leltár szándékosan élőben old fel.
+- A `categories` a névvel és leírással együtt megkapta az `is_active` jelzőt is (a ház
+  konvenciója `is_active`, nem `status` — így egyezik a `products`/`partners` táblákkal).
 - **Minden táblán van `created_at` és `updated_at`**, `DEFAULT CURRENT_TIMESTAMP`
   illetve `ON UPDATE CURRENT_TIMESTAMP` beállítással, tehát az adatbázis tartja
   karban őket, PHP-oldali kód nélkül. Erre épül a REST API `updated_since` szűrője.
