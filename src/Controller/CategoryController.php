@@ -44,6 +44,7 @@ class CategoryController extends BaseController
         $this->pageTitle = $this->t('categories.new');
         $this->render('categories/form.twig', [
             'category' => null,
+            'descriptions' => [],
             'categories' => $this->categories->all(),
             'paths' => $this->categories->paths(),
         ]);
@@ -55,7 +56,7 @@ class CategoryController extends BaseController
 
         $data = $this->collectInput();
 
-        if ($data['name'] === '') {
+        if ($this->defaultText($data['name']) === '') {
             $this->flashError($this->t('categories.name_required'));
             $this->redirect('/categories/create');
         }
@@ -77,6 +78,7 @@ class CategoryController extends BaseController
         $this->pageTitle = $this->t('categories.edit_title');
         $this->render('categories/form.twig', [
             'category' => $category,
+            'descriptions' => $this->categories->descriptions($id),
             'categories' => $this->categories->all(),
             'paths' => $this->categories->paths(),
         ]);
@@ -88,7 +90,7 @@ class CategoryController extends BaseController
 
         $data = $this->collectInput();
 
-        if ($data['name'] === '') {
+        if ($this->defaultText($data['name']) === '') {
             $this->flashError($this->t('categories.name_required'));
             $this->redirect('/categories/' . $id . '/edit');
         }
@@ -110,8 +112,34 @@ class CategoryController extends BaseController
     private function collectInput(): array
     {
         return [
-            'name' => trim($_POST['name'] ?? ''),
+            'name' => $this->localized('name'),
+            'description' => $this->localized('description'),
             'parent_id' => $_POST['parent_id'] ?? null,
+            'is_active' => isset($_POST['is_active']) ? 1 : 0,
         ];
+    }
+
+    /**
+     * Nyelvenkénti szövegek a POST-ból: name[<nyelv id>].
+     *
+     * @return array<int, string>
+     */
+    private function localized(string $field): array
+    {
+        $out = [];
+        foreach ((array) ($_POST[$field] ?? []) as $languageId => $value) {
+            $languageId = (int) $languageId;
+            if ($languageId > 0) {
+                $out[$languageId] = trim((string) $value);
+            }
+        }
+
+        return $out;
+    }
+
+    /** A szöveg az alapnyelven — ez a kötelező kitöltés feltétele. */
+    private function defaultText(array $localized): string
+    {
+        return $localized[\Cloudexus\Core\Language::defaultId()] ?? '';
     }
 }

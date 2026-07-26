@@ -7,6 +7,21 @@ use Cloudexus\Core\Paginator;
 
 class StockMovementModel
 {
+
+    /**
+     * A terméknév a product_description táblából, alapnyelvi visszaeséssel.
+     * Metódusként, mert az itteni lekérdezések dupla idézőjelű sztringek, ahol
+     * a statikus hívás csak {$this->...} alakban interpolálható.
+     */
+    private function descJoin(): string
+    {
+        return \Cloudexus\Core\Translation::join('product_description', 'product_id', 'p.id', 'pd');
+    }
+
+    private function nameSelect(): string
+    {
+        return \Cloudexus\Core\Translation::select('pd', 'name', 'product_name');
+    }
     /**
      * Filtered, paginated movement list for one movement type ('in'|'out').
      * Filters: warehouse_id, q (product sku/name), date_from, date_to.
@@ -21,7 +36,7 @@ class StockMovementModel
             $params['warehouse_id'] = (int) $filters['warehouse_id'];
         }
         if ($filters['q'] !== '') {
-            $where[] = '(p.sku LIKE :q1 OR p.name LIKE :q2)';
+            $where[] = '(p.sku LIKE :q1 OR ' . \Cloudexus\Core\Translation::pick('pd', 'name') . ' LIKE :q2)';
             $params['q1'] = '%' . $filters['q'] . '%';
             $params['q2'] = '%' . $filters['q'] . '%';
         }
@@ -37,17 +52,19 @@ class StockMovementModel
         $whereSql = 'WHERE ' . implode(' AND ', $where);
 
         $count = DatabaseConnection::get()->prepare(
-            "SELECT COUNT(*) FROM stock_movements m JOIN products p ON p.id = m.product_id $whereSql"
+            "SELECT COUNT(*) FROM stock_movements m JOIN products p ON p.id = m.product_id
+             {$this->descJoin()} $whereSql"
         );
         $count->execute($params);
         $pager->total = (int) $count->fetchColumn();
         $pager->clamp();
 
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT m.*, p.sku, p.name AS product_name, un.code AS unit, w.name AS warehouse_name,
+            "SELECT m.*, p.sku, {$this->nameSelect()}, un.code AS unit, w.name AS warehouse_name,
                     l.code AS location_code, u.full_name AS created_by_name
              FROM stock_movements m
              JOIN products p ON p.id = m.product_id
+             {$this->descJoin()}
              LEFT JOIN units un ON un.id = p.unit_id
              JOIN warehouses w ON w.id = m.warehouse_id
              LEFT JOIN warehouse_locations l ON l.id = m.location_id
@@ -130,7 +147,7 @@ class StockMovementModel
             $params['warehouse_id'] = (int) $filters['warehouse_id'];
         }
         if ($filters['q'] !== '') {
-            $where[] = '(p.sku LIKE :q1 OR p.name LIKE :q2)';
+            $where[] = '(p.sku LIKE :q1 OR ' . \Cloudexus\Core\Translation::pick('pd', 'name') . ' LIKE :q2)';
             $params['q1'] = '%' . $filters['q'] . '%';
             $params['q2'] = '%' . $filters['q'] . '%';
         }
@@ -146,17 +163,19 @@ class StockMovementModel
         $whereSql = 'WHERE ' . implode(' AND ', $where);
 
         $count = DatabaseConnection::get()->prepare(
-            "SELECT COUNT(*) FROM stock_movements m JOIN products p ON p.id = m.product_id $whereSql"
+            "SELECT COUNT(*) FROM stock_movements m JOIN products p ON p.id = m.product_id
+             {$this->descJoin()} $whereSql"
         );
         $count->execute($params);
         $pager->total = (int) $count->fetchColumn();
         $pager->clamp();
 
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT m.*, p.sku, p.name AS product_name, un.code AS unit, w.name AS warehouse_name,
+            "SELECT m.*, p.sku, {$this->nameSelect()}, un.code AS unit, w.name AS warehouse_name,
                     l.code AS location_code, u.full_name AS created_by_name
              FROM stock_movements m
              JOIN products p ON p.id = m.product_id
+             {$this->descJoin()}
              LEFT JOIN units un ON un.id = p.unit_id
              JOIN warehouses w ON w.id = m.warehouse_id
              LEFT JOIN warehouse_locations l ON l.id = m.location_id
@@ -195,7 +214,7 @@ class StockMovementModel
             $params['warehouse_id'] = (int) $filters['warehouse_id'];
         }
         if ($filters['q'] !== '') {
-            $where[] = '(p.sku LIKE :q1 OR p.name LIKE :q2)';
+            $where[] = '(p.sku LIKE :q1 OR ' . \Cloudexus\Core\Translation::pick('pd', 'name') . ' LIKE :q2)';
             $params['q1'] = '%' . $filters['q'] . '%';
             $params['q2'] = '%' . $filters['q'] . '%';
         }
@@ -215,11 +234,12 @@ class StockMovementModel
         // melyik polcon mennyi van (a tárhely nélküli mozgások "—" alatt gyűlnek).
         $baseSql = "SELECT w.id AS warehouse_id, w.name AS warehouse_name,
                            l.id AS location_id, l.code AS location_code,
-                           p.id AS product_id, p.sku, p.name AS product_name, un.code AS unit,
+                           p.id AS product_id, p.sku, {$this->nameSelect()}, un.code AS unit,
                            SUM(CASE WHEN m.type = 'in' THEN m.quantity ELSE -m.quantity END) AS quantity
                     FROM stock_movements m
                     JOIN warehouses w ON w.id = m.warehouse_id
                     JOIN products p ON p.id = m.product_id
+             {$this->descJoin()}
                     LEFT JOIN units un ON un.id = p.unit_id
                     LEFT JOIN warehouse_locations l ON l.id = m.location_id
                     $whereSql
@@ -246,16 +266,17 @@ class StockMovementModel
     public function stockSheet(int $warehouseId): array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT p.id AS product_id, p.sku, p.name AS product_name, un.code AS unit,
+            "SELECT p.id AS product_id, p.sku, {$this->nameSelect()}, un.code AS unit,
                     COALESCE(m.qty, 0) AS book_quantity
              FROM products p
+             {$this->descJoin()}
              LEFT JOIN units un ON un.id = p.unit_id
              LEFT JOIN (
                  SELECT product_id, SUM(CASE WHEN type = 'in' THEN quantity ELSE -quantity END) AS qty
                  FROM stock_movements WHERE warehouse_id = :wid GROUP BY product_id
              ) m ON m.product_id = p.id
              WHERE p.is_active = 1
-             ORDER BY p.name ASC"
+             ORDER BY product_name ASC"
         );
         $stmt->execute(['wid' => $warehouseId]);
 

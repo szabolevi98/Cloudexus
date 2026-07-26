@@ -35,6 +35,7 @@ return [
     'parameters' => 'Paraméterek',
     'units' => 'Mennyiségi egységek',
     'currencies' => 'Pénznemek',
+    'languages' => 'Nyelvek',
     'api_users' => 'API felhasználók',
     'api_docs' => 'API dokumentáció',
     'profile' => 'Profil',

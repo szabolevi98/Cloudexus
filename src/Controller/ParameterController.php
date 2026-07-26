@@ -32,7 +32,7 @@ class ParameterController extends BaseController
 
         $this->pageTitle = $this->t('parameters.list_title');
         $this->render('parameters/list.twig', [
-            'names' => $this->names->paginate($filters, $pager),
+            'names' => $this->withTranslations($this->names->paginate($filters, $pager)),
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
         ]);
@@ -42,10 +42,10 @@ class ParameterController extends BaseController
     {
         $this->requireAdmin();
 
-        $name = trim($_POST['name'] ?? '');
-        if ($name === '') {
+        $name = $this->localized('name');
+        if ($this->defaultText($name) === '') {
             $this->flashError($this->t('parameters.name_required'));
-        } elseif ($this->names->exists($name)) {
+        } elseif ($this->names->exists($this->defaultText($name))) {
             $this->flashError($this->t('parameters.name_exists'));
         } else {
             $this->names->create($name);
@@ -58,10 +58,10 @@ class ParameterController extends BaseController
     {
         $this->requireAdmin();
 
-        $name = trim($_POST['name'] ?? '');
-        if ($name === '') {
+        $name = $this->localized('name');
+        if ($this->defaultText($name) === '') {
             $this->flashError($this->t('parameters.name_required'));
-        } elseif ($this->names->exists($name, $id)) {
+        } elseif ($this->names->exists($this->defaultText($name), $id)) {
             $this->flashError($this->t('parameters.name_exists'));
         } else {
             $this->names->update($id, $name);
@@ -77,5 +77,49 @@ class ParameterController extends BaseController
         $this->names->delete($id);
         $this->flashSuccess($this->t('parameters.deleted'));
         $this->redirect('/parameters');
+    }
+
+    /**
+     * Nyelvenkénti szövegek a POST-ból: name[<nyelv id>]. Sima stringet is
+     * elfogad, azt az alapnyelv sorába teszi.
+     *
+     * @return array<int, string>
+     */
+    private function localized(string $field): array
+    {
+        $raw = $_POST[$field] ?? [];
+        if (!is_array($raw)) {
+            $raw = trim((string) $raw) !== '' ? [\Cloudexus\Core\Language::defaultId() => $raw] : [];
+        }
+
+        $out = [];
+        foreach ($raw as $languageId => $value) {
+            $languageId = (int) $languageId;
+            if ($languageId > 0) {
+                $out[$languageId] = trim((string) $value);
+            }
+        }
+
+        return $out;
+    }
+
+    /** A szöveg az alapnyelven — ez a kötelező kitöltés feltétele. */
+    private function defaultText(array $localized): string
+    {
+        return $localized[\Cloudexus\Core\Language::defaultId()] ?? '';
+    }
+
+    /**
+     * Minden sorhoz hozzáteszi a nyelvenkénti megnevezéseket (names[nyelv id]),
+     * hogy a lista soronként minden nyelvet szerkeszthetően kiírhasson.
+     */
+    private function withTranslations(array $rows): array
+    {
+        foreach ($rows as &$row) {
+            $row['names'] = $this->names->descriptions((int) $row['id']);
+        }
+        unset($row);
+
+        return $rows;
     }
 }

@@ -109,6 +109,9 @@
                 <a class="cx-nav__link {{ active_menu == 'currencies' ? 'is-active' : '' }}" href="{{ base_url }}/currencies">
                     <i class="bi bi-currency-exchange"></i><span>{{ t('nav.currencies') }}</span>
                 </a>
+                <a class="cx-nav__link {{ active_menu == 'languages' ? 'is-active' : '' }}" href="{{ base_url }}/languages">
+                    <i class="bi bi-translate"></i><span>{{ t('nav.languages') }}</span>
+                </a>
 
                 <div class="cx-nav__group-label">{{ t('nav.groups.api') }}</div>
                 <a class="cx-nav__link {{ active_menu == 'api-users' ? 'is-active' : '' }}" href="{{ base_url }}/api-users">
@@ -129,16 +132,15 @@
             <h1 class="cx-topbar__title">{{ page_title|default('') }}</h1>
 
             <div class="ms-auto d-flex align-items-center gap-2">
-                {% set locale_names = {'hu': 'Magyar', 'en': 'English'} %}
                 <div class="dropdown">
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle cx-lang-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="{{ t('nav.language') }}" aria-label="{{ t('nav.language') }}">
                         <i class="bi bi-translate" aria-hidden="true"></i><span class="cx-lang-btn__code ms-1">{{ current_locale|upper }}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                        {% for loc in available_locales %}
+                        {% for lang in languages %}
                             <li>
-                                <a class="dropdown-item {{ loc == current_locale ? 'active' : '' }}" href="{{ base_url }}/lang/{{ loc }}">
-                                    {{ locale_names[loc]|default(loc|upper) }}
+                                <a class="dropdown-item {{ lang.code == current_locale ? 'active' : '' }}" href="{{ base_url }}/lang/{{ lang.code }}">
+                                    {{ lang.name }}
                                 </a>
                             </li>
                         {% endfor %}

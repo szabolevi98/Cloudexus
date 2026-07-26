@@ -25,7 +25,7 @@ class UnitController extends BaseController
 
         $this->pageTitle = $this->t('units.list_title');
         $this->render('units/list.twig', [
-            'units' => $this->units->paginate($filters, $pager),
+            'units' => $this->withTranslations($this->units->paginate($filters, $pager)),
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
         ]);
@@ -36,7 +36,7 @@ class UnitController extends BaseController
         $this->requireAdmin();
 
         $data = $this->collectInput();
-        if ($data['code'] === '' || $data['name'] === '') {
+        if ($data['code'] === '' || $this->defaultText($data['name']) === '') {
             $this->flashError($this->t('units.code_name_required'));
         } elseif ($this->units->codeExists($data['code'])) {
             $this->flashError($this->t('units.code_exists'));
@@ -52,7 +52,7 @@ class UnitController extends BaseController
         $this->requireAdmin();
 
         $data = $this->collectInput();
-        if ($data['code'] === '' || $data['name'] === '') {
+        if ($data['code'] === '' || $this->defaultText($data['name']) === '') {
             $this->flashError($this->t('units.code_name_required'));
         } elseif ($this->units->codeExists($data['code'], $id)) {
             $this->flashError($this->t('units.code_exists'));
@@ -76,8 +76,52 @@ class UnitController extends BaseController
     {
         return [
             'code' => trim($_POST['code'] ?? ''),
-            'name' => trim($_POST['name'] ?? ''),
+            'name' => $this->localized('name'),
             'sort_order' => (int) ($_POST['sort_order'] ?? 0),
         ];
+    }
+
+    /**
+     * Nyelvenkénti szövegek a POST-ból: name[<nyelv id>]. Sima stringet is
+     * elfogad, azt az alapnyelv sorába teszi.
+     *
+     * @return array<int, string>
+     */
+    private function localized(string $field): array
+    {
+        $raw = $_POST[$field] ?? [];
+        if (!is_array($raw)) {
+            $raw = trim((string) $raw) !== '' ? [\Cloudexus\Core\Language::defaultId() => $raw] : [];
+        }
+
+        $out = [];
+        foreach ($raw as $languageId => $value) {
+            $languageId = (int) $languageId;
+            if ($languageId > 0) {
+                $out[$languageId] = trim((string) $value);
+            }
+        }
+
+        return $out;
+    }
+
+    /** A szöveg az alapnyelven — ez a kötelező kitöltés feltétele. */
+    private function defaultText(array $localized): string
+    {
+        return $localized[\Cloudexus\Core\Language::defaultId()] ?? '';
+    }
+
+    /**
+     * Minden sorhoz hozzáteszi a nyelvenkénti megnevezéseket (names[nyelv id]),
+     * hogy a lista soronként minden nyelvet szerkeszthetően kiírhasson.
+     */
+    private function withTranslations(array $rows): array
+    {
+        foreach ($rows as &$row) {
+            $row['names'] = $this->units->descriptions((int) $row['id']);
+        }
+        unset($row);
+
+        return $rows;
     }
 }

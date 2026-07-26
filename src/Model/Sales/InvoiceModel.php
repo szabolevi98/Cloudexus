@@ -96,10 +96,14 @@ class InvoiceModel
     public function items(int $invoiceId): array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT ii.*, pr.sku, pr.name AS product_name, un.code AS unit
+            'SELECT ii.*,
+                    COALESCE(ii.product_sku, pr.sku) AS sku,
+                    COALESCE(ii.product_name, ' . \Cloudexus\Core\Translation::pick('pd', 'name') . ') AS product_name,
+                    COALESCE(ii.unit_code, un.code) AS unit
              FROM invoice_items ii
              JOIN products pr ON pr.id = ii.product_id
              LEFT JOIN units un ON un.id = pr.unit_id
+             ' . \Cloudexus\Core\Translation::join('product_description', 'product_id', 'pr.id', 'pd') . '
              WHERE ii.invoice_id = :invoice_id'
         );
         $stmt->execute(['invoice_id' => $invoiceId]);
@@ -155,8 +159,15 @@ class InvoiceModel
             $invoiceId = (int) $pdo->lastInsertId();
 
             $itemStmt = $pdo->prepare(
-                'INSERT INTO invoice_items (invoice_id, product_id, quantity, unit_price, line_total)
-                 VALUES (:invoice_id, :product_id, :quantity, :unit_price, :line_total)'
+                'INSERT INTO invoice_items
+                     (invoice_id, product_id, product_name, product_sku, unit_code, quantity, unit_price, line_total)
+                 SELECT :invoice_id, p.id, COALESCE(d.name, p.sku), p.sku, u.code,
+                        :quantity, :unit_price, :line_total
+                 FROM products p
+                 LEFT JOIN product_description d ON d.product_id = p.id
+                       AND d.language_id = ' . \Cloudexus\Core\Language::defaultId() . '
+                 LEFT JOIN units u ON u.id = p.unit_id
+                 WHERE p.id = :product_id'
             );
             $stockStmt = $pdo->prepare(
                 "INSERT INTO stock_movements (warehouse_id, product_id, type, quantity, note, created_by, created_at)

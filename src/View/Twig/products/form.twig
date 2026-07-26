@@ -27,17 +27,36 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="name" class="form-label">{{ t('products.name') }} *</label>
-                            <input type="text" id="name" name="name" class="form-control" value="{{ product.name|default('') }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="short_description" class="form-label">{{ t('products.short_description') }}</label>
-                            <input type="text" id="short_description" name="short_description" class="form-control" maxlength="255" value="{{ product.short_description|default('') }}">
-                        </div>
-                        <div class="mb-1">
-                            <label for="description" class="form-label">{{ t('products.long_description') }}</label>
-                            <textarea id="description" name="description" class="tinymce-editor form-control" rows="8">{{ product.description|default('') }}</textarea>
+                        {# Nyelvenkénti fülek: a név és a leírások nyelvenként tárolódnak.
+                           A kötelező kitöltés csak az alapnyelvre (az első fülre) vonatkozik. #}
+                        <ul class="nav nav-tabs mb-3" role="tablist">
+                            {% for lang in languages %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {{ loop.first ? 'active' : '' }}" type="button"
+                                            data-bs-toggle="tab" data-bs-target="#prod-lang-{{ lang.id }}"
+                                            role="tab" aria-selected="{{ loop.first ? 'true' : 'false' }}">{{ lang.name }}</button>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <div class="tab-content">
+                            {% for lang in languages %}
+                                <div class="tab-pane fade {{ loop.first ? 'show active' : '' }}" id="prod-lang-{{ lang.id }}" role="tabpanel">
+                                    <div class="mb-3">
+                                        <label for="name-{{ lang.id }}" class="form-label">{{ t('products.name') }}{{ loop.first ? ' *' : '' }}</label>
+                                        <input type="text" id="name-{{ lang.id }}" name="name[{{ lang.id }}]" class="form-control"
+                                               value="{{ descriptions[lang.id].name|default('') }}" {{ loop.first ? 'required' : '' }}>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="short_description-{{ lang.id }}" class="form-label">{{ t('products.short_description') }}</label>
+                                        <input type="text" id="short_description-{{ lang.id }}" name="short_description[{{ lang.id }}]"
+                                               class="form-control" maxlength="255" value="{{ descriptions[lang.id].short_description|default('') }}">
+                                    </div>
+                                    <div class="mb-1">
+                                        <label for="description-{{ lang.id }}" class="form-label">{{ t('products.long_description') }}</label>
+                                        <textarea id="description-{{ lang.id }}" name="description[{{ lang.id }}]" class="tinymce-editor form-control" rows="8">{{ descriptions[lang.id].description|default('') }}</textarea>
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -47,14 +66,23 @@
                     <div class="cx-card__header"><h2>{{ t('products.parameters') }}</h2></div>
                     <div class="cx-card__body">
                         <div id="attr-rows">
-                            {% for attr in product.attributes|default([]) %}
+                            {% for row in parameter_rows|default([]) %}
                                 <div class="row g-2 mb-2 attr-row">
                                     <div class="col-md-5">
                                         <select name="parameter_id[]" class="form-select form-select-sm cx-ajax-select" data-url="{{ base_url }}/parameters/search" data-placeholder="{{ t('products.param_name_placeholder') }}">
-                                            <option value="{{ attr.parameter_id }}" selected>{{ attr.attr_name }}</option>
+                                            <option value="{{ row.parameter_id }}" selected>{{ row.name }}</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-6"><input type="text" name="parameter_value[]" class="form-control form-control-sm" placeholder="{{ t('products.value_placeholder') }}" value="{{ attr.attr_value }}"></div>
+                                    <div class="col-md-6">
+                                        {% for lang in languages %}
+                                            <div class="input-group input-group-sm {{ not loop.last ? 'mb-1' : '' }}">
+                                                <span class="input-group-text" title="{{ lang.name }}">{{ lang.code|upper }}</span>
+                                                <input type="text" name="parameter_value[{{ lang.id }}][]" class="form-control"
+                                                       placeholder="{{ t('products.value_placeholder') }}"
+                                                       value="{{ row.values[lang.id]|default('') }}">
+                                            </div>
+                                        {% endfor %}
+                                    </div>
                                     <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger attr-remove"><i class="bi bi-x-lg"></i></button></div>
                                 </div>
                             {% endfor %}
@@ -65,7 +93,15 @@
                                 <div class="col-md-5">
                                     <select name="parameter_id[]" class="form-select form-select-sm cx-ajax-select" data-url="{{ base_url }}/parameters/search" data-placeholder="{{ t('products.param_name_placeholder') }}"></select>
                                 </div>
-                                <div class="col-md-6"><input type="text" name="parameter_value[]" class="form-control form-control-sm" placeholder="{{ t('products.value_placeholder') }}"></div>
+                                <div class="col-md-6">
+                                    {% for lang in languages %}
+                                        <div class="input-group input-group-sm {{ not loop.last ? 'mb-1' : '' }}">
+                                            <span class="input-group-text" title="{{ lang.name }}">{{ lang.code|upper }}</span>
+                                            <input type="text" name="parameter_value[{{ lang.id }}][]" class="form-control"
+                                                   placeholder="{{ t('products.value_placeholder') }}">
+                                        </div>
+                                    {% endfor %}
+                                </div>
                                 <div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger attr-remove"><i class="bi bi-x-lg"></i></button></div>
                             </div>
                         </template>
@@ -289,7 +325,7 @@
         (function () {
             if (typeof tinymce === 'undefined') return;
             tinymce.init({
-                selector: '#description',
+                selector: 'textarea.tinymce-editor',
                 base_url: '{{ base_url }}/assets/vendor/tinymce',
                 suffix: '.min',
                 height: 320,

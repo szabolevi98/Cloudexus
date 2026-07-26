@@ -12,16 +12,15 @@
 <body class="cx-auth-body">
 <div class="cx-auth-decor"></div>
 <div class="cx-auth-card">
-    {% set locale_names = {'hu': 'Magyar', 'en': 'English'} %}
     <details class="cx-auth-lang">
         <summary class="cx-auth-lang__toggle" role="button" aria-label="{{ t('nav.language') }}" title="{{ t('nav.language') }}">
             <i class="bi bi-translate" aria-hidden="true"></i>
         </summary>
         <div class="cx-auth-lang__menu">
-            {% for loc in available_locales %}
-                <a class="cx-auth-lang__item {{ loc == current_locale ? 'is-active' : '' }}" href="{{ base_url }}/lang/{{ loc }}" {{ loc == current_locale ? 'aria-current="true"' : '' }}>
-                    {{ locale_names[loc]|default(loc|upper) }}
-                    {% if loc == current_locale %}<i class="bi bi-check2" aria-hidden="true"></i>{% endif %}
+            {% for lang in languages %}
+                <a class="cx-auth-lang__item {{ lang.code == current_locale ? 'is-active' : '' }}" href="{{ base_url }}/lang/{{ lang.code }}" {{ lang.code == current_locale ? 'aria-current="true"' : '' }}>
+                    {{ lang.name }}
+                    {% if lang.code == current_locale %}<i class="bi bi-check2" aria-hidden="true"></i>{% endif %}
                 </a>
             {% endfor %}
         </div>

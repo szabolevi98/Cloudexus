@@ -3,33 +3,75 @@
 namespace Cloudexus\Model\Core;
 
 use Cloudexus\Core\DatabaseConnection;
+use Cloudexus\Core\Language;
+use Cloudexus\Core\Translation;
 
 class ProductModel
 {
     /** All product columns written by create()/update(). */
     private const FIELDS = [
-        'sku', 'barcode', 'name', 'short_description', 'description',
+        'sku', 'barcode',
         'category_id', 'unit_id', 'price', 'sale_price', 'vat_rate', 'min_stock',
         'width_mm', 'height_mm', 'depth_mm', 'weight_g',
         'is_active', 'is_webshop',
     ];
 
     /**
-     * A mértékegység kódja a units törzsből, `unit` néven. A termék csak
-     * unit_id-t tárol, de a lekérdezések a feloldott kódot is visszaadják, hogy
-     * a listák és a REST API változatlan `unit` mezőt kapjanak.
+     * A mértékegység kódja a units törzsből, `unit` néven, a neve pedig a
+     * unit_description táblából, `unit_name` néven. A termék csak unit_id-t
+     * tárol, de a lekérdezések a feloldott kódot is visszaadják, hogy a listák
+     * és a REST API változatlan `unit` mezőt kapjanak.
      */
-    private const UNIT_JOIN = 'LEFT JOIN units un ON un.id = p.unit_id';
-    private const UNIT_SELECT = 'un.code AS unit, un.name AS unit_name';
+    private static function unitJoin(): string
+    {
+        return 'LEFT JOIN units un ON un.id = p.unit_id'
+            . "\n             " . Translation::join('unit_description', 'unit_id', 'un.id', 'ud');
+    }
+
+    private static function unitSelect(): string
+    {
+        return 'un.code AS unit, ' . Translation::select('ud', 'name', 'unit_name');
+    }
+
+    /** A termék fordítható szövegei (name, short_description, description). */
+    private static function descJoin(): string
+    {
+        return Translation::join('product_description', 'product_id', 'p.id', 'pd');
+    }
+
+    private static function descSelect(): string
+    {
+        return Translation::select('pd', 'name');
+    }
+
+    private static function descSelectFull(): string
+    {
+        return Translation::select('pd', 'name')
+            . ', ' . Translation::select('pd', 'short_description')
+            . ', ' . Translation::select('pd', 'description');
+    }
+
+    /** A kategória neve a category_description táblából, `category_name` néven. */
+    private static function categoryJoin(): string
+    {
+        return 'LEFT JOIN categories c ON c.id = p.category_id'
+            . "\n             " . Translation::join('category_description', 'category_id', 'c.id', 'cd');
+    }
+
+    private static function categorySelect(): string
+    {
+        return Translation::select('cd', 'name', 'category_name');
+    }
 
     public function all(): array
     {
         return DatabaseConnection::get()->query(
-            'SELECT p.*, c.name AS category_name, ' . self::UNIT_SELECT . '
+            'SELECT p.*, ' . self::descSelectFull() . ', ' . self::categorySelect() . ', ' . self::unitSelect() . '
              FROM products p
-             LEFT JOIN categories c ON c.id = p.category_id
-             ' . self::UNIT_JOIN . '
-             ORDER BY p.name ASC'
+             ' . self::descJoin() . '
+             ' . self::categoryJoin() . '
+             ' . self::unitJoin() . '
+             ORDER BY name ASC'
         )->fetchAll();
     }
 
@@ -37,7 +79,10 @@ class ProductModel
     public function activeSelectList(): array
     {
         return DatabaseConnection::get()
-            ->query('SELECT id, sku, name FROM products WHERE is_active = 1 ORDER BY name ASC')
+            ->query('SELECT p.id, p.sku, ' . self::descSelect() . '
+                     FROM products p
+                     ' . self::descJoin() . '
+                     WHERE p.is_active = 1 ORDER BY name ASC')
             ->fetchAll();
     }
 
@@ -48,8 +93,11 @@ class ProductModel
         $like = '%' . $q . '%';
 
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT id, sku, name FROM products
-             WHERE is_active = 1 AND (sku LIKE :q1 OR name LIKE :q2 OR barcode LIKE :q3)
+            'SELECT p.id, p.sku, ' . self::descSelect() . '
+             FROM products p
+             ' . self::descJoin() . '
+             WHERE p.is_active = 1
+               AND (p.sku LIKE :q1 OR ' . Translation::pick('pd', 'name') . ' LIKE :q2 OR p.barcode LIKE :q3)
              ORDER BY name ASC LIMIT :lim OFFSET :off'
         );
         $stmt->bindValue('q1', $like);
@@ -78,7 +126,10 @@ class ProductModel
         }
         $in = implode(',', $ids);
         $rows = DatabaseConnection::get()->query(
-            "SELECT id, sku, name FROM products WHERE id IN ($in)"
+            'SELECT p.id, p.sku, ' . self::descSelect() . '
+             FROM products p
+             ' . self::descJoin() . "
+             WHERE p.id IN ($in)"
         )->fetchAll();
 
         return array_map(fn($r) => ['id' => (int) $r['id'], 'text' => $r['sku'] . ' — ' . $r['name']], $rows);
@@ -92,8 +143,10 @@ class ProductModel
     public function findById(int $id): ?array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT p.*, ' . self::UNIT_SELECT . '
-             FROM products p ' . self::UNIT_JOIN . '
+            'SELECT p.*, ' . self::descSelectFull() . ', ' . self::unitSelect() . '
+             FROM products p
+             ' . self::descJoin() . '
+             ' . self::unitJoin() . '
              WHERE p.id = :id LIMIT 1'
         );
         $stmt->execute(['id' => $id]);
@@ -220,18 +273,33 @@ class ProductModel
     }
 
     /**
-     * A termék paraméterei. A név a parameters törzsből oldódik fel; a kifelé
-     * adott kulcsok (attr_name / attr_value) szándékosan a korábbiak, hogy a
-     * REST API válasza ne változzon — a parameter_id új mezőként jön mellé.
+     * A termék paraméterei. A név a parameter_description táblából oldódik fel;
+     * a kifelé adott kulcsok (attr_name / attr_value) szándékosan a korábbiak,
+     * hogy a REST API válasza ne változzon.
+     *
+     * Az érték magán a product_parameters táblán van, nyelvenként egy sorral.
+     * A választott nyelv sora nyer; ha a paraméternek abban a nyelvben nincs
+     * értéke, az alapnyelvi sor jön helyette (ezt szűri az önmagára mutató
+     * LEFT JOIN: csak akkor engedi be az alapnyelvi sort, ha a választott
+     * nyelvben nincs párja). Így minden paraméter pontosan egyszer szerepel.
      */
     public function attributes(int $productId): array
     {
+        $lang = Language::id();
+        $default = Language::defaultId();
+
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT pp.id, pp.product_id, pp.parameter_id, pa.name AS attr_name,
+            'SELECT pp.id, pp.product_id, pp.parameter_id, ' . Translation::select('pad', 'name', 'attr_name') . ',
                     pp.value AS attr_value, pp.sort_order, pp.created_at, pp.updated_at
              FROM product_parameters pp
              JOIN parameters pa ON pa.id = pp.parameter_id
+             ' . Translation::join('parameter_description', 'parameter_id', 'pa.id', 'pad') . '
+             LEFT JOIN product_parameters ppc
+                    ON ppc.product_id = pp.product_id
+                   AND ppc.parameter_id = pp.parameter_id
+                   AND ppc.language_id = ' . $lang . '
              WHERE pp.product_id = :id
+               AND (pp.language_id = ' . $lang . ' OR (pp.language_id = ' . $default . ' AND ppc.id IS NULL))
              ORDER BY pp.sort_order ASC, pp.id ASC'
         );
         $stmt->execute(['id' => $productId]);
@@ -274,7 +342,7 @@ class ProductModel
         $params = [];
 
         if ($filters['q'] !== '') {
-            $where[] = '(p.sku LIKE :q1 OR p.name LIKE :q2 OR p.barcode LIKE :q3)';
+            $where[] = '(p.sku LIKE :q1 OR ' . Translation::pick('pd', 'name') . ' LIKE :q2 OR p.barcode LIKE :q3)';
             $params['q1'] = '%' . $filters['q'] . '%';
             $params['q2'] = '%' . $filters['q'] . '%';
             $params['q3'] = '%' . $filters['q'] . '%';
@@ -297,23 +365,30 @@ class ProductModel
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM products p $whereSql");
+        // A COUNT ugyanazokat a fordítás-joinokat kapja, mint a SELECT: a q szűrő
+        // a lefordított névre nézik, ami join nélkül nem létezik.
+        $count = DatabaseConnection::get()->prepare(
+            'SELECT COUNT(*) FROM products p
+             ' . self::descJoin() . "
+             $whereSql"
+        );
         $count->execute($params);
         $pager->total = (int) $count->fetchColumn();
         $pager->clamp();
 
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT p.*, c.name AS category_name, " . self::UNIT_SELECT . ", COALESCE(s.qty, 0) AS stock_qty,
+            "SELECT p.*, " . self::descSelectFull() . ", " . self::categorySelect() . ", " . self::unitSelect() . ", COALESCE(s.qty, 0) AS stock_qty,
                     (SELECT path FROM product_images pi WHERE pi.product_id = p.id ORDER BY is_primary DESC, sort_order ASC, id ASC LIMIT 1) AS thumb
              FROM products p
-             LEFT JOIN categories c ON c.id = p.category_id
-             " . self::UNIT_JOIN . "
+             " . self::descJoin() . "
+             " . self::categoryJoin() . "
+             " . self::unitJoin() . "
              LEFT JOIN (
                  SELECT product_id, SUM(CASE WHEN type = 'in' THEN quantity ELSE -quantity END) AS qty
                  FROM stock_movements GROUP BY product_id
              ) s ON s.product_id = p.id
              $whereSql
-             ORDER BY p.name ASC
+             ORDER BY name ASC
              LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
         );
         $stmt->execute($params);
@@ -348,6 +423,7 @@ class ProductModel
         $stmt->execute($this->bind($data));
 
         $id = (int) DatabaseConnection::get()->lastInsertId();
+        $this->saveDescriptions($id, $data);
         $this->syncRelations($id, $data);
 
         return $id;
@@ -362,7 +438,45 @@ class ProductModel
         );
         $stmt->execute($this->bind($data) + ['id' => $id]);
 
+        $this->saveDescriptions($id, $data);
         $this->syncRelations($id, $data);
+    }
+
+    /**
+     * A termék fordítható szövegei nyelvenként. A $data['name'],
+     * $data['short_description'] és $data['description'] nyelv szerint kulcsolt
+     * tömb (nyelv id => szöveg); egyetlen string is elfogadott, az az alapnyelv
+     * sorába kerül. Csak a beküldött nyelveket írja — a nem beküldött nyelvek
+     * meglévő fordítása marad.
+     */
+    public function saveDescriptions(int $productId, array $data): void
+    {
+        $names = self::perLanguage($data['name'] ?? null);
+        $shorts = self::perLanguage($data['short_description'] ?? null);
+        $longs = self::perLanguage($data['description'] ?? null);
+
+        $languageIds = array_unique(array_merge(array_keys($names), array_keys($shorts), array_keys($longs)));
+        if (!$languageIds) {
+            return;
+        }
+
+        $stmt = DatabaseConnection::get()->prepare(
+            'INSERT INTO product_description (product_id, language_id, name, short_description, description)
+             VALUES (:product_id, :language_id, :name, :short_description, :description)
+             ON DUPLICATE KEY UPDATE name = VALUES(name),
+                 short_description = VALUES(short_description),
+                 description = VALUES(description)'
+        );
+
+        foreach ($languageIds as $languageId) {
+            $stmt->execute([
+                'product_id' => $productId,
+                'language_id' => $languageId,
+                'name' => (string) ($names[$languageId] ?? ''),
+                'short_description' => ($shorts[$languageId] ?? '') !== '' ? $shorts[$languageId] : null,
+                'description' => ($longs[$languageId] ?? '') !== '' ? $longs[$languageId] : null,
+            ]);
+        }
     }
 
     public function delete(int $id): void
@@ -374,8 +488,10 @@ class ProductModel
     public function findByCode(string $code): ?array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT p.*, ' . self::UNIT_SELECT . '
-             FROM products p ' . self::UNIT_JOIN . '
+            'SELECT p.*, ' . self::descSelectFull() . ', ' . self::unitSelect() . '
+             FROM products p
+             ' . self::descJoin() . '
+             ' . self::unitJoin() . '
              WHERE (p.barcode = :c1 OR p.sku = :c2) AND p.is_active = 1 LIMIT 1'
         );
         $stmt->execute(['c1' => $code, 'c2' => $code]);
@@ -387,9 +503,10 @@ class ProductModel
     public function lowStock(int $limit = 10): array
     {
         return DatabaseConnection::get()->query(
-            "SELECT p.id, p.sku, p.name, " . self::UNIT_SELECT . ", p.min_stock, COALESCE(s.qty, 0) AS stock_qty
+            "SELECT p.id, p.sku, " . self::descSelect() . ", " . self::unitSelect() . ", p.min_stock, COALESCE(s.qty, 0) AS stock_qty
              FROM products p
-             " . self::UNIT_JOIN . "
+             " . self::descJoin() . "
+             " . self::unitJoin() . "
              LEFT JOIN (
                  SELECT product_id, SUM(CASE WHEN type = 'in' THEN quantity ELSE -quantity END) AS qty
                  FROM stock_movements GROUP BY product_id
@@ -451,14 +568,37 @@ class ProductModel
 
     // --- internals ---------------------------------------------------------
 
+    /**
+     * Fordítható szöveg nyelv szerint kulcsolt tömbje. Sima stringet is elfogad
+     * (az alapnyelvhez rendeli), így a még nem nyelvesített hívók sem törnek el.
+     *
+     * @return array<int, string>
+     */
+    private static function perLanguage(mixed $value): array
+    {
+        if ($value === null) {
+            return [];
+        }
+        if (!is_array($value)) {
+            return [Language::defaultId() => (string) $value];
+        }
+
+        $out = [];
+        foreach ($value as $languageId => $text) {
+            $languageId = (int) $languageId;
+            if ($languageId > 0) {
+                $out[$languageId] = (string) $text;
+            }
+        }
+
+        return $out;
+    }
+
     private function bind(array $data): array
     {
         return [
             'sku' => $data['sku'],
             'barcode' => ($data['barcode'] ?? '') !== '' ? $data['barcode'] : null,
-            'name' => $data['name'],
-            'short_description' => ($data['short_description'] ?? '') !== '' ? $data['short_description'] : null,
-            'description' => ($data['description'] ?? '') !== '' ? $data['description'] : null,
             'category_id' => $data['category_id'] ?: null,
             'unit_id' => ($data['unit_id'] ?? null) ?: null,
             'price' => $data['price'],
@@ -491,21 +631,40 @@ class ProductModel
         }
 
         // Paraméterek: párhuzamos tömbök, parameter_id[] / parameter_value[].
-        // Ugyanaz a paraméter egy terméken csak egyszer szerepelhet (uniq kulcs),
-        // ezért az ismételt választást az INSERT IGNORE eldobja.
+        // Az érték nyelvenként külön sor, ezért a parameter_value nyelv szerint
+        // kulcsolt tömbök tömbje: parameter_value[nyelv][sorindex]. Egy sima
+        // (nyelv nélküli) tömb az alapnyelvre kerül. Ugyanaz a paraméter egy
+        // terméken nyelvenként csak egyszer szerepelhet (uniq kulcs), ezért az
+        // ismételt választást az INSERT IGNORE eldobja.
         $pdo->prepare('DELETE FROM product_parameters WHERE product_id = :id')->execute(['id' => $id]);
         $parameterIds = $data['parameter_id'] ?? [];
         $values = $data['parameter_value'] ?? [];
+        if ($values && !is_array(reset($values))) {
+            $values = [Language::defaultId() => $values];
+        }
         $paramStmt = $pdo->prepare(
-            'INSERT IGNORE INTO product_parameters (product_id, parameter_id, value, sort_order)
-             VALUES (:p, :pid, :v, :s)'
+            'INSERT IGNORE INTO product_parameters (product_id, parameter_id, language_id, value, sort_order)
+             VALUES (:p, :pid, :lang, :v, :s)'
         );
         $sort = 0;
         foreach ($parameterIds as $i => $parameterId) {
             $parameterId = (int) $parameterId;
-            $value = trim((string) ($values[$i] ?? ''));
-            if ($parameterId > 0 && $value !== '') {
-                $paramStmt->execute(['p' => $id, 'pid' => $parameterId, 'v' => $value, 's' => $sort++]);
+            if ($parameterId <= 0) {
+                continue;
+            }
+            $rowSort = $sort++;
+            foreach ($values as $languageId => $languageValues) {
+                $languageId = (int) $languageId;
+                $value = trim((string) (is_array($languageValues) ? ($languageValues[$i] ?? '') : ''));
+                if ($languageId > 0 && $value !== '') {
+                    $paramStmt->execute([
+                        'p' => $id,
+                        'pid' => $parameterId,
+                        'lang' => $languageId,
+                        'v' => $value,
+                        's' => $rowSort,
+                    ]);
+                }
             }
         }
 
@@ -536,5 +695,65 @@ class ProductModel
                 $stmt->execute(['p' => $id, 'l' => $linkedId, 't' => $type]);
             }
         }
+    }
+
+    /**
+     * A termék szövegei minden nyelven, szerkesztéshez.
+     *
+     * @return array<int, array{name: string, short_description: ?string, description: ?string}>
+     */
+    public function descriptions(int $productId): array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT language_id, name, short_description, description
+             FROM product_description WHERE product_id = :id'
+        );
+        $stmt->execute(['id' => $productId]);
+
+        $out = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $out[(int) $row['language_id']] = [
+                'name' => (string) $row['name'],
+                'short_description' => $row['short_description'],
+                'description' => $row['description'],
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * A termék paraméterei szerkesztéshez: soronként a paraméter id-ja és az
+     * értéke minden nyelven. A sorrend a sort_order, hogy az űrlap ugyanabban a
+     * sorrendben jelenítse meg, ahogy mentve lett.
+     *
+     * @return list<array{parameter_id: int, name: string, values: array<int, string>}>
+     */
+    public function parameterRows(int $productId): array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT pp.parameter_id, pp.language_id, pp.value, pp.sort_order,
+                    ' . Translation::select('pad', 'name') . '
+             FROM product_parameters pp
+             ' . Translation::join('parameter_description', 'parameter_id', 'pp.parameter_id', 'pad') . '
+             WHERE pp.product_id = :id
+             ORDER BY pp.sort_order ASC, pp.parameter_id ASC'
+        );
+        $stmt->execute(['id' => $productId]);
+
+        $rows = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $parameterId = (int) $row['parameter_id'];
+            if (!isset($rows[$parameterId])) {
+                $rows[$parameterId] = [
+                    'parameter_id' => $parameterId,
+                    'name' => (string) $row['name'],
+                    'values' => [],
+                ];
+            }
+            $rows[$parameterId]['values'][(int) $row['language_id']] = (string) $row['value'];
+        }
+
+        return array_values($rows);
     }
 }

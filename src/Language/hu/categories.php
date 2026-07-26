@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'description' => 'Leírás',
+    'is_active' => 'Aktív',
     'list_title' => 'Termékkategóriák',
     'new' => 'Új kategória',
     'edit_title' => 'Kategória szerkesztése',

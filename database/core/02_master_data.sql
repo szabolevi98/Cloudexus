@@ -1,15 +1,16 @@
+-- A kategória neve és leírása fordítható, ezért a category_description
+-- táblában van (24_languages_and_translations.sql).
 CREATE TABLE IF NOT EXISTS categories (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(160) NOT NULL,
     parent_id INT UNSIGNED NULL,
     created_at DATETIME NOT NULL,
     CONSTRAINT fk_categories_parent FOREIGN KEY (parent_id) REFERENCES categories (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- A terméknév és a leírások szintén fordíthatók: product_description.
 CREATE TABLE IF NOT EXISTS products (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     sku VARCHAR(64) NOT NULL,
-    name VARCHAR(200) NOT NULL,
     category_id INT UNSIGNED NULL,
     -- A units törzsre hivatkozik; a külső kulcsot a 23-as migráció adja hozzá,
     -- mert a units tábla csak a 12-esben jön létre.

@@ -6,6 +6,7 @@ use Cloudexus\Core\Auth;
 use Cloudexus\Core\Config;
 use Cloudexus\Core\Currency;
 use Cloudexus\Core\Lang;
+use Cloudexus\Core\Language;
 use Cloudexus\Core\Session;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -57,6 +58,9 @@ abstract class BaseController
             'page_title' => $this->pageTitle,
             'current_locale' => Lang::locale(),
             'available_locales' => Lang::available(),
+            // A nyelvváltó a languages táblából töltődik, hogy a saját nevén
+            // jelenjen meg minden nyelv (Magyar, English, …).
+            'languages' => Language::all(),
             'flashes' => $flashes,
         ], $data));
     }
