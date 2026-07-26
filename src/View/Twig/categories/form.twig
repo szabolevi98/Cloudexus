@@ -7,9 +7,30 @@
         </div>
         <div class="cx-card__body">
             <form method="post" action="{{ base_url }}/categories{{ category ? '/' ~ category.id : '/create' }}">
-                <div class="mb-3">
-                    <label for="name" class="form-label">{{ t('common.name') }}</label>
-                    <input type="text" id="name" name="name" class="form-control" value="{{ category.name|default('') }}" required>
+                {# Nyelvenkénti fülek: a név és a leírás nyelvenként tárolódik. #}
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    {% for lang in languages %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {{ loop.first ? 'active' : '' }}" type="button"
+                                    data-bs-toggle="tab" data-bs-target="#cat-lang-{{ lang.id }}"
+                                    role="tab" aria-selected="{{ loop.first ? 'true' : 'false' }}">{{ lang.name }}</button>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div class="tab-content mb-3">
+                    {% for lang in languages %}
+                        <div class="tab-pane fade {{ loop.first ? 'show active' : '' }}" id="cat-lang-{{ lang.id }}" role="tabpanel">
+                            <div class="mb-3">
+                                <label for="name-{{ lang.id }}" class="form-label">{{ t('common.name') }}{{ loop.first ? ' *' : '' }}</label>
+                                <input type="text" id="name-{{ lang.id }}" name="name[{{ lang.id }}]" class="form-control"
+                                       value="{{ descriptions[lang.id].name|default('') }}" {{ loop.first ? 'required' : '' }}>
+                            </div>
+                            <div class="mb-0">
+                                <label for="description-{{ lang.id }}" class="form-label">{{ t('categories.description') }}</label>
+                                <textarea id="description-{{ lang.id }}" name="description[{{ lang.id }}]" class="form-control" rows="4">{{ descriptions[lang.id].description|default('') }}</textarea>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
                 <div class="mb-4">
                     <label for="parent_id" class="form-label">{{ t('categories.parent') }}</label>
@@ -21,6 +42,11 @@
                             {% endif %}
                         {% endfor %}
                     </select>
+                </div>
+                <div class="form-check mb-4">
+                    <input type="checkbox" id="is_active" name="is_active" class="form-check-input"
+                           {{ (category is null or category.is_active) ? 'checked' : '' }}>
+                    <label for="is_active" class="form-check-label">{{ t('categories.is_active') }}</label>
                 </div>
                 <button type="submit" class="btn btn-primary">{{ t('common.save') }}</button>
                 <a href="{{ base_url }}/categories" class="btn btn-outline-secondary">{{ t('common.cancel') }}</a>

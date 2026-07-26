@@ -252,4 +252,27 @@ class CategoryModel
     {
         DatabaseConnection::get()->prepare('DELETE FROM categories WHERE id = :id')->execute(['id' => $id]);
     }
+
+    /**
+     * A kategória szövegei minden nyelven, szerkesztéshez.
+     *
+     * @return array<int, array{name: string, description: ?string}>
+     */
+    public function descriptions(int $categoryId): array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT language_id, name, description FROM category_description WHERE category_id = :id'
+        );
+        $stmt->execute(['id' => $categoryId]);
+
+        $out = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $out[(int) $row['language_id']] = [
+                'name' => (string) $row['name'],
+                'description' => $row['description'],
+            ];
+        }
+
+        return $out;
+    }
 }

@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'description' => 'Description',
+    'is_active' => 'Active',
     'list_title' => 'Product categories',
     'new' => 'New category',
     'edit_title' => 'Edit category',
