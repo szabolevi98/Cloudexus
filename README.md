@@ -129,8 +129,9 @@ Cloudexus/
 │   └── sync_currency_rates.php  # MNB közép-árfolyamok frissítése (cronhoz)
 ├── config/              # config.ini (gitignore-olt) + .dist sablon
 ├── database/
-│   ├── core/            # sorszámozott SQL migrációk (01_core.sql, …); a 23-as
-│   │                    #   normalizál, a 24-es vezeti be a nyelveket
+│   ├── core/            # sorszámozott SQL migrációk; a korábbi 24 fájl egy
+│   │                    #   induló 01_base.sql-be lett összevonva, innentől
+│   │                    #   új sémaváltozás új, rákövetkező fájlként kerül be
 │   ├── migrate.php      # migrációfuttató
 │   ├── create_admin.php # kezdő admin létrehozása
 │   └── seed_demo.php    # újrafuttatható demo-adat generátor
@@ -179,10 +180,10 @@ Cloudexus/
   illetve `ON UPDATE CURRENT_TIMESTAMP` beállítással, tehát az adatbázis tartja
   karban őket, PHP-oldali kód nélkül. Erre épül a REST API `updated_since` szűrője.
 
-> A `database/migrate.php` **minden migrációt minden futtatáskor újra lefuttat**, ezért
-> minden migrációnak idempotensnek kell lennie (`IF [NOT] EXISTS`, `INSERT IGNORE`, illetve
-> `information_schema`-ellenőrzés mögé tett `PREPARE`/`EXECUTE`, ha egy már eldobott táblára
-> kellene hivatkozni). Új migráció írásakor ezt tartsd szem előtt.
+> A `database/migrate.php` a `database/core/` alatti összes `.sql` fájlt minden futtatáskor
+> újra lefuttatja, ezért mindegyiknek idempotensnek kell lennie (`IF [NOT] EXISTS`,
+> `INSERT IGNORE`). A séma jelenleg egyetlen fájlban van (`01_base.sql`); ha később bővül,
+> az új darab is kövesse ezt a szabályt.
 
 ## 🌐 Adatok nyelvesítése
 
