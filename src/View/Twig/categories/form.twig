@@ -27,7 +27,7 @@
                             </div>
                             <div class="mb-0">
                                 <label for="description-{{ lang.id }}" class="form-label">{{ t('categories.description') }}</label>
-                                <textarea id="description-{{ lang.id }}" name="description[{{ lang.id }}]" class="form-control" rows="4">{{ descriptions[lang.id].description|default('') }}</textarea>
+                                <textarea id="description-{{ lang.id }}" name="description[{{ lang.id }}]" class="tinymce-editor form-control" rows="4">{{ descriptions[lang.id].description|default('') }}</textarea>
                             </div>
                         </div>
                     {% endfor %}
@@ -53,4 +53,22 @@
             </form>
         </div>
     </div>
+
+    <script src="{{ base_url }}/assets/vendor/tinymce/tinymce.min.js"></script>
+    <script>
+        (function () {
+            if (typeof tinymce === 'undefined') return;
+            tinymce.init({
+                selector: 'textarea.tinymce-editor',
+                base_url: '{{ base_url }}/assets/vendor/tinymce',
+                suffix: '.min',
+                height: 320,
+                menubar: false,
+                branding: false,
+                plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste help wordcount',
+                toolbar: 'undo redo | styleselect | bold italic | bullist numlist outdent indent | link image table | removeformat code fullscreen',
+                content_style: 'body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}',
+            });
+        })();
+    </script>
 {% endblock %}
