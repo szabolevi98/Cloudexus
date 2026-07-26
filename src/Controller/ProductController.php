@@ -197,6 +197,8 @@ class ProductController extends BaseController
     {
         return [
             'product' => $product,
+            'descriptions' => $product ? $this->products->descriptions((int) $product['id']) : [],
+            'parameter_rows' => $product ? $this->products->parameterRows((int) $product['id']) : [],
             'units' => $this->units->all(),
             'warehouses' => (new WarehouseModel())->activeList(),
             'customer_groups' => $this->customerGroups->all(),
@@ -216,9 +218,9 @@ class ProductController extends BaseController
         return [
             'sku' => trim($_POST['sku'] ?? ''),
             'barcode' => trim($_POST['barcode'] ?? ''),
-            'name' => trim($_POST['name'] ?? ''),
-            'short_description' => trim($_POST['short_description'] ?? ''),
-            'description' => trim($_POST['description'] ?? ''),
+            'name' => $this->localized('name'),
+            'short_description' => $this->localized('short_description'),
+            'description' => $this->localized('description'),
             'category_id' => $categoryIds[0] ?? 0,
             'category_ids' => $categoryIds,
             'unit_id' => ((int) ($_POST['unit_id'] ?? 0)) ?: null,
@@ -233,7 +235,7 @@ class ProductController extends BaseController
             'is_active' => isset($_POST['is_active']) ? 1 : 0,
             'is_webshop' => isset($_POST['is_webshop']) ? 1 : 0,
             'parameter_id' => $_POST['parameter_id'] ?? [],
-            'parameter_value' => $_POST['parameter_value'] ?? [],
+            'parameter_value' => (array) ($_POST['parameter_value'] ?? []),
             'related_ids' => $_POST['related_ids'] ?? [],
             'substitute_ids' => $_POST['substitute_ids'] ?? [],
             'group_id' => $_POST['group_id'] ?? [],
@@ -246,7 +248,7 @@ class ProductController extends BaseController
     {
         $errors = [];
 
-        if ($data['sku'] === '' || $data['name'] === '') {
+        if ($data['sku'] === '' || $this->defaultText($data['name']) === '') {
             $errors[] = $this->t('products.required_fields');
         }
         if (!$errors && $this->products->skuExists($data['sku'], $excludeId)) {
@@ -321,5 +323,29 @@ class ProductController extends BaseController
                 'created_by' => Auth::id(),
             ]);
         }
+    }
+
+    /**
+     * Nyelvenkénti szövegek a POST-ból: name[<nyelv id>].
+     *
+     * @return array<int, string>
+     */
+    private function localized(string $field): array
+    {
+        $out = [];
+        foreach ((array) ($_POST[$field] ?? []) as $languageId => $value) {
+            $languageId = (int) $languageId;
+            if ($languageId > 0) {
+                $out[$languageId] = trim((string) $value);
+            }
+        }
+
+        return $out;
+    }
+
+    /** A szöveg az alapnyelven — ez a kötelező kitöltés feltétele. */
+    private function defaultText(array $localized): string
+    {
+        return $localized[\Cloudexus\Core\Language::defaultId()] ?? '';
     }
 }

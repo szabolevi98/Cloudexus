@@ -696,4 +696,64 @@ class ProductModel
             }
         }
     }
+
+    /**
+     * A termék szövegei minden nyelven, szerkesztéshez.
+     *
+     * @return array<int, array{name: string, short_description: ?string, description: ?string}>
+     */
+    public function descriptions(int $productId): array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT language_id, name, short_description, description
+             FROM product_description WHERE product_id = :id'
+        );
+        $stmt->execute(['id' => $productId]);
+
+        $out = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $out[(int) $row['language_id']] = [
+                'name' => (string) $row['name'],
+                'short_description' => $row['short_description'],
+                'description' => $row['description'],
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * A termék paraméterei szerkesztéshez: soronként a paraméter id-ja és az
+     * értéke minden nyelven. A sorrend a sort_order, hogy az űrlap ugyanabban a
+     * sorrendben jelenítse meg, ahogy mentve lett.
+     *
+     * @return list<array{parameter_id: int, name: string, values: array<int, string>}>
+     */
+    public function parameterRows(int $productId): array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT pp.parameter_id, pp.language_id, pp.value, pp.sort_order,
+                    ' . Translation::select('pad', 'name') . '
+             FROM product_parameters pp
+             ' . Translation::join('parameter_description', 'parameter_id', 'pp.parameter_id', 'pad') . '
+             WHERE pp.product_id = :id
+             ORDER BY pp.sort_order ASC, pp.parameter_id ASC'
+        );
+        $stmt->execute(['id' => $productId]);
+
+        $rows = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $parameterId = (int) $row['parameter_id'];
+            if (!isset($rows[$parameterId])) {
+                $rows[$parameterId] = [
+                    'parameter_id' => $parameterId,
+                    'name' => (string) $row['name'],
+                    'values' => [],
+                ];
+            }
+            $rows[$parameterId]['values'][(int) $row['language_id']] = (string) $row['value'];
+        }
+
+        return array_values($rows);
+    }
 }
