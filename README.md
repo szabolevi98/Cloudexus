@@ -29,6 +29,7 @@ A Cloudexus egy helyen kezeli a teljes kereskedelmi folyamatot: részletes term�
 - Partnertörzs (vevő / szállító / mindkettő) adószámmal, elérhetőségekkel és vevőcsoport-hozzárendeléssel
 - Kereshető, szűrhető, lapozható listák minden modulban, nagy listákhoz (termékek, kategóriák, partnerek) önállóan hosztolt Select2 AJAX kereséssel
 - Pénznemek elsődleges pénznemmel és váltószámokkal; az összegek mindig az elsődleges pénznemben jelennek meg
+- Nyelvenként tárolt terméknév, leírások, kategória-, mértékegység- és paraméternevek, nyelvi fülekkel a szerkesztőkben
 
 ### 🏭 Készletkezelés
 - Több raktár és telephely kezelése
@@ -59,7 +60,7 @@ A Cloudexus egy helyen kezeli a teljes kereskedelmi folyamatot: részletes term�
 - Szerepkör-alapú jogosultságok (admin / felhasználó), admin felhasználókezelés
 - Saját profil és jelszóváltás
 - CSRF-védelem minden űrlapon, HttpOnly + SameSite session süti
-- Kétnyelvű felület (magyar / angol) nyelvváltóval, a választás sütiben megjegyezve; az üzleti adatok (terméknevek, leírások) nem fordulnak
+- Kétnyelvű felület (magyar / angol) nyelvváltóval, a választás sütiben megjegyezve; a nyelvválasztás a törzsadatok szövegeire is érvényes (lásd [Adatok nyelvesítése](#-adatok-nyelvesítése)), a partner- és rendelésadatok viszont nem fordulnak
 - Pénznemek kezelése elsődleges pénznemmel és váltószámokkal, MNB közép­árfolyam-lekéréssel (gombbal vagy cronból)
 
 ---
@@ -115,7 +116,7 @@ php database/seed_demo.php
 
 Ezután nyisd meg a `config.ini`-ben beállított `base_url`-t (pl. `http://localhost/Cloudexus/web`), és jelentkezz be.
 
-> A `database/seed_demo.php` bármikor újrafuttatható: minden üzleti táblát kiürít (a felhasználókat nem), és valósághű magyar demo adatokkal tölti fel — 48 termék (köztük akciós áras és vevőcsoportos áras is), 17 partner, 3 vevőcsoport, 3 raktár, 300+ készletmozgás (köztük raktárközi átadások), 130 rendelés számlákkal és kiegyenlítésekkel, valamint 3 pénznem (forint elsődlegesként, euró, dollár).
+> A `database/seed_demo.php` bármikor újrafuttatható: minden üzleti táblát kiürít (a felhasználókat nem), és valósághű magyar demo adatokkal tölti fel — 48 termék (köztük akciós áras és vevőcsoportos áras is), 17 partner, 3 vevőcsoport, 3 raktár, 300+ készletmozgás (köztük raktárközi átadások), 130 rendelés számlákkal és kiegyenlítésekkel, valamint 3 pénznem (forint elsődlegesként, euró, dollár). A terméknevek, leírások és kategóriák magyarul és angolul is felkerülnek, hogy a nyelvváltás azonnal látszódjon.
 
 ## 📁 Projektstruktúra
 
@@ -164,6 +165,9 @@ Cloudexus/
   `product_parameters.parameter_id` → `parameters`; szabad szöveg csak az érték
   (`product_parameters.value`). A listák és a REST API a feloldott nevet is visszaadják
   (`unit`, `attr_name`), így a felület és az integrációk nem látják a normalizálást.
+- **A fordítható szöveg nincs a base táblán.** A `products`, `categories`, `units` és
+  `parameters` táblák nem tartalmaznak nevet/leírást — azok a `*_description` táblákban
+  vannak, nyelvenként egy sorral (lásd [Adatok nyelvesítése](#-adatok-nyelvesítése)).
 - **Egységes szókincs**: a paraméter-törzs táblája `parameters`, a kapcsolótábla
   `product_parameters` — nincs többé „attribute" és „parameter_names" kettősség.
 - **Minden táblán van `created_at` és `updated_at`**, `DEFAULT CURRENT_TIMESTAMP`
@@ -174,6 +178,41 @@ Cloudexus/
 > minden migrációnak idempotensnek kell lennie (`IF [NOT] EXISTS`, `INSERT IGNORE`, illetve
 > `information_schema`-ellenőrzés mögé tett `PREPARE`/`EXECUTE`, ha egy már eldobott táblára
 > kellene hivatkozni). Új migráció írásakor ezt tartsd szem előtt.
+
+## 🌐 Adatok nyelvesítése
+
+A felület feliratain túl a **törzsadatok szövegei is nyelvenként tárolódnak**, az
+OpenCart mintájára külön `*_description` táblákban:
+
+| Tábla | Fordítható mezők |
+|---|---|
+| `product_description` | terméknév, rövid és hosszú leírás |
+| `category_description` | kategórianév és leírás |
+| `unit_description` | mértékegység megnevezése (a kód nem fordul) |
+| `parameter_description` | paraméternév |
+| `product_parameters` | a paraméter értéke (`language_id` oszloppal, nem külön táblában) |
+
+A nyelvek a **Beállítások → Nyelvek** oldalon vehetők fel (megnevezés, kód, sorrend,
+állapot), az alapnyelvet a `settings.language.default` kulcs tartja — ugyanúgy, ahogy
+a pénznemeknél az elsődleges pénznemet.
+
+- **Egy nyelvváltó mindenre.** A topbar (és a bejelentkezés) nyelvváltója a `languages`
+  táblából töltődik, és egyszerre állítja a felirat és az adat nyelvét. Ha egy nyelvhez
+  nincs `src/Language/<kód>/` mappa, a feliratok az alapnyelven maradnak, az adatok
+  viszont már az új nyelven jönnek.
+- **Hiányzó fordítás esetén az alapnyelv látszik.** Minden lekérdezés két nyelvet kap
+  (a választottat és az alapnyelvet) és `COALESCE`-szal veszi a szöveget, így soha nem
+  jelenik meg névtelen termék. A `src/Core/Translation.php` adja ehhez az SQL-töredékeket.
+- **A kiállított bizonylat nem változik.** A rendelés, számla, szállítói rendelés és
+  bejövő számla tételsora rögzítéskor eltárolja a termék akkori nevét, cikkszámát és
+  mértékegységét (`product_name`, `product_sku`, `unit_code`) az alapnyelven — mint az
+  OpenCart `order_product` táblája. Így sem a nyelvváltás, sem egy későbbi átnevezés nem
+  írja át visszamenőleg. A készletmozgás és a leltár szándékosan élőben oldja fel a
+  nevet: azok belső üzemi nyilvántartások, nem kiadott dokumentumok.
+- A szerkesztő űrlapokon a terméknél és a kategóriánál **nyelvenkénti fülek** vannak, a
+  mértékegység- és paraméterlistákon soronként nyelvenként egy mező. A kötelező kitöltés
+  csak az alapnyelvre vonatkozik.
+- A partner- és rendelésadatok szándékosan **nem** fordíthatók (az OpenCartban sem azok).
 
 ## 💱 Pénznemek
 
@@ -227,6 +266,7 @@ történik — így akkor is helyes, ha nem a forint az elsődleges pénznem.
 - [x] REST API (token-alapú auth, olvasható katalógus + teljes CRUD partnerekre/rendelésekre, API-felhasználók admin + dokumentáció)
 - [x] Kétnyelvű felület (magyar / angol): nyelvváltó a topbarban és a bejelentkezésen, teljes UI-fordítás a rendszerüzenetekkel együtt
 - [x] Pénznemek: elsődleges pénznem + váltószámok, MNB közép-árfolyam lekérése gombbal és cronból, `/api/currencies` végpont
+- [x] Adatok nyelvesítése: `*_description` táblák, nyelvek admin felület, bizonylat-névmásolat, `?language=` az API-n
 
 **Következő lépcsők:**
 

@@ -49,6 +49,32 @@ The response has a `data` + `meta` shape:
 
 A single-item response is `{ "data": { ... }, "meta": { "currency": { ... } } }`.
 
+## Language
+
+Translatable text (product name and descriptions, category, unit and parameter names,
+parameter values) is stored per language. Pick one with the optional `language`
+parameter on any endpoint:
+
+- `?language=en` — return translatable text in that language
+- omitted or empty — the installation's default language
+- an unknown code returns `422`
+
+A record with no translation in the requested language falls back to the **default**
+language, so a product is never returned nameless. `meta.language` reports what you got:
+
+```json
+{ "meta": { "language": { "code": "en", "name": "English", "default": "hu" } } }
+```
+
+Available languages come from [`GET /api/languages`](#other-master-data).
+
+**Document lines are not translated.** Order and invoice lines store the product name,
+SKU and unit as they were when the line was saved, in the default language, so an issued
+document never changes because of a language switch or a later rename. `?language=` has
+no effect on them.
+
+Partner and order data is not translatable at all.
+
 ## Currency
 
 Every monetary amount in every response is expressed in the installation's **primary
@@ -71,6 +97,8 @@ Available on every list endpoint:
 - `?updated_since=YYYY-MM-DD HH:MM:SS` — only records changed since the given time
   (for delta sync; every record has both a `created_at` and an `updated_at` field, maintained
   automatically by the database)
+- `?language=<code>` — the language translatable text is returned in (see
+  [Language](#language)); empty or omitted means the default language
 
 ## Error format
 
@@ -170,6 +198,10 @@ their own master tables, and the response carries both the id and the resolved t
 The `unit`, `attr_name` and `attr_value` keys are unchanged from earlier versions, so existing
 integrations keep working — `unit_id` and `parameter_id` are additions.
 
+`name`, `short_description`, `description`, `unit_name` and the `attributes[].attr_name` /
+`attr_value` values are returned in the language selected by `?language=` (see
+[Language](#language)), falling back to the default language where a translation is missing.
+
 ### Categories
 
 | Method | Path | Description |
@@ -185,6 +217,7 @@ integrations keep working — `unit_id` and `parameter_id` are additions.
 | GET | `/api/parameter-names` | Deprecated alias of `/api/parameters`, kept so existing integrations keep working |
 | GET | `/api/units` | Units of measure. Filters: `q`, `updated_since` |
 | GET | `/api/currencies` | Currencies and exchange rates. Filters: `q`, `updated_since` |
+| GET | `/api/languages` | Languages, with `is_active` and `is_default`. Filters: `q`, `updated_since` |
 | GET | `/api/customer-groups` | Customer groups. Filters: `q`, `updated_since` |
 | GET | `/api/customer-groups/{id}` | Single customer group |
 | GET | `/api/warehouses` | Warehouses. Filters: `q`, `status`, `updated_since` |
