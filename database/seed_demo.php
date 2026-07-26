@@ -46,6 +46,7 @@ foreach ([
     // A termékhez kötött kapcsolótáblák is, különben az újraseedelés után árva
     // sorok maradnának (a TRUNCATE nem futtatja a CASCADE-et).
     'product_parameters', 'product_categories', 'product_images', 'product_links',
+    'product_description', 'category_description',
     'products', 'categories',
     'partners', 'warehouses', 'customer_groups', 'currencies',
 ] as $table) {
@@ -171,25 +172,60 @@ $unitIds = $pdo->query(
     "SELECT id FROM units WHERE code IN ('db', 'doboz', 'csomag', 'szett', 'karton')"
 )->fetchAll(PDO::FETCH_COLUMN);
 $parameterIds = $pdo->query(
-    "SELECT id FROM parameters WHERE name IN ('Gyártó', 'Garancia', 'Származási ország')
-     ORDER BY FIELD(name, 'Gyártó', 'Garancia', 'Származási ország')"
+    "SELECT d.parameter_id FROM parameter_description d
+     JOIN languages l ON l.id = d.language_id AND l.code = 'hu'
+     WHERE d.name IN ('Gyártó', 'Garancia', 'Származási ország')
+     ORDER BY FIELD(d.name, 'Gyártó', 'Garancia', 'Származási ország')"
 )->fetchAll(PDO::FETCH_COLUMN);
 
-foreach ($catalog as $categoryName => $items) {
-    $categoryIds[$categoryName] = $categoryModel->create(['name' => $categoryName, 'parent_id' => null]);
+// A nyelvek id-jai: a fordítható szövegeket nyelv szerint kulcsolt tömbben adjuk át.
+$langIds = [];
+foreach ($pdo->query('SELECT id, code FROM languages')->fetchAll() as $row) {
+    $langIds[$row['code']] = (int) $row['id'];
+}
+$hu = $langIds['hu'] ?? 1;
+$en = $langIds['en'] ?? $hu;
 
-    foreach ($items as [$name, $price]) {
+$origins = [
+    ['Magyarország', 'Hungary'], ['Németország', 'Germany'],
+    ['Kína', 'China'], ['Lengyelország', 'Poland'],
+];
+
+foreach ($catalog as $group) {
+    $categoryName = $group['hu'];
+    $categoryIds[$categoryName] = $categoryModel->create([
+        'name' => [$hu => $group['hu'], $en => $group['en']],
+        'description' => [
+            $hu => $group['hu'] . ' kategória termékei.',
+            $en => 'Products in the ' . $group['en'] . ' category.',
+        ],
+        'parent_id' => null,
+        'is_active' => 1,
+    ]);
+
+    foreach ($group['items'] as [$nameHu, $nameEn, $price]) {
         $sku = 'PRD-' . str_pad((string) $skuCounter++, 4, '0', STR_PAD_LEFT);
         // Minden negyedik termékre akciós ár kerül (10-25% kedvezmény).
         $salePrice = rand(1, 100) <= 25 ? round($price * (1 - rand(10, 25) / 100), -1) : null;
+        $brand = ['Bosch', 'Makita', 'Samsung', 'Generic', 'Xiaomi'][array_rand([0, 1, 2, 3, 4])];
+        $months = [12, 24, 36][array_rand([0, 1, 2])];
+        [$originHu, $originEn] = $origins[array_rand($origins)];
+
         $productId = $productModel->create([
             'sku' => $sku,
             // EAN-13-szerű demo vonalkód (599 = magyar prefix)
             'barcode' => '599' . str_pad((string) rand(0, 9999999999), 10, '0', STR_PAD_LEFT),
-            'name' => $name,
-            'short_description' => $name . ' — kiváló minőségű termék raktárról.',
-            'description' => "A(z) $name részletes leírása. Tartós, megbízható termék, amely megfelel a piaci elvárásoknak. "
-                . 'Ideális választás vállalati és lakossági felhasználásra egyaránt.',
+            'name' => [$hu => $nameHu, $en => $nameEn],
+            'short_description' => [
+                $hu => $nameHu . ' — kiváló minőségű termék raktárról.',
+                $en => $nameEn . ' — high quality product, in stock.',
+            ],
+            'description' => [
+                $hu => "A(z) $nameHu részletes leírása. Tartós, megbízható termék, amely megfelel a piaci elvárásoknak. "
+                    . 'Ideális választás vállalati és lakossági felhasználásra egyaránt.',
+                $en => "Detailed description of the $nameEn. A durable, reliable product that meets market expectations. "
+                    . 'An ideal choice for both business and household use.',
+            ],
             'category_id' => $categoryIds[$categoryName],
             'unit_id' => $unitIds[array_rand($unitIds)],
             'price' => $price,
@@ -205,9 +241,8 @@ foreach ($catalog as $categoryName => $items) {
             'is_webshop' => rand(1, 100) <= 85 ? 1 : 0,
             'parameter_id' => $parameterIds,
             'parameter_value' => [
-                ['Bosch', 'Makita', 'Samsung', 'Generic', 'Xiaomi'][array_rand([0, 1, 2, 3, 4])],
-                [12, 24, 36][array_rand([0, 1, 2])] . ' hónap',
-                ['Magyarország', 'Németország', 'Kína', 'Lengyelország'][array_rand([0, 1, 2, 3])],
+                $hu => [$brand, $months . ' hónap', $originHu],
+                $en => [$brand, $months . ' months', $originEn],
             ],
         ]);
         $products[] = ['id' => $productId, 'price' => $price];
@@ -234,12 +269,20 @@ $subcategories = [
 $subCount = 0;
 $subIdsByParent = []; // parentName => [childCategoryId, ...]
 foreach ($subcategories as $parentName => $children) {
-    foreach ($children as $childName) {
-        $childId = $categoryModel->create(['name' => $childName, 'parent_id' => $categoryIds[$parentName]]);
+    foreach ($children as [$childHu, $childEn]) {
+        $childId = $categoryModel->create([
+            'name' => [$hu => $childHu, $en => $childEn],
+            'parent_id' => $categoryIds[$parentName],
+            'is_active' => 1,
+        ]);
         $subIdsByParent[$parentName][] = $childId;
         // Egy-két unoka szint is, hogy többszintű útvonal is legyen.
-        if ($childName === 'Számítástechnika') {
-            $categoryModel->create(['name' => 'Perifériák', 'parent_id' => $childId]);
+        if ($childHu === 'Számítástechnika') {
+            $categoryModel->create([
+                'name' => [$hu => 'Perifériák', $en => 'Peripherals'],
+                'parent_id' => $childId,
+                'is_active' => 1,
+            ]);
             $subCount++;
         }
         $subCount++;
