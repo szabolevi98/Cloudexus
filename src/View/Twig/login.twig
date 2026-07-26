@@ -11,6 +11,7 @@
 </head>
 <body class="cx-auth-body">
 <div class="cx-auth-decor"></div>
+<div class="cx-auth-wrap">
 <div class="cx-auth-card">
     <details class="cx-auth-lang">
         <summary class="cx-auth-lang__toggle" role="button" aria-label="{{ t('nav.language') }}" title="{{ t('nav.language') }}">
@@ -57,6 +58,8 @@
         </div>
         <button type="submit" class="btn btn-primary w-100 py-2" id="login-submit">{{ t('auth.sign_in') }}</button>
     </form>
+</div>
+<p class="cx-auth-footer">Copyright &copy; {{ "now"|date("Y") }} <a href="https://github.com/szabolevi98/Cloudexus" target="_blank" rel="noopener">szabolevi98</a></p>
 </div>
 <script>
     // A <details> alapból nyitva marad külső kattintásra és Escape-re is,
