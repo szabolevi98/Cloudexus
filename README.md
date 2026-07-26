@@ -246,6 +246,22 @@ A szkript `0` kilépési kóddal jelzi a sikert, `1`-gyel a hibát, a részletek
 kerülnek. Az MNB minden árfolyamot forintban jegyez, ezért az átszámítás a forinton keresztül
 történik — így akkor is helyes, ha nem a forint az elsődleges pénznem.
 
+## 🔌 REST API
+
+Külső integrációkhoz (pl. webshop-szinkronizáláshoz) van egy REST API, `Bearer`
+tokenes hitelesítéssel. A tokeneket az **API → API-felhasználók** admin oldalon lehet létrehozni és kezelni.
+
+- Olvasásra: teljes katalógus (termékek, kategóriák, mértékegységek, paraméterek,
+  pénznemek, nyelvek, készlet, számlák, árazás)
+- Írásra is: partnerek és rendelések teljes CRUD-dal
+- Az összegek mindig az elsődleges pénznemben jönnek (`meta.currency`); a fordítható
+  szövegek nyelve az opcionális `?language=` paraméterrel választható (`meta.language`)
+- A válaszok és hibaüzenetek angolul érkeznek
+
+A teljes végpontlista, kérés/válasz formátumok és curl-példák a [web/API.md](web/API.md)
+fájlban vannak, a felületen pedig az **API → API dokumentáció** menüpont alatt is
+elérhetők.
+
 ## 🗺️ Roadmap
 
 **Kész:**
