@@ -3,6 +3,7 @@
 namespace Cloudexus\Controller\Api;
 
 use Cloudexus\Core\Currency;
+use Cloudexus\Core\Language;
 use Cloudexus\Core\Paginator;
 use Cloudexus\Model\Account\ApiUserModel;
 
@@ -24,6 +25,27 @@ abstract class ApiController
         if (!$this->apiUser) {
             $this->error('Invalid or missing API token.', 401);
         }
+
+        $this->applyLanguage();
+    }
+
+    /**
+     * Optional ?language=<code> selects the language translatable text is
+     * returned in. Empty or unknown falls back to the default language, and a
+     * record with no translation falls back to the default language too.
+     */
+    private function applyLanguage(): void
+    {
+        $requested = strtolower(trim($_GET['language'] ?? ''));
+        if ($requested === '') {
+            return;
+        }
+
+        if (!in_array($requested, Language::codes(), true)) {
+            $this->error('Unknown language code: ' . $requested . '. See GET /api/languages.', 422);
+        }
+
+        Language::init($requested);
     }
 
     protected function bearerToken(): string
@@ -92,17 +114,36 @@ abstract class ApiController
                 'total' => $pager->total,
                 'total_pages' => $pager->pages(),
                 'currency' => $this->currencyMeta(),
+                'language' => $this->languageMeta(),
             ],
         ]);
     }
 
-    /** Outputs a single resource plus the currency metadata. */
+    /** Outputs a single resource plus the currency and language metadata. */
     protected function resource(array $data, int $status = 200): never
     {
         $this->json([
             'data' => $data,
-            'meta' => ['currency' => $this->currencyMeta()],
+            'meta' => [
+                'currency' => $this->currencyMeta(),
+                'language' => $this->languageMeta(),
+            ],
         ], $status);
+    }
+
+    /**
+     * The language translatable text in the response is returned in. Records
+     * without a translation fall back to the default language.
+     *
+     * @return array{code: string, name: string, default: string}
+     */
+    protected function languageMeta(): array
+    {
+        return [
+            'code' => Language::code(),
+            'name' => (string) Language::current()['name'],
+            'default' => Language::defaultCode(),
+        ];
     }
 
     /**

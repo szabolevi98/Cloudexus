@@ -3,16 +3,21 @@
 namespace Cloudexus\Model\Core;
 
 use Cloudexus\Core\DatabaseConnection;
+use Cloudexus\Core\Language;
+use Cloudexus\Core\Translation;
 
 class CategoryModel
 {
     public function all(): array
     {
         return DatabaseConnection::get()->query(
-            'SELECT c.*, p.name AS parent_name
+            'SELECT c.*, ' . Translation::select('cd', 'name') . ', ' . Translation::select('cd', 'description') . ',
+                    ' . Translation::select('pcd', 'name', 'parent_name') . '
              FROM categories c
+             ' . Translation::join('category_description', 'category_id', 'c.id', 'cd') . '
              LEFT JOIN categories p ON p.id = c.parent_id
-             ORDER BY c.name ASC'
+             ' . Translation::join('category_description', 'category_id', 'p.id', 'pcd') . '
+             ORDER BY name ASC'
         )->fetchAll();
     }
 
@@ -30,7 +35,7 @@ class CategoryModel
         $params = [];
 
         if ($filters['q'] !== '') {
-            $conds[] = 'c.name LIKE :q';
+            $conds[] = Translation::pick('cd', 'name') . ' LIKE :q';
             $params['q'] = '%' . $filters['q'] . '%';
         }
         if (!empty($filters['updated_since'])) {
@@ -40,10 +45,13 @@ class CategoryModel
         $where = $conds ? 'WHERE ' . implode(' AND ', $conds) : '';
 
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT c.*, p.name AS parent_name,
+            'SELECT c.*, ' . Translation::select('cd', 'name') . ', ' . Translation::select('cd', 'description') . ',
+                    ' . Translation::select('pcd', 'name', 'parent_name') . ',
                     (SELECT COUNT(*) FROM products pr WHERE pr.category_id = c.id) AS product_count
              FROM categories c
+             ' . Translation::join('category_description', 'category_id', 'c.id', 'cd') . '
              LEFT JOIN categories p ON p.id = c.parent_id
+             ' . Translation::join('category_description', 'category_id', 'p.id', 'pcd') . "
              $where"
         );
         $stmt->execute($params);
@@ -80,7 +88,11 @@ class CategoryModel
      */
     public function paths(): array
     {
-        $rows = DatabaseConnection::get()->query('SELECT id, name, parent_id FROM categories')->fetchAll();
+        $rows = DatabaseConnection::get()->query(
+            'SELECT c.id, ' . Translation::select('cd', 'name') . ', c.parent_id
+             FROM categories c
+             ' . Translation::join('category_description', 'category_id', 'c.id', 'cd')
+        )->fetchAll();
 
         $byId = [];
         foreach ($rows as $row) {
@@ -139,7 +151,12 @@ class CategoryModel
 
     public function findById(int $id): ?array
     {
-        $stmt = DatabaseConnection::get()->prepare('SELECT * FROM categories WHERE id = :id LIMIT 1');
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT c.*, ' . Translation::select('cd', 'name') . ', ' . Translation::select('cd', 'description') . '
+             FROM categories c
+             ' . Translation::join('category_description', 'category_id', 'c.id', 'cd') . '
+             WHERE c.id = :id LIMIT 1'
+        );
         $stmt->execute(['id' => $id]);
         return $stmt->fetch() ?: null;
     }
@@ -147,26 +164,88 @@ class CategoryModel
     public function create(array $data): int
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'INSERT INTO categories (name, parent_id, created_at) VALUES (:name, :parent_id, NOW())'
+            'INSERT INTO categories (parent_id, is_active, created_at) VALUES (:parent_id, :is_active, NOW())'
         );
         $stmt->execute([
-            'name' => $data['name'],
             'parent_id' => $data['parent_id'] ?: null,
+            'is_active' => isset($data['is_active']) ? (int) (bool) $data['is_active'] : 1,
         ]);
 
-        return (int) DatabaseConnection::get()->lastInsertId();
+        $id = (int) DatabaseConnection::get()->lastInsertId();
+        $this->saveDescriptions($id, $data);
+
+        return $id;
     }
 
     public function update(int $id, array $data): void
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'UPDATE categories SET name = :name, parent_id = :parent_id WHERE id = :id'
+            'UPDATE categories SET parent_id = :parent_id, is_active = :is_active WHERE id = :id'
         );
         $stmt->execute([
             'id' => $id,
-            'name' => $data['name'],
             'parent_id' => ($data['parent_id'] && (int) $data['parent_id'] !== $id) ? $data['parent_id'] : null,
+            'is_active' => isset($data['is_active']) ? (int) (bool) $data['is_active'] : 1,
         ]);
+
+        $this->saveDescriptions($id, $data);
+    }
+
+    /**
+     * A kategória fordítható szövegei nyelvenként. A $data['name'] és
+     * $data['description'] nyelv szerint kulcsolt tömb (nyelv id => szöveg);
+     * egyetlen string is elfogadott, az az alapnyelv sorába kerül.
+     */
+    public function saveDescriptions(int $categoryId, array $data): void
+    {
+        $names = self::perLanguage($data['name'] ?? null);
+        $descriptions = self::perLanguage($data['description'] ?? null);
+
+        $languageIds = array_unique(array_merge(array_keys($names), array_keys($descriptions)));
+        if (!$languageIds) {
+            return;
+        }
+
+        $stmt = DatabaseConnection::get()->prepare(
+            'INSERT INTO category_description (category_id, language_id, name, description)
+             VALUES (:category_id, :language_id, :name, :description)
+             ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description)'
+        );
+
+        foreach ($languageIds as $languageId) {
+            $stmt->execute([
+                'category_id' => $categoryId,
+                'language_id' => $languageId,
+                'name' => (string) ($names[$languageId] ?? ''),
+                'description' => ($descriptions[$languageId] ?? '') !== '' ? $descriptions[$languageId] : null,
+            ]);
+        }
+    }
+
+    /**
+     * Fordítható szöveg nyelv szerint kulcsolt tömbje. Sima stringet is elfogad
+     * (az alapnyelvhez rendeli), így a még nem nyelvesített hívók sem törnek el.
+     *
+     * @return array<int, string>
+     */
+    private static function perLanguage(mixed $value): array
+    {
+        if ($value === null) {
+            return [];
+        }
+        if (!is_array($value)) {
+            return [Language::defaultId() => (string) $value];
+        }
+
+        $out = [];
+        foreach ($value as $languageId => $text) {
+            $languageId = (int) $languageId;
+            if ($languageId > 0) {
+                $out[$languageId] = (string) $text;
+            }
+        }
+
+        return $out;
     }
 
     public function delete(int $id): void

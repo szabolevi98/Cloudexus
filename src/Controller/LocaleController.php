@@ -3,18 +3,18 @@
 namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Config;
+use Cloudexus\Core\Language;
 
 /**
- * Switches the UI language by storing the choice in a long-lived cookie
- * (persists across sessions and login state), then redirects back.
+ * Switches the language by storing the choice in a long-lived cookie (persists
+ * across sessions and login state), then redirects back. The same choice drives
+ * both the interface texts and the language the data is read in.
  */
 class LocaleController
 {
     public function switch(string $code): void
     {
-        $available = array_map('trim', explode(',', (string) Config::get('app.available_locales', 'hu,en')));
-
-        if (in_array($code, $available, true)) {
+        if (in_array($code, Language::codes(), true)) {
             setcookie('cx_locale', $code, [
                 'expires' => time() + 31536000, // ~1 year
                 'path' => '/',

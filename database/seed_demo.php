@@ -95,46 +95,70 @@ echo "3 currencies (HUF elsődleges, EUR, USD).\n";
 echo "Seeding categories and products...\n";
 
 $catalog = [
-    'Kerékpár' => [
-        ['Városi kerékpár 26"', 89900], ['Városi kerékpár 28"', 99900],
-        ['Hegyikerékpár 27.5"', 149900], ['Elektromos kerékpár', 599900],
-        ['Gyerek kerékpár 20"', 54900], ['Országúti kerékpár', 349900],
-    ],
-    'Elektronika' => [
-        ['Vezeték nélküli egér', 7990], ['Mechanikus billentyűzet', 24990],
-        ['USB-C töltő 65W', 8990], ['Bluetooth fejhallgató', 19990],
-        ['Powerbank 20000mAh', 14990], ['24" monitor', 59990],
-    ],
-    'Irodai kellék' => [
-        ['A4 nyomtatópapír (500 lap)', 2490], ['Golyóstoll (12 db)', 1990],
-        ['Iratrendező', 990], ['Post-it jegyzettömb', 690],
-        ['Irattartó doboz', 1490], ['Vonalkód nyomtató', 89990],
-    ],
-    'Élelmiszer' => [
-        ['Bio zabpehely 1kg', 990], ['Extra szűz olívaolaj 1L', 3490],
-        ['Kávékapszula (30 db)', 4290], ['Tea válogatás', 1890],
-        ['Müzliszelet (24 db)', 3290], ['Ásványvíz 1.5L (6 db)', 990],
-    ],
-    'Sportfelszerelés' => [
-        ['Futócipő', 24990], ['Jóga szőnyeg', 6990],
-        ['Súlyzókészlet 20kg', 34990], ['Fitness gumiszalag szett', 4990],
-        ['Kerékpáros sisak', 12990], ['Sportkulacs 750ml', 2990],
-    ],
-    'Bútor' => [
-        ['Irodai szék', 39990], ['Íróasztal 120cm', 49990],
-        ['Könyvespolc', 29990], ['Ruhásszekrény', 89990],
-        ['Éjjeliszekrény', 19990], ['Konferenciaasztal', 129990],
-    ],
-    'Játék' => [
-        ['Építőjáték 500db', 14990], ['Társasjáték családi', 9990],
-        ['Puzzle 1000db', 4990], ['Távirányítós autó', 12990],
-        ['Rajzkészlet', 3990], ['Plüss figura', 3490],
-    ],
-    'Kertészet' => [
-        ['Kerti slag 20m', 6990], ['Fűnyíró elektromos', 79990],
-        ['Kerti szerszámkészlet', 17990], ['Virágföld 20L', 1990],
-        ['Öntözőkanna 10L', 2490], ['Kerti bútor szett', 149990],
-    ],
+    ['hu' => 'Kerékpár', 'en' => 'Bicycle', 'items' => [
+        ['Városi kerékpár 26"', 'City bike 26"', 89900],
+        ['Városi kerékpár 28"', 'City bike 28"', 99900],
+        ['Hegyikerékpár 27.5"', 'Mountain bike 27.5"', 149900],
+        ['Elektromos kerékpár', 'Electric bike', 599900],
+        ['Gyerek kerékpár 20"', "Kids' bike 20\"", 54900],
+        ['Országúti kerékpár', 'Road bike', 349900],
+    ]],
+    ['hu' => 'Elektronika', 'en' => 'Electronics', 'items' => [
+        ['Vezeték nélküli egér', 'Wireless mouse', 7990],
+        ['Mechanikus billentyűzet', 'Mechanical keyboard', 24990],
+        ['USB-C töltő 65W', 'USB-C charger 65W', 8990],
+        ['Bluetooth fejhallgató', 'Bluetooth headphones', 19990],
+        ['Powerbank 20000mAh', 'Power bank 20000mAh', 14990],
+        ['24" monitor', '24" monitor', 59990],
+    ]],
+    ['hu' => 'Irodai kellék', 'en' => 'Office supplies', 'items' => [
+        ['A4 nyomtatópapír (500 lap)', 'A4 printer paper (500 sheets)', 2490],
+        ['Golyóstoll (12 db)', 'Ballpoint pen (12 pcs)', 1990],
+        ['Iratrendező', 'Lever arch file', 990],
+        ['Post-it jegyzettömb', 'Sticky note pad', 690],
+        ['Irattartó doboz', 'Document storage box', 1490],
+        ['Vonalkód nyomtató', 'Barcode printer', 89990],
+    ]],
+    ['hu' => 'Élelmiszer', 'en' => 'Food', 'items' => [
+        ['Bio zabpehely 1kg', 'Organic oat flakes 1kg', 990],
+        ['Extra szűz olívaolaj 1L', 'Extra virgin olive oil 1L', 3490],
+        ['Kávékapszula (30 db)', 'Coffee capsules (30 pcs)', 4290],
+        ['Tea válogatás', 'Tea selection', 1890],
+        ['Müzliszelet (24 db)', 'Muesli bars (24 pcs)', 3290],
+        ['Ásványvíz 1.5L (6 db)', 'Mineral water 1.5L (6 pcs)', 990],
+    ]],
+    ['hu' => 'Sportfelszerelés', 'en' => 'Sports equipment', 'items' => [
+        ['Futócipő', 'Running shoes', 24990],
+        ['Jóga szőnyeg', 'Yoga mat', 6990],
+        ['Súlyzókészlet 20kg', 'Dumbbell set 20kg', 34990],
+        ['Fitness gumiszalag szett', 'Resistance band set', 4990],
+        ['Kerékpáros sisak', 'Cycling helmet', 12990],
+        ['Sportkulacs 750ml', 'Sports bottle 750ml', 2990],
+    ]],
+    ['hu' => 'Bútor', 'en' => 'Furniture', 'items' => [
+        ['Irodai szék', 'Office chair', 39990],
+        ['Íróasztal 120cm', 'Desk 120cm', 49990],
+        ['Könyvespolc', 'Bookshelf', 29990],
+        ['Ruhásszekrény', 'Wardrobe', 89990],
+        ['Éjjeliszekrény', 'Bedside table', 19990],
+        ['Konferenciaasztal', 'Conference table', 129990],
+    ]],
+    ['hu' => 'Játék', 'en' => 'Toys', 'items' => [
+        ['Építőjáték 500db', 'Building blocks 500pcs', 14990],
+        ['Társasjáték családi', 'Family board game', 9990],
+        ['Puzzle 1000db', 'Jigsaw puzzle 1000pcs', 4990],
+        ['Távirányítós autó', 'Remote control car', 12990],
+        ['Rajzkészlet', 'Drawing set', 3990],
+        ['Plüss figura', 'Plush toy', 3490],
+    ]],
+    ['hu' => 'Kertészet', 'en' => 'Gardening', 'items' => [
+        ['Kerti slag 20m', 'Garden hose 20m', 6990],
+        ['Fűnyíró elektromos', 'Electric lawnmower', 79990],
+        ['Kerti szerszámkészlet', 'Garden tool set', 17990],
+        ['Virágföld 20L', 'Potting soil 20L', 1990],
+        ['Öntözőkanna 10L', 'Watering can 10L', 2490],
+        ['Kerti bútor szett', 'Garden furniture set', 149990],
+    ]],
 ];
 
 $categoryIds = [];
@@ -193,9 +217,19 @@ foreach ($catalog as $categoryName => $items) {
 
 // Néhány alkategória, hogy a kategória-útvonal (Szülő > Gyerek) megjelenjen.
 $subcategories = [
-    'Kerékpár' => ['Városi kerékpár', 'Hegyi kerékpár', 'Elektromos kerékpár'],
-    'Elektronika' => ['Számítástechnika', 'Audió eszközök'],
-    'Bútor' => ['Irodabútor', 'Otthon'],
+    'Kerékpár' => [
+        ['Városi kerékpár', 'City bike'],
+        ['Hegyi kerékpár', 'Mountain bike'],
+        ['Elektromos kerékpár', 'Electric bike'],
+    ],
+    'Elektronika' => [
+        ['Számítástechnika', 'Computing'],
+        ['Audió eszközök', 'Audio devices'],
+    ],
+    'Bútor' => [
+        ['Irodabútor', 'Office furniture'],
+        ['Otthon', 'Home'],
+    ],
 ];
 $subCount = 0;
 $subIdsByParent = []; // parentName => [childCategoryId, ...]

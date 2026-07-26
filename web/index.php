@@ -4,6 +4,7 @@ use Cloudexus\Controller\Api\CategoryApiController;
 use Cloudexus\Controller\Api\CurrencyApiController;
 use Cloudexus\Controller\Api\CustomerGroupApiController;
 use Cloudexus\Controller\Api\InvoiceApiController;
+use Cloudexus\Controller\Api\LanguageApiController;
 use Cloudexus\Controller\Api\OrderApiController;
 use Cloudexus\Controller\Api\ParameterApiController;
 use Cloudexus\Controller\Api\PartnerApiController;
@@ -20,6 +21,7 @@ use Cloudexus\Controller\CustomerGroupController;
 use Cloudexus\Controller\DashboardController;
 use Cloudexus\Controller\IncomingInvoiceController;
 use Cloudexus\Controller\InvoiceController;
+use Cloudexus\Controller\LanguageController;
 use Cloudexus\Controller\LocaleController;
 use Cloudexus\Controller\LocationController;
 use Cloudexus\Controller\LoginController;
@@ -47,11 +49,15 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 Config::load(dirname(__DIR__) . '/config/config.ini');
 date_default_timezone_set(Config::get('app.timezone', 'Europe/Budapest'));
 
-// UI language: the user's saved choice (cx_locale cookie) or the config default.
+// Nyelv: a languages tábla az egyetlen forrás a felület és az adatok nyelvéhez
+// is. A választást a cx_locale süti tartja; a REST API a ?language= paraméterrel
+// írhatja felül (lásd ApiController). Ha a tábla még nem létezik (friss
+// telepítés a migráció előtt), a Language az alapnyelvre esik vissza.
+\Cloudexus\Core\Language::init($_COOKIE['cx_locale'] ?? null);
 \Cloudexus\Core\Lang::init(
-    (string) Config::get('app.default_locale', 'hu'),
-    array_map('trim', explode(',', (string) Config::get('app.available_locales', 'hu,en'))),
-    $_COOKIE['cx_locale'] ?? null
+    \Cloudexus\Core\Language::defaultCode(),
+    \Cloudexus\Core\Language::codes(),
+    \Cloudexus\Core\Language::code()
 );
 
 // Never leak PHP notices/warnings into responses (they would corrupt JSON,
@@ -153,6 +159,12 @@ $router->post('/units/create', fn() => (new UnitController())->create());
 $router->post('/units/{id}', fn($id) => (new UnitController())->update((int) $id));
 $router->post('/units/{id}/delete', fn($id) => (new UnitController())->delete((int) $id));
 
+$router->get('/languages', fn() => (new LanguageController())->list());
+$router->post('/languages/create', fn() => (new LanguageController())->create());
+$router->post('/languages/{id}', fn($id) => (new LanguageController())->update((int) $id));
+$router->post('/languages/{id}/default', fn($id) => (new LanguageController())->setDefault((int) $id));
+$router->post('/languages/{id}/delete', fn($id) => (new LanguageController())->delete((int) $id));
+
 $router->get('/currencies', fn() => (new CurrencyController())->list());
 $router->post('/currencies/create', fn() => (new CurrencyController())->create());
 $router->post('/currencies/sync', fn() => (new CurrencyController())->syncRates());
@@ -247,6 +259,7 @@ $router->get('/api/parameters', fn() => (new ParameterApiController())->index())
 $router->get('/api/parameter-names', fn() => (new ParameterApiController())->index());
 $router->get('/api/units', fn() => (new UnitApiController())->index());
 $router->get('/api/currencies', fn() => (new CurrencyApiController())->index());
+$router->get('/api/languages', fn() => (new LanguageApiController())->index());
 
 $router->get('/api/customer-groups', fn() => (new CustomerGroupApiController())->index());
 $router->get('/api/customer-groups/{id}', fn($id) => (new CustomerGroupApiController())->show((int) $id));

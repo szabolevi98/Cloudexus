@@ -3,13 +3,31 @@
 namespace Cloudexus\Model\Core;
 
 use Cloudexus\Core\DatabaseConnection;
+use Cloudexus\Core\Language;
 use Cloudexus\Core\Paginator;
+use Cloudexus\Core\Translation;
 
 class ParameterModel
 {
+    /** A paraméter neve a parameter_description táblából. */
+    private static function descJoin(): string
+    {
+        return Translation::join('parameter_description', 'parameter_id', 'pa.id', 'pad');
+    }
+
+    private static function descSelect(): string
+    {
+        return Translation::select('pad', 'name');
+    }
+
     public function all(): array
     {
-        return DatabaseConnection::get()->query('SELECT * FROM parameters ORDER BY name ASC')->fetchAll();
+        return DatabaseConnection::get()->query(
+            'SELECT pa.*, ' . self::descSelect() . '
+             FROM parameters pa
+             ' . self::descJoin() . '
+             ORDER BY name ASC'
+        )->fetchAll();
     }
 
     /** Filters: q (name). */
@@ -19,23 +37,33 @@ class ParameterModel
         $params = [];
 
         if ($filters['q'] !== '') {
-            $where[] = 'name LIKE :q';
+            $where[] = Translation::pick('pad', 'name') . ' LIKE :q';
             $params['q'] = '%' . $filters['q'] . '%';
         }
         if (!empty($filters['updated_since'])) {
-            $where[] = 'updated_at >= :updated_since';
+            $where[] = 'pa.updated_at >= :updated_since';
             $params['updated_since'] = $filters['updated_since'];
         }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-        $count = DatabaseConnection::get()->prepare("SELECT COUNT(*) FROM parameters $whereSql");
+        // A COUNT is megkapja a fordítás-joinokat, különben a q szűrő eltörik.
+        $count = DatabaseConnection::get()->prepare(
+            'SELECT COUNT(*) FROM parameters pa
+             ' . self::descJoin() . "
+             $whereSql"
+        );
         $count->execute($params);
         $pager->total = (int) $count->fetchColumn();
         $pager->clamp();
 
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT * FROM parameters $whereSql ORDER BY name ASC LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
+            'SELECT pa.*, ' . self::descSelect() . '
+             FROM parameters pa
+             ' . self::descJoin() . "
+             $whereSql
+             ORDER BY name ASC
+             LIMIT {$pager->perPage} OFFSET {$pager->offset()}"
         );
         $stmt->execute($params);
 
@@ -44,17 +72,27 @@ class ParameterModel
 
     public function findById(int $id): ?array
     {
-        $stmt = DatabaseConnection::get()->prepare('SELECT * FROM parameters WHERE id = :id LIMIT 1');
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT pa.*, ' . self::descSelect() . '
+             FROM parameters pa
+             ' . self::descJoin() . '
+             WHERE pa.id = :id LIMIT 1'
+        );
         $stmt->execute(['id' => $id]);
         return $stmt->fetch() ?: null;
     }
 
+    /**
+     * Foglalt-e már a név? A név nyelven belül egyedi, ezért a vizsgálat az
+     * aktuális nyelv sorait nézi (uniq_parameter_name_per_language).
+     */
     public function exists(string $name, ?int $excludeId = null): bool
     {
-        $sql = 'SELECT COUNT(*) FROM parameters WHERE name = :name';
+        $sql = 'SELECT COUNT(*) FROM parameter_description
+                WHERE language_id = ' . Language::id() . ' AND name = :name';
         $params = ['name' => $name];
         if ($excludeId !== null) {
-            $sql .= ' AND id != :id';
+            $sql .= ' AND parameter_id != :id';
             $params['id'] = $excludeId;
         }
         $stmt = DatabaseConnection::get()->prepare($sql);
@@ -62,19 +100,33 @@ class ParameterModel
         return (int) $stmt->fetchColumn() > 0;
     }
 
-    public function create(string $name): int
+    /**
+     * A paraméter maga csak egy id — a nevek a parameter_description táblába
+     * kerülnek. A $name nyelv szerint kulcsolt tömb (nyelv id => név); egyetlen
+     * string is elfogadott, az az alapnyelv sorába kerül.
+     *
+     * @param string|array<int, string> $name
+     */
+    public function create(string|array $name): int
     {
         DatabaseConnection::get()
-            ->prepare('INSERT INTO parameters (name, created_at) VALUES (:name, NOW())')
-            ->execute(['name' => $name]);
-        return (int) DatabaseConnection::get()->lastInsertId();
+            ->prepare('INSERT INTO parameters (created_at) VALUES (NOW())')
+            ->execute();
+        $id = (int) DatabaseConnection::get()->lastInsertId();
+
+        $this->saveDescriptions($id, $name);
+
+        return $id;
     }
 
-    public function update(int $id, string $name): void
+    /** @param string|array<int, string> $name */
+    public function update(int $id, string|array $name): void
     {
+        $this->saveDescriptions($id, $name);
+
         DatabaseConnection::get()
-            ->prepare('UPDATE parameters SET name = :name WHERE id = :id')
-            ->execute(['id' => $id, 'name' => $name]);
+            ->prepare('UPDATE parameters SET updated_at = NOW() WHERE id = :id')
+            ->execute(['id' => $id]);
     }
 
     public function delete(int $id): void
@@ -87,7 +139,11 @@ class ParameterModel
     {
         $offset = max(0, ($page - 1) * $perPage);
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT id, name FROM parameters WHERE name LIKE :q ORDER BY name ASC LIMIT :lim OFFSET :off'
+            'SELECT pa.id, ' . self::descSelect() . '
+             FROM parameters pa
+             ' . self::descJoin() . '
+             WHERE ' . Translation::pick('pad', 'name') . ' LIKE :q
+             ORDER BY name ASC LIMIT :lim OFFSET :off'
         );
         $stmt->bindValue('q', '%' . $q . '%');
         $stmt->bindValue('lim', $perPage + 1, \PDO::PARAM_INT);
@@ -103,5 +159,47 @@ class ParameterModel
             'results' => array_map(fn(array $r) => ['id' => (int) $r['id'], 'text' => $r['name']], $rows),
             'more' => $more,
         ];
+    }
+
+    /** @param string|array<int, string> $name */
+    public function saveDescriptions(int $parameterId, string|array $name): void
+    {
+        $names = self::perLanguage($name);
+        if (!$names) {
+            return;
+        }
+
+        $stmt = DatabaseConnection::get()->prepare(
+            'INSERT INTO parameter_description (parameter_id, language_id, name)
+             VALUES (:parameter_id, :language_id, :name)
+             ON DUPLICATE KEY UPDATE name = VALUES(name)'
+        );
+
+        foreach ($names as $languageId => $text) {
+            $stmt->execute(['parameter_id' => $parameterId, 'language_id' => $languageId, 'name' => $text]);
+        }
+    }
+
+    /**
+     * Fordítható szöveg nyelv szerint kulcsolt tömbje. Sima stringet is elfogad
+     * (az alapnyelvhez rendeli), így a még nem nyelvesített hívók sem törnek el.
+     *
+     * @return array<int, string>
+     */
+    private static function perLanguage(string|array $value): array
+    {
+        if (!is_array($value)) {
+            return $value !== '' ? [Language::defaultId() => $value] : [];
+        }
+
+        $out = [];
+        foreach ($value as $languageId => $text) {
+            $languageId = (int) $languageId;
+            if ($languageId > 0 && trim((string) $text) !== '') {
+                $out[$languageId] = (string) $text;
+            }
+        }
+
+        return $out;
     }
 }

@@ -1,0 +1,125 @@
+{% extends 'common/layout.twig' %}
+
+{% block content %}
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="cx-card">
+                <div class="cx-card__header"><h2>{{ t('languages.new') }}</h2></div>
+                <div class="cx-card__body">
+                    <form method="post" action="{{ base_url }}/languages/create">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">{{ t('languages.name') }}</label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="{{ t('languages.name_placeholder') }}" required>
+                            <div class="form-text">{{ t('languages.name_hint') }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="code" class="form-label">{{ t('languages.code') }}</label>
+                            <input type="text" id="code" name="code" class="form-control" placeholder="{{ t('languages.code_placeholder') }}" maxlength="5" required>
+                            <div class="form-text">{{ t('languages.code_hint')|raw }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sort_order" class="form-label">{{ t('languages.sort_order') }}</label>
+                            <input type="number" id="sort_order" name="sort_order" class="form-control" value="0">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input type="checkbox" id="is_active" name="is_active" class="form-check-input" checked>
+                            <label for="is_active" class="form-check-label">{{ t('languages.active') }}</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>{{ t('common.add') }}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="cx-card">
+                <div class="cx-card__header">
+                    <h2>{{ t('languages.list_title') }}</h2>
+                    <span class="text-muted small">{{ pager.total }} {{ t('common.pcs') }}</span>
+                </div>
+                <div class="cx-card__body p-0">
+                    <div class="alert alert-info rounded-0 border-0 border-bottom mb-0 small">
+                        <i class="bi bi-info-circle me-1"></i>{{ t('languages.default_explained') }}
+                        <div class="mt-1">{{ t('languages.documents_note') }}</div>
+                    </div>
+                    <form method="get" class="p-3 border-bottom">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-sm-6 col-lg-5">
+                                <label class="form-label small text-muted mb-1">{{ t('common.search') }}</label>
+                                <input type="text" name="q" class="form-control form-control-sm" placeholder="{{ t('languages.search_placeholder') }}" value="{{ filters.q }}">
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>{{ t('common.filter') }}</button>
+                                <a href="{{ base_url }}/languages" class="btn btn-sm btn-outline-secondary">{{ t('common.clear') }}</a>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 cx-table">
+                            <thead>
+                            <tr>
+                                <th style="width:90px;">{{ t('languages.code') }}</th>
+                                <th>{{ t('languages.name') }}</th>
+                                <th style="width:90px;">{{ t('languages.sort_order') }}</th>
+                                <th style="width:110px;">{{ t('languages.status') }}</th>
+                                <th style="width:130px;">{{ t('languages.default') }}</th>
+                                <th class="text-end">{{ t('common.actions') }}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in rows %}
+                                <tr>
+                                    <td><input type="text" name="code" form="lang-{{ row.id }}" class="form-control form-control-sm" value="{{ row.code }}" maxlength="5"></td>
+                                    <td>
+                                        <input type="text" name="name" form="lang-{{ row.id }}" class="form-control form-control-sm" value="{{ row.name }}">
+                                        {% if row.translation_count > 0 %}
+                                            <div class="form-text">{{ t('languages.translation_count', {'count': row.translation_count}) }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td><input type="number" name="sort_order" form="lang-{{ row.id }}" class="form-control form-control-sm" value="{{ row.sort_order }}"></td>
+                                    <td>
+                                        {% if row.is_default %}
+                                            <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">{{ t('languages.active') }}</span>
+                                        {% else %}
+                                            <div class="form-check mb-0">
+                                                <input type="checkbox" name="is_active" form="lang-{{ row.id }}" class="form-check-input" {{ row.is_active ? 'checked' : '' }}>
+                                                <label class="form-check-label small">{{ t('languages.active') }}</label>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if row.is_default %}
+                                            <span class="badge rounded-pill text-bg-primary">{{ t('languages.default_badge') }}</span>
+                                        {% else %}
+                                            <button type="submit" form="lang-default-{{ row.id }}" class="btn btn-sm btn-outline-secondary" title="{{ t('languages.set_default') }}">
+                                                <i class="bi bi-star"></i>
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <button type="submit" form="lang-{{ row.id }}" class="btn btn-sm btn-outline-primary">{{ t('common.save') }}</button>
+                                        {% if not row.is_default %}
+                                            <button type="submit" form="lang-del-{{ row.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ t('languages.delete_warning')|e('js') }}');"><i class="bi bi-trash"></i></button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="6" class="text-center text-muted py-4">{{ t('languages.none_found') }}</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% include 'common/pagination.twig' %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for row in rows %}
+        <form id="lang-{{ row.id }}" method="post" action="{{ base_url }}/languages/{{ row.id }}">
+            {% if row.is_default %}<input type="hidden" name="is_active" value="1">{% endif %}
+        </form>
+        <form id="lang-del-{{ row.id }}" method="post" action="{{ base_url }}/languages/{{ row.id }}/delete"></form>
+        <form id="lang-default-{{ row.id }}" method="post" action="{{ base_url }}/languages/{{ row.id }}/default"></form>
+    {% endfor %}
+{% endblock %}
