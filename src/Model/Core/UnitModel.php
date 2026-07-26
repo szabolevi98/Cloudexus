@@ -170,4 +170,24 @@ class UnitModel
     {
         DatabaseConnection::get()->prepare('DELETE FROM units WHERE id = :id')->execute(['id' => $id]);
     }
+
+    /**
+     * A megnevezés minden nyelven, szerkesztéshez.
+     *
+     * @return array<int, string> nyelv id => név
+     */
+    public function descriptions(int $unitId): array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT language_id, name FROM unit_description WHERE unit_id = :id'
+        );
+        $stmt->execute(['id' => $unitId]);
+
+        $out = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $out[(int) $row['language_id']] = (string) $row['name'];
+        }
+
+        return $out;
+    }
 }

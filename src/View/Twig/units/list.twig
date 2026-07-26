@@ -12,8 +12,14 @@
                             <input type="text" id="code" name="code" class="form-control" placeholder="{{ t('units.code_placeholder') }}" required>
                         </div>
                         <div class="mb-3">
-                            <label for="name" class="form-label">{{ t('common.name') }}</label>
-                            <input type="text" id="name" name="name" class="form-control" placeholder="{{ t('units.name_placeholder') }}" required>
+                            <label class="form-label">{{ t('common.name') }}</label>
+                            {# Nyelvenként egy mező; a kötelező kitöltés az alapnyelvre vonatkozik. #}
+                            {% for lang in languages %}
+                                <div class="input-group input-group-sm mb-1">
+                                    <span class="input-group-text" title="{{ lang.name }}">{{ lang.code|upper }}</span>
+                                    <input type="text" name="name[{{ lang.id }}]" class="form-control" placeholder="{{ loop.first ? t('units.name_placeholder') : '' }}" {{ loop.first ? 'required' : '' }}>
+                                </div>
+                            {% endfor %}
                         </div>
                         <div class="mb-3">
                             <label for="sort_order" class="form-label">{{ t('units.sort_order') }}</label>
@@ -50,7 +56,14 @@
                             {% for u in units %}
                                 <tr>
                                     <td><input type="text" name="code" form="unit-{{ u.id }}" class="form-control form-control-sm" value="{{ u.code }}"></td>
-                                    <td><input type="text" name="name" form="unit-{{ u.id }}" class="form-control form-control-sm" value="{{ u.name }}"></td>
+                                    <td>
+                                        {% for lang in languages %}
+                                            <div class="input-group input-group-sm {{ not loop.last ? 'mb-1' : '' }}">
+                                                <span class="input-group-text" title="{{ lang.name }}">{{ lang.code|upper }}</span>
+                                                <input type="text" name="name[{{ lang.id }}]" form="unit-{{ u.id }}" class="form-control" value="{{ u.names[lang.id]|default('') }}">
+                                            </div>
+                                        {% endfor %}
+                                    </td>
                                     <td><input type="number" name="sort_order" form="unit-{{ u.id }}" class="form-control form-control-sm" value="{{ u.sort_order }}"></td>
                                     <td class="text-end text-nowrap">
                                         <button type="submit" form="unit-{{ u.id }}" class="btn btn-sm btn-outline-primary">{{ t('common.save') }}</button>

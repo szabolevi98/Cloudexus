@@ -202,4 +202,24 @@ class ParameterModel
 
         return $out;
     }
+
+    /**
+     * A paraméternév minden nyelven, szerkesztéshez.
+     *
+     * @return array<int, string> nyelv id => név
+     */
+    public function descriptions(int $parameterId): array
+    {
+        $stmt = DatabaseConnection::get()->prepare(
+            'SELECT language_id, name FROM parameter_description WHERE parameter_id = :id'
+        );
+        $stmt->execute(['id' => $parameterId]);
+
+        $out = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $out[(int) $row['language_id']] = (string) $row['name'];
+        }
+
+        return $out;
+    }
 }

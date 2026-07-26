@@ -8,8 +8,14 @@
                 <div class="cx-card__body">
                     <form method="post" action="{{ base_url }}/parameters/create">
                         <div class="mb-3">
-                            <label for="name" class="form-label">{{ t('common.name') }}</label>
-                            <input type="text" id="name" name="name" class="form-control" required>
+                            <label class="form-label">{{ t('common.name') }}</label>
+                            {# Nyelvenként egy mező; a kötelező kitöltés az alapnyelvre vonatkozik. #}
+                            {% for lang in languages %}
+                                <div class="input-group input-group-sm mb-1">
+                                    <span class="input-group-text" title="{{ lang.name }}">{{ lang.code|upper }}</span>
+                                    <input type="text" name="name[{{ lang.id }}]" class="form-control" {{ loop.first ? 'required' : '' }}>
+                                </div>
+                            {% endfor %}
                         </div>
                         <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>{{ t('common.add') }}</button>
                     </form>
@@ -43,7 +49,14 @@
                                 <tr>
                                     <td>
                                         <form method="post" action="{{ base_url }}/parameters/{{ n.id }}" class="d-flex gap-2" style="max-width:400px;">
-                                            <input type="text" name="name" class="form-control form-control-sm" value="{{ n.name }}">
+                                            <div class="flex-grow-1">
+                                                {% for lang in languages %}
+                                                    <div class="input-group input-group-sm {{ not loop.last ? 'mb-1' : '' }}">
+                                                        <span class="input-group-text" title="{{ lang.name }}">{{ lang.code|upper }}</span>
+                                                        <input type="text" name="name[{{ lang.id }}]" class="form-control" value="{{ n.names[lang.id]|default('') }}">
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
                                             <button type="submit" class="btn btn-sm btn-outline-primary">{{ t('common.save') }}</button>
                                         </form>
                                     </td>
