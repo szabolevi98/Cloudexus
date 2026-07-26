@@ -34,7 +34,13 @@ class CategoryController extends BaseController
     public function search(): void
     {
         $this->requireAuth();
-        $this->json($this->categories->search(trim($_GET['q'] ?? ''), (int) ($_GET['page'] ?? 1)));
+        $excludeId = (int) ($_GET['exclude_id'] ?? 0);
+        $this->json($this->categories->search(
+            trim($_GET['q'] ?? ''),
+            (int) ($_GET['page'] ?? 1),
+            20,
+            $excludeId > 0 ? $excludeId : null
+        ));
     }
 
     public function createForm(): void
@@ -45,8 +51,6 @@ class CategoryController extends BaseController
         $this->render('categories/form.twig', [
             'category' => null,
             'descriptions' => [],
-            'categories' => $this->categories->all(),
-            'paths' => $this->categories->paths(),
         ]);
     }
 
@@ -79,8 +83,9 @@ class CategoryController extends BaseController
         $this->render('categories/form.twig', [
             'category' => $category,
             'descriptions' => $this->categories->descriptions($id),
-            'categories' => $this->categories->all(),
-            'paths' => $this->categories->paths(),
+            // Csak a jelenlegi szülő felirata kell az előtöltéshez — a teljes
+            // listát a Select2 AJAX kéri le, nem a szerver rendereli bele.
+            'parent_option' => $category['parent_id'] ? $this->categories->labelsForIds([$category['parent_id']]) : [],
         ]);
     }
 

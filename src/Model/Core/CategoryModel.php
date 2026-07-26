@@ -114,15 +114,24 @@ class CategoryModel
         return $paths;
     }
 
-    /** Select2 AJAX search: categories by name, text = full breadcrumb path. */
-    public function search(string $q, int $page = 1, int $perPage = 20): array
+    /**
+     * Select2 AJAX search: categories by name, text = full breadcrumb path.
+     * $excludeId (a szerkesztett kategória) és minden utódja kimarad, így a
+     * szülőválasztóban nem lehet önmagát vagy egy alkategóriáját választani —
+     * az utóbbi kört hozna létre a fában.
+     */
+    public function search(string $q, int $page = 1, int $perPage = 20, ?int $excludeId = null): array
     {
         $paths = $this->paths();
+        $excluded = $excludeId ? $this->subtreeIds($excludeId) : [];
         $offset = max(0, ($page - 1) * $perPage);
         $like = '%' . mb_strtolower($q) . '%';
 
         $matches = [];
         foreach ($paths as $id => $path) {
+            if (in_array((int) $id, $excluded, true)) {
+                continue;
+            }
             if ($q === '' || str_contains(mb_strtolower($path), trim($like, '%'))) {
                 $matches[] = ['id' => (int) $id, 'text' => $path];
             }
@@ -134,6 +143,32 @@ class CategoryModel
             'results' => array_values($slice),
             'more' => count($matches) > $offset + $perPage,
         ];
+    }
+
+    /** A megadott kategória id-ja és minden leszármazottjának id-ja. */
+    private function subtreeIds(int $id): array
+    {
+        $rows = DatabaseConnection::get()->query('SELECT id, parent_id FROM categories')->fetchAll();
+
+        $children = [];
+        foreach ($rows as $row) {
+            if ($row['parent_id'] !== null) {
+                $children[(int) $row['parent_id']][] = (int) $row['id'];
+            }
+        }
+
+        $ids = [$id];
+        $queue = [$id];
+        $guard = 0;
+        while ($queue && $guard++ < 10000) {
+            $current = array_shift($queue);
+            foreach ($children[$current] ?? [] as $childId) {
+                $ids[] = $childId;
+                $queue[] = $childId;
+            }
+        }
+
+        return $ids;
     }
 
     public function labelsForIds(array $ids): array

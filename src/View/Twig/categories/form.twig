@@ -36,12 +36,12 @@
                         </div>
                         <div class="mb-4">
                             <label for="parent_id" class="form-label">{{ t('categories.parent') }}</label>
-                            <select id="parent_id" name="parent_id" class="form-select">
-                                <option value="">{{ t('categories.parent_none') }}</option>
-                                {% for c in categories %}
-                                    {% if not category or c.id != category.id %}
-                                        <option value="{{ c.id }}" {{ category and category.parent_id == c.id ? 'selected' : '' }}>{{ paths[c.id] }}</option>
-                                    {% endif %}
+                            <select id="parent_id" name="parent_id" class="form-select cx-ajax-select"
+                                    data-url="{{ base_url }}/categories/search{{ category ? '?exclude_id=' ~ category.id : '' }}"
+                                    data-placeholder="{{ t('categories.parent_none') }}">
+                                <option value=""></option>
+                                {% for opt in parent_option|default([]) %}
+                                    <option value="{{ opt.id }}" selected>{{ opt.text }}</option>
                                 {% endfor %}
                             </select>
                         </div>
