@@ -296,4 +296,4 @@ elérhetők.
 
 ## 📄 Licenc
 
-Minden jog fenntartva. © 2026 Cloudexus
+[GNU AGPLv3](LICENSE) — © 2026 [szabolevi98](https://github.com/szabolevi98/Cloudexus)
