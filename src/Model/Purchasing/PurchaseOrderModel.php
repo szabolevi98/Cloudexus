@@ -39,10 +39,14 @@ class PurchaseOrderModel
     public function items(int $orderId): array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT poi.*, pr.sku, pr.name AS product_name, un.code AS unit
+            'SELECT poi.*,
+                    COALESCE(poi.product_sku, pr.sku) AS sku,
+                    COALESCE(poi.product_name, ' . \Cloudexus\Core\Translation::pick('pd', 'name') . ') AS product_name,
+                    COALESCE(poi.unit_code, un.code) AS unit
              FROM purchase_order_items poi
              JOIN products pr ON pr.id = poi.product_id
              LEFT JOIN units un ON un.id = pr.unit_id
+             ' . \Cloudexus\Core\Translation::join('product_description', 'product_id', 'pr.id', 'pd') . '
              WHERE poi.purchase_order_id = :order_id'
         );
         $stmt->execute(['order_id' => $orderId]);
@@ -133,8 +137,15 @@ class PurchaseOrderModel
             $orderId = (int) $pdo->lastInsertId();
 
             $itemStmt = $pdo->prepare(
-                'INSERT INTO purchase_order_items (purchase_order_id, product_id, quantity, unit_price, line_total)
-                 VALUES (:order_id, :product_id, :quantity, :unit_price, :line_total)'
+                'INSERT INTO purchase_order_items
+                     (purchase_order_id, product_id, product_name, product_sku, unit_code, quantity, unit_price, line_total)
+                 SELECT :order_id, p.id, COALESCE(d.name, p.sku), p.sku, u.code,
+                        :quantity, :unit_price, :line_total
+                 FROM products p
+                 LEFT JOIN product_description d ON d.product_id = p.id
+                       AND d.language_id = ' . \Cloudexus\Core\Language::defaultId() . '
+                 LEFT JOIN units u ON u.id = p.unit_id
+                 WHERE p.id = :product_id'
             );
             foreach ($items as $item) {
                 $itemStmt->execute([

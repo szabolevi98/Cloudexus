@@ -71,12 +71,13 @@ class StocktakingModel
         }
 
         $itemStmt = DatabaseConnection::get()->prepare(
-            'SELECT si.*, p.sku, p.name AS product_name, un.code AS unit
+            'SELECT si.*, p.sku, ' . \Cloudexus\Core\Translation::select('pd', 'name', 'product_name') . ', un.code AS unit
              FROM stocktaking_items si
              JOIN products p ON p.id = si.product_id
+             ' . \Cloudexus\Core\Translation::join('product_description', 'product_id', 'p.id', 'pd') . '
              LEFT JOIN units un ON un.id = p.unit_id
              WHERE si.stocktaking_id = :id
-             ORDER BY p.name ASC'
+             ORDER BY product_name ASC'
         );
         $itemStmt->execute(['id' => $id]);
         $row['items'] = $itemStmt->fetchAll();

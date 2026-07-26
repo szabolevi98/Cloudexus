@@ -7,6 +7,17 @@ use Cloudexus\Core\Lang;
 
 class OrderModel
 {
+
+    /** A kategórianév a category_description táblából, alapnyelvi visszaeséssel. */
+    private function categoryJoin(): string
+    {
+        return \Cloudexus\Core\Translation::join('category_description', 'category_id', 'c.id', 'cd');
+    }
+
+    private function categoryName(): string
+    {
+        return \Cloudexus\Core\Translation::pick('cd', 'name');
+    }
     public function all(): array
     {
         return DatabaseConnection::get()->query(
@@ -46,10 +57,14 @@ class OrderModel
     public function items(int $orderId): array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'SELECT oi.*, pr.sku, pr.name AS product_name, un.code AS unit
+            'SELECT oi.*,
+                    COALESCE(oi.product_sku, pr.sku) AS sku,
+                    COALESCE(oi.product_name, ' . \Cloudexus\Core\Translation::pick('pd', 'name') . ') AS product_name,
+                    COALESCE(oi.unit_code, un.code) AS unit
              FROM order_items oi
              JOIN products pr ON pr.id = oi.product_id
              LEFT JOIN units un ON un.id = pr.unit_id
+             ' . \Cloudexus\Core\Translation::join('product_description', 'product_id', 'pr.id', 'pd') . '
              WHERE oi.order_id = :order_id'
         );
         $stmt->execute(['order_id' => $orderId]);
@@ -140,13 +155,16 @@ class OrderModel
     public function topCategories(int $days = 30, int $limit = 6): array
     {
         $stmt = DatabaseConnection::get()->prepare(
-            "SELECT c.id AS category_id, COALESCE(c.name, :uncategorized) AS name, SUM(oi.line_total) AS value
+            "SELECT c.id AS category_id,
+                    COALESCE({$this->categoryName()}, :uncategorized) AS name,
+                    SUM(oi.line_total) AS value
              FROM order_items oi
              JOIN orders o ON o.id = oi.order_id AND o.status != 'cancelled'
              JOIN products p ON p.id = oi.product_id
              LEFT JOIN categories c ON c.id = p.category_id
+             {$this->categoryJoin()}
              WHERE o.order_date >= :from
-             GROUP BY c.id, c.name
+             GROUP BY c.id, {$this->categoryName()}
              ORDER BY value DESC
              LIMIT " . (int) $limit
         );
@@ -275,8 +293,15 @@ class OrderModel
     private function insertItems(int $orderId, array $items): void
     {
         $stmt = DatabaseConnection::get()->prepare(
-            'INSERT INTO order_items (order_id, product_id, quantity, unit_price, line_total)
-             VALUES (:order_id, :product_id, :quantity, :unit_price, :line_total)'
+            'INSERT INTO order_items
+                 (order_id, product_id, product_name, product_sku, unit_code, quantity, unit_price, line_total)
+             SELECT :order_id, p.id, COALESCE(d.name, p.sku), p.sku, u.code,
+                    :quantity, :unit_price, :line_total
+             FROM products p
+             LEFT JOIN product_description d ON d.product_id = p.id
+                   AND d.language_id = ' . \Cloudexus\Core\Language::defaultId() . '
+             LEFT JOIN units u ON u.id = p.unit_id
+             WHERE p.id = :product_id'
         );
 
         foreach ($items as $item) {
