@@ -60,11 +60,11 @@ class StockController extends BaseController
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
             'warehouses' => $this->warehouses->activeList(),
-            'products' => $this->products->all(),
             'locations' => $this->locations->activeWithWarehouse(),
             // ?product_id=… -val előre kiválasztható a termék (pl. a vezérlőpult
-            // alacsony készlet listájának "Bevételezés" gombjáról érkezve)
-            'selected_product_id' => (int) ($_GET['product_id'] ?? 0),
+            // alacsony készlet listájának "Bevételezés" gombjáról érkezve) — a
+            // Select2 AJAX választóhoz csak a kiválasztott termék felirata kell.
+            'selected_product' => $this->selectedProductOption(),
         ]);
     }
 
@@ -87,9 +87,8 @@ class StockController extends BaseController
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
             'warehouses' => $this->warehouses->activeList(),
-            'products' => $this->products->all(),
             'locations' => $this->locations->activeWithWarehouse(),
-            'selected_product_id' => (int) ($_GET['product_id'] ?? 0),
+            'selected_product' => $this->selectedProductOption(),
         ]);
     }
 
@@ -115,7 +114,6 @@ class StockController extends BaseController
         $this->pageTitle = $this->t('stock.transfer_title');
         $this->render('stock/transfer.twig', [
             'warehouses' => $this->warehouses->activeList(),
-            'products' => $this->products->all(),
             'locations' => $this->locations->activeWithWarehouse(),
             'transfers' => $this->movements->paginateTransfers($filters, $pager),
             'pager' => $pager->toTwig($filters),
@@ -273,6 +271,13 @@ class StockController extends BaseController
         $pager = new Paginator(20);
 
         return [$filters, $pager, $this->movements->paginateByType($type, $filters, $pager)];
+    }
+
+    /** A ?product_id=-ból előre kiválasztott termék {id,text} párja, ha van. */
+    private function selectedProductOption(): array
+    {
+        $id = (int) ($_GET['product_id'] ?? 0);
+        return $id > 0 ? $this->products->labelsForIds([$id]) : [];
     }
 
     private function createMovement(string $type, string $redirectPath): void

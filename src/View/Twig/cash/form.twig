@@ -32,12 +32,8 @@
                 </div>
                 <div class="mb-3">
                     <label for="partner_id" class="form-label">{{ t('cash.partner') }} <span class="text-muted small">{{ t('cash.optional') }}</span></label>
-                    <select id="partner_id" name="partner_id" class="form-select">
-                        <option value="">{{ t('cash.none_option') }}</option>
-                        {% for p in partners %}
-                            <option value="{{ p.id }}">{{ p.name }}</option>
-                        {% endfor %}
-                    </select>
+                    <select id="partner_id" name="partner_id" class="form-select cx-ajax-select"
+                            data-url="{{ base_url }}/partners/search" data-placeholder="{{ t('cash.none_option') }}"></select>
                 </div>
                 <div class="mb-3" id="invoice-field">
                     <label for="invoice_id" class="form-label">{{ t('cash.outgoing_invoice_to_settle') }} <span class="text-muted small">{{ t('cash.optional') }}</span></label>

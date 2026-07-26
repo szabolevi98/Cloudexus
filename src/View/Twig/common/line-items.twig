@@ -29,12 +29,8 @@
 <template id="line-item-template">
     <tr class="cx-line-item">
         <td>
-            <select name="product_id[]" class="form-select form-select-sm cx-line-item__product" required>
-                <option value="">{{ t('common.choose_product') }}</option>
-                {% for p in products %}
-                    <option value="{{ p.id }}" data-price="{{ p.price }}">{{ p.sku }} — {{ p.name }}</option>
-                {% endfor %}
-            </select>
+            <select name="product_id[]" class="form-select form-select-sm cx-line-item__product cx-ajax-select"
+                    data-url="{{ base_url }}/products/search" data-placeholder="{{ t('common.choose_product') }}" required></select>
         </td>
         <td><input type="number" step="0.001" min="0.001" name="quantity[]" class="form-control form-control-sm cx-line-item__quantity" required></td>
         <td><input type="number" step="0.01" min="0" name="unit_price[]" class="form-control form-control-sm cx-line-item__price" required></td>
@@ -99,8 +95,20 @@
 
     function addRow(data) {
         const row = template.content.firstElementChild.cloneNode(true);
+        const productSelect = row.querySelector('.cx-line-item__product');
 
-        row.querySelector('.cx-line-item__product').addEventListener('change', (e) => {
+        // Előtöltéshez (jelenleg nem használt út, de a JSON alak régről ezt
+        // engedi): a Select2 AJAX módhoz a kiválasztott opciónak már a DOM-ban
+        // kell lennie, mielőtt inicializáljuk, különben csak az id látszódna.
+        if (data && data.product_id) {
+            const opt = document.createElement('option');
+            opt.value = data.product_id;
+            opt.selected = true;
+            opt.textContent = data.text || ('#' + data.product_id);
+            productSelect.appendChild(opt);
+        }
+
+        productSelect.addEventListener('change', (e) => {
             const productId = e.target.value;
             if (!productId) {
                 return;
@@ -118,9 +126,9 @@
         });
 
         body.appendChild(row);
+        if (window.cxInitSelect2) window.cxInitSelect2(row);
 
         if (data) {
-            row.querySelector('.cx-line-item__product').value = data.product_id;
             row.querySelector('.cx-line-item__quantity').value = data.quantity;
             row.querySelector('.cx-line-item__price').value = data.unit_price;
             recalcRow(row);

@@ -47,7 +47,7 @@ class ProductController extends BaseController
             'products' => $this->products->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
-            'categories' => $this->categories->all(),
+            'category_option' => $filters['category_id'] ? $this->categories->labelsForIds([$filters['category_id']]) : [],
         ]);
     }
 

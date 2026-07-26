@@ -128,6 +128,7 @@ $router->get('/products/search', fn() => (new ProductController())->search());
 $router->get('/partners/export', fn() => (new PartnerController())->export());
 $router->get('/categories/search', fn() => (new CategoryController())->search());
 $router->get('/parameters/search', fn() => (new ParameterController())->search());
+$router->get('/partners/search', fn() => (new PartnerController())->search());
 $router->get('/pricing/effective', fn() => (new PricingController())->effective());
 
 $router->post('/products/{id}/images/{imageId}/delete', fn($id, $imageId) => (new ProductController())->deleteImage((int) $id, (int) $imageId));

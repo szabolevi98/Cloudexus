@@ -50,7 +50,7 @@ class InvoiceController extends BaseController
             'invoices' => $this->invoices->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
-            'partners' => $this->partners->customersAndBoth(),
+            'partner_option' => $filters['partner_id'] ? $this->partners->labelsForIds([$filters['partner_id']]) : [],
         ]);
     }
 
@@ -99,10 +99,10 @@ class InvoiceController extends BaseController
         $this->pageTitle = $this->t('invoices.new');
         $this->render('invoices/form.twig', [
             'invoice_number' => $this->invoices->nextInvoiceNumber(),
-            'partners' => $this->partners->customersAndBoth(),
-            'products' => $this->products->all(),
             'warehouses' => $this->warehouses->activeList(),
             'from_order' => $fromOrder,
+            // A rendelésből átvett partner felirata a Select2 AJAX előtöltéshez.
+            'partner_option' => $fromOrder ? $this->partners->labelsForIds([$fromOrder['partner_id']]) : [],
         ]);
     }
 

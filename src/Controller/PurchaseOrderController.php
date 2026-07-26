@@ -4,21 +4,18 @@ namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Auth;
 use Cloudexus\Model\Core\PartnerModel;
-use Cloudexus\Model\Core\ProductModel;
 use Cloudexus\Model\Purchasing\PurchaseOrderModel;
 
 class PurchaseOrderController extends BaseController
 {
     private PurchaseOrderModel $orders;
     private PartnerModel $partners;
-    private ProductModel $products;
 
     public function __construct()
     {
         parent::__construct();
         $this->orders = new PurchaseOrderModel();
         $this->partners = new PartnerModel();
-        $this->products = new ProductModel();
         $this->activeMenu = 'purchase-orders';
     }
 
@@ -40,7 +37,7 @@ class PurchaseOrderController extends BaseController
             'orders' => $this->orders->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
-            'partners' => $this->partners->suppliersAndBoth(),
+            'partner_option' => $filters['partner_id'] ? $this->partners->labelsForIds([$filters['partner_id']]) : [],
         ]);
     }
 
@@ -51,8 +48,6 @@ class PurchaseOrderController extends BaseController
         $this->pageTitle = $this->t('purchase_orders.new_full');
         $this->render('purchase-orders/form.twig', [
             'po_number' => $this->orders->nextPoNumber(),
-            'partners' => $this->partners->suppliersAndBoth(),
-            'products' => $this->products->all(),
         ]);
     }
 

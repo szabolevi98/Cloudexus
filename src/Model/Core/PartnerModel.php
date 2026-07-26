@@ -28,6 +28,74 @@ class PartnerModel
         return $stmt->fetch() ?: null;
     }
 
+    /**
+     * Select2 AJAX search: partners by name/tax number, text = name (+ tax
+     * number, ha van). $role szűkíthet 'customer' vagy 'supplier' szerepre —
+     * ilyenkor a 'both' típusú partnerek is bekerülnek, mint a
+     * customersAndBoth()/suppliersAndBoth() metódusoknál. is_active = 1 mindig.
+     */
+    public function search(string $q, int $page = 1, int $perPage = 20, ?string $role = null): array
+    {
+        $where = ['p.is_active = 1'];
+        $params = [];
+
+        if ($q !== '') {
+            $where[] = '(p.name LIKE :q1 OR p.tax_number LIKE :q2)';
+            $params['q1'] = '%' . $q . '%';
+            $params['q2'] = '%' . $q . '%';
+        }
+        if ($role === 'customer') {
+            $where[] = "p.type IN ('customer', 'both')";
+        } elseif ($role === 'supplier') {
+            $where[] = "p.type IN ('supplier', 'both')";
+        }
+
+        $offset = max(0, ($page - 1) * $perPage);
+        $whereSql = 'WHERE ' . implode(' AND ', $where);
+
+        $stmt = DatabaseConnection::get()->prepare(
+            "SELECT p.id, p.name, p.tax_number FROM partners p
+             $whereSql
+             ORDER BY p.name ASC LIMIT :lim OFFSET :off"
+        );
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->bindValue('lim', $perPage + 1, \PDO::PARAM_INT);
+        $stmt->bindValue('off', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll();
+
+        $more = count($rows) > $perPage;
+        $rows = array_slice($rows, 0, $perPage);
+
+        return [
+            'results' => array_map(fn($r) => [
+                'id' => (int) $r['id'],
+                'text' => $r['tax_number'] ? $r['name'] . ' — ' . $r['tax_number'] : $r['name'],
+            ], $rows),
+            'more' => $more,
+        ];
+    }
+
+    /** Resolves ids to {id,text} pairs, to preselect Select2 options on edit. */
+    public function labelsForIds(array $ids): array
+    {
+        $ids = array_values(array_filter(array_map('intval', $ids)));
+        if (!$ids) {
+            return [];
+        }
+        $in = implode(',', $ids);
+        $rows = DatabaseConnection::get()->query(
+            "SELECT id, name, tax_number FROM partners WHERE id IN ($in)"
+        )->fetchAll();
+
+        return array_map(fn($r) => [
+            'id' => (int) $r['id'],
+            'text' => $r['tax_number'] ? $r['name'] . ' — ' . $r['tax_number'] : $r['name'],
+        ], $rows);
+    }
+
     /** Partner resolved by exact tax number (for the REST API's /partners/tax/{taxNumber}). */
     public function findByTaxNumber(string $taxNumber): ?array
     {

@@ -4,7 +4,6 @@ namespace Cloudexus\Controller;
 
 use Cloudexus\Core\Auth;
 use Cloudexus\Model\Core\PartnerModel;
-use Cloudexus\Model\Core\ProductModel;
 use Cloudexus\Model\Core\WarehouseModel;
 use Cloudexus\Model\Purchasing\IncomingInvoiceModel;
 use Cloudexus\Model\Purchasing\PurchaseOrderModel;
@@ -13,7 +12,6 @@ class IncomingInvoiceController extends BaseController
 {
     private IncomingInvoiceModel $invoices;
     private PartnerModel $partners;
-    private ProductModel $products;
     private WarehouseModel $warehouses;
     private PurchaseOrderModel $orders;
 
@@ -22,7 +20,6 @@ class IncomingInvoiceController extends BaseController
         parent::__construct();
         $this->invoices = new IncomingInvoiceModel();
         $this->partners = new PartnerModel();
-        $this->products = new ProductModel();
         $this->warehouses = new WarehouseModel();
         $this->orders = new PurchaseOrderModel();
         $this->activeMenu = 'incoming-invoices';
@@ -46,7 +43,7 @@ class IncomingInvoiceController extends BaseController
             'invoices' => $this->invoices->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
-            'partners' => $this->partners->suppliersAndBoth(),
+            'partner_option' => $filters['partner_id'] ? $this->partners->labelsForIds([$filters['partner_id']]) : [],
         ]);
     }
 
@@ -62,10 +59,9 @@ class IncomingInvoiceController extends BaseController
         $this->pageTitle = $this->t('incoming_invoices.new');
         $this->render('incoming-invoices/form.twig', [
             'invoice_number' => $this->invoices->nextInvoiceNumber(),
-            'partners' => $this->partners->suppliersAndBoth(),
-            'products' => $this->products->all(),
             'warehouses' => $this->warehouses->activeList(),
             'from_order' => $fromOrder,
+            'partner_option' => $fromOrder ? $this->partners->labelsForIds([$fromOrder['partner_id']]) : [],
         ]);
     }
 

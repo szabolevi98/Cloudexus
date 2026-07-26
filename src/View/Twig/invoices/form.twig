@@ -23,10 +23,10 @@
                     </div>
                     <div class="col-md-3 mb-3">
                         <label for="partner_id" class="form-label">{{ t('common.partner') }}</label>
-                        <select id="partner_id" name="partner_id" class="form-select" required>
-                            <option value="">{{ t('invoices.choose_partner') }}</option>
-                            {% for p in partners %}
-                                <option value="{{ p.id }}" {{ from_order and from_order.partner_id == p.id ? 'selected' : '' }}>{{ p.name }}</option>
+                        <select id="partner_id" name="partner_id" class="form-select cx-ajax-select"
+                                data-url="{{ base_url }}/partners/search?role=customer" data-placeholder="{{ t('invoices.choose_partner') }}" required>
+                            {% for opt in partner_option|default([]) %}
+                                <option value="{{ opt.id }}" selected>{{ opt.text }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -65,8 +65,7 @@
                 </div>
 
                 {% include 'common/line-items.twig' with {
-                    products: products,
-                    prefill: from_order ? from_order.items|map(i => {product_id: i.product_id, quantity: i.quantity, unit_price: i.unit_price}) : [],
+                    prefill: from_order ? from_order.items|map(i => {product_id: i.product_id, quantity: i.quantity, unit_price: i.unit_price, text: i.sku ~ ' — ' ~ i.product_name}) : [],
                     partner_select_id: 'partner_id',
                     extra_cost_selector: '.cx-order-cost'
                 } %}

@@ -17,12 +17,8 @@
                         </div>
                         <div class="mb-3">
                             <label for="partner_id" class="form-label">{{ t('todos.partner') }} <span class="text-muted small">{{ t('todos.optional') }}</span></label>
-                            <select id="partner_id" name="partner_id" class="form-select">
-                                <option value="">{{ t('todos.none_option') }}</option>
-                                {% for p in partners %}
-                                    <option value="{{ p.id }}">{{ p.name }}</option>
-                                {% endfor %}
-                            </select>
+                            <select id="partner_id" name="partner_id" class="form-select cx-ajax-select"
+                                    data-url="{{ base_url }}/partners/search" data-placeholder="{{ t('todos.none_option') }}"></select>
                         </div>
                         <div class="mb-4">
                             <label for="assigned_to" class="form-label">{{ t('todos.assignee') }} <span class="text-muted small">{{ t('todos.optional') }}</span></label>

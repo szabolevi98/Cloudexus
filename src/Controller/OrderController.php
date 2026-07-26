@@ -5,7 +5,6 @@ namespace Cloudexus\Controller;
 use Cloudexus\Core\Auth;
 use Cloudexus\Model\Core\PartnerAddressModel;
 use Cloudexus\Model\Core\PartnerModel;
-use Cloudexus\Model\Core\ProductModel;
 use Cloudexus\Model\Sales\OrderModel;
 
 class OrderController extends BaseController
@@ -13,7 +12,6 @@ class OrderController extends BaseController
     private OrderModel $orders;
     private PartnerModel $partners;
     private PartnerAddressModel $addresses;
-    private ProductModel $products;
 
     public function __construct()
     {
@@ -21,7 +19,6 @@ class OrderController extends BaseController
         $this->orders = new OrderModel();
         $this->partners = new PartnerModel();
         $this->addresses = new PartnerAddressModel();
-        $this->products = new ProductModel();
         $this->activeMenu = 'orders';
     }
 
@@ -43,7 +40,7 @@ class OrderController extends BaseController
             'orders' => $this->orders->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
-            'partners' => $this->partners->customersAndBoth(),
+            'partner_option' => $filters['partner_id'] ? $this->partners->labelsForIds([$filters['partner_id']]) : [],
         ]);
     }
 
@@ -54,8 +51,6 @@ class OrderController extends BaseController
         $this->pageTitle = $this->t('orders.new_full');
         $this->render('orders/form.twig', [
             'order_number' => $this->orders->nextOrderNumber(),
-            'partners' => $this->partners->customersAndBoth(),
-            'products' => $this->products->all(),
             'partner_addresses' => $this->addresses->all(),
         ]);
     }

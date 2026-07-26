@@ -22,10 +22,10 @@
                     </div>
                     <div class="col-sm-3 col-lg-2">
                         <label class="form-label small text-muted mb-1">{{ t('products.category') }}</label>
-                        <select name="category_id" class="form-select form-select-sm">
-                            <option value="">{{ t('common.all') }}</option>
-                            {% for c in categories %}
-                                <option value="{{ c.id }}" {{ filters.category_id == c.id ? 'selected' : '' }}>{{ c.name }}</option>
+                        <select name="category_id" class="form-select form-select-sm cx-ajax-select"
+                                data-url="{{ base_url }}/categories/search" data-placeholder="{{ t('common.all') }}">
+                            {% for opt in category_option|default([]) %}
+                                <option value="{{ opt.id }}" selected>{{ opt.text }}</option>
                             {% endfor %}
                         </select>
                     </div>

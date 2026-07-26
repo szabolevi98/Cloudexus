@@ -53,7 +53,6 @@ class CashVoucherController extends BaseController
         $this->pageTitle = $this->t('cash.new_voucher');
         $this->render('cash/form.twig', [
             'voucher_number' => $this->vouchers->nextVoucherNumber(),
-            'partners' => $this->partners->all(),
             'unpaid_invoices' => $this->invoices->unpaidList(),
             'unpaid_incoming_invoices' => $this->incomingInvoices->unpaidList(),
         ]);

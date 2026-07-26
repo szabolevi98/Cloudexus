@@ -5,7 +5,6 @@ namespace Cloudexus\Controller;
 use Cloudexus\Core\Auth;
 use Cloudexus\Core\Paginator;
 use Cloudexus\Model\Account\UserModel;
-use Cloudexus\Model\Core\PartnerModel;
 use Cloudexus\Model\Crm\TodoModel;
 
 class TodoController extends BaseController
@@ -35,7 +34,6 @@ class TodoController extends BaseController
             'todos' => $this->todos->paginate($filters, $pager),
             'pager' => $pager->toTwig($filters),
             'filters' => $filters,
-            'partners' => (new PartnerModel())->all(),
             'users' => (new UserModel())->all(),
             'today' => date('Y-m-d'),
         ]);

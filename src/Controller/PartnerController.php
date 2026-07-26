@@ -25,6 +25,17 @@ class PartnerController extends BaseController
         $this->activeMenu = 'partners';
     }
 
+    /** Select2 AJAX endpoint. ?role=customer|supplier szűkíthet a partner típusára. */
+    public function search(): void
+    {
+        $this->requireAuth();
+
+        $role = $_GET['role'] ?? '';
+        $role = in_array($role, ['customer', 'supplier'], true) ? $role : null;
+
+        $this->json($this->partners->search(trim($_GET['q'] ?? ''), (int) ($_GET['page'] ?? 1), 20, $role));
+    }
+
     public function show(int $id): void
     {
         $this->requireAuth();

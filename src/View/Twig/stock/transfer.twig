@@ -41,12 +41,8 @@
                         </div>
                         <div class="mb-3">
                             <label for="product_id" class="form-label">{{ t('common.product') }}</label>
-                            <select id="product_id" name="product_id" class="form-select" required>
-                                <option value="">{{ t('common.choose_product') }}</option>
-                                {% for p in products %}
-                                    <option value="{{ p.id }}">{{ p.sku }} — {{ p.name }}</option>
-                                {% endfor %}
-                            </select>
+                            <select id="product_id" name="product_id" class="form-select cx-ajax-select"
+                                    data-url="{{ base_url }}/products/search" data-placeholder="{{ t('common.choose_product') }}" required></select>
                         </div>
                         <div class="mb-3">
                             <label for="quantity" class="form-label">{{ t('common.quantity') }}</label>
