@@ -20,20 +20,20 @@ return [
     'overview_none_found' => 'No stock matches the filter.',
 
     // Stock in
-    'in_title' => 'Goods receipt',
-    'in_new' => 'New receipt',
-    'in_list_title' => 'Receipts',
-    'in_submit' => 'Record receipt',
-    'in_none_found' => 'No receipt matches the filter.',
-    'in_created' => 'Goods receipt recorded.',
+    'in_title' => 'Stock in',
+    'in_new' => 'New stock in',
+    'in_list_title' => 'Stock in',
+    'in_submit' => 'Record stock in',
+    'in_none_found' => 'No stock-in record matches the filter.',
+    'in_created' => 'Stock in recorded.',
 
     // Stock out
-    'out_title' => 'Goods issue',
-    'out_new' => 'New issue',
-    'out_list_title' => 'Issues',
-    'out_submit' => 'Record issue',
-    'out_none_found' => 'No issue matches the filter.',
-    'out_created' => 'Goods issue recorded.',
+    'out_title' => 'Stock out',
+    'out_new' => 'New stock out',
+    'out_list_title' => 'Stock out',
+    'out_submit' => 'Record stock out',
+    'out_none_found' => 'No stock-out record matches the filter.',
+    'out_created' => 'Stock out recorded.',
 
     // Transfer between warehouses
     'transfer_title' => 'Warehouse transfer',
