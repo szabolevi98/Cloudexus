@@ -254,7 +254,11 @@ class PartnerController extends BaseController
         }
 
         $this->pageTitle = $this->t('partners.edit_title');
-        $this->render('partners/form.twig', ['partner' => $partner, 'customer_groups' => $this->customerGroups->all()]);
+        $this->render('partners/form.twig', [
+            'partner' => $partner,
+            'customer_groups' => $this->customerGroups->all(),
+            'addresses' => $this->addresses->forPartner($id),
+        ]);
     }
 
     public function update(int $id): void

@@ -44,57 +44,16 @@
                 </div>
                 <div class="cx-card__body">
                     {% for a in addresses %}
-                        <div class="pb-2 mb-2 {{ not loop.last ? 'border-bottom' : '' }}">
-                            <div class="row g-2">
-                                <div class="col-4">
-                                    <input type="text" name="country" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.country }}" placeholder="{{ t('partners.country') }}">
-                                </div>
-                                <div class="col-3">
-                                    <input type="text" name="postal_code" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.postal_code }}" placeholder="{{ t('partners.postal_code') }}">
-                                </div>
-                                <div class="col-5">
-                                    <input type="text" name="city" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.city }}" placeholder="{{ t('partners.city') }}">
-                                </div>
-                                <div class="col-8">
-                                    <input type="text" name="street" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.street }}" placeholder="{{ t('partners.street') }}">
-                                </div>
-                                <div class="col-4">
-                                    <input type="text" name="note" form="addr-{{ a.id }}" class="form-control form-control-sm" value="{{ a.note }}" placeholder="{{ t('common.note') }}">
-                                </div>
-                            </div>
-                            <div class="mt-2 text-end">
-                                <button type="submit" form="addr-{{ a.id }}" class="btn btn-sm btn-outline-primary">{{ t('common.save') }}</button>
-                                <button type="submit" form="addr-del-{{ a.id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ t('partners.confirm_delete_address')|e('js') }}');"><i class="bi bi-trash"></i></button>
-                            </div>
+                        <div class="pb-2 mb-2 small {{ not loop.last ? 'border-bottom' : '' }}">
+                            {% if a.country and a.country != 'Magyarország' %}{{ a.country }}, {% endif %}{{ a.postal_code }} {{ a.city }}, {{ a.street }}
+                            {% if a.note %}<span class="text-muted">({{ a.note }})</span>{% endif %}
                         </div>
                     {% else %}
                         <div class="text-muted small">{{ t('partners.no_addresses') }}</div>
                     {% endfor %}
-                    <form method="post" action="{{ base_url }}/partners/{{ partner.id }}/addresses" class="mt-3 pt-3 border-top">
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label small text-muted mb-1">{{ t('partners.country') }}</label>
-                                <input type="text" name="country" class="form-control form-control-sm" value="Magyarország">
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label small text-muted mb-1">{{ t('partners.postal_code') }}</label>
-                                <input type="text" name="postal_code" class="form-control form-control-sm" required>
-                            </div>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small text-muted mb-1">{{ t('partners.city') }}</label>
-                            <input type="text" name="city" class="form-control form-control-sm" required>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small text-muted mb-1">{{ t('partners.street') }}</label>
-                            <input type="text" name="street" class="form-control form-control-sm" required>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small text-muted mb-1">{{ t('common.note') }} <span class="text-muted">{{ t('partners.address_note_hint') }}</span></label>
-                            <input type="text" name="note" class="form-control form-control-sm">
-                        </div>
-                        <button type="submit" class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-plus-lg me-1"></i>{{ t('partners.add_address') }}</button>
-                    </form>
+                    <a href="{{ base_url }}/partners/{{ partner.id }}/edit" class="btn btn-sm btn-outline-secondary w-100 mt-2">
+                        <i class="bi bi-pencil me-1"></i>{{ t('partners.edit_addresses') }}
+                    </a>
                 </div>
             </div>
 
@@ -167,9 +126,4 @@
             </div>
         </div>
     </div>
-
-    {% for a in addresses %}
-        <form id="addr-{{ a.id }}" method="post" action="{{ base_url }}/partners/{{ partner.id }}/addresses/{{ a.id }}"></form>
-        <form id="addr-del-{{ a.id }}" method="post" action="{{ base_url }}/partners/{{ partner.id }}/addresses/{{ a.id }}/delete"></form>
-    {% endfor %}
 {% endblock %}

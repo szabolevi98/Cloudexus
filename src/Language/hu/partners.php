@@ -29,6 +29,7 @@ return [
     'address_note_hint' => '(opcionális, pl. emelet/ajtó)',
     'add_address' => 'Cím hozzáadása',
     'no_addresses' => 'Még nincs cím felvéve.',
+    'edit_addresses' => 'Címek szerkesztése',
     'confirm_delete_address' => 'Törlöd a címet?',
     'legacy_address_prefix' => 'Korábbi (nem szerkezetes) cím',
 

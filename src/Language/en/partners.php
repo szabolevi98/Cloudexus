@@ -29,6 +29,7 @@ return [
     'address_note_hint' => '(optional, e.g. floor/door)',
     'add_address' => 'Add address',
     'no_addresses' => 'No addresses added yet.',
+    'edit_addresses' => 'Edit addresses',
     'confirm_delete_address' => 'Delete this address?',
     'legacy_address_prefix' => 'Previous (unstructured) address',
 
