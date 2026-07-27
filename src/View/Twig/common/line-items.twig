@@ -44,7 +44,7 @@
 </template>
 
 <script>
-(function () {
+document.addEventListener('DOMContentLoaded', function () {
     const body = document.getElementById('line-items-body');
     const template = document.getElementById('line-item-template');
     const totalCell = document.getElementById('line-items-total');
@@ -108,7 +108,7 @@
             productSelect.appendChild(opt);
         }
 
-        productSelect.addEventListener('change', (e) => {
+        jQuery(productSelect).on('change', (e) => {
             const productId = e.target.value;
             if (!productId) {
                 return;
@@ -144,7 +144,7 @@
     }
 
     if (partnerSelect) {
-        partnerSelect.addEventListener('change', () => {
+        jQuery(partnerSelect).on('change', () => {
             body.querySelectorAll('tr').forEach((row) => {
                 const productId = row.querySelector('.cx-line-item__product').value;
                 if (!productId) {
@@ -163,5 +163,5 @@
     } else {
         addRow();
     }
-})();
+});
 </script>

@@ -61,7 +61,7 @@
     </div>
 
     <script>
-        (function () {
+        document.addEventListener('DOMContentLoaded', function () {
             const addresses = {{ partner_addresses|default([])|json_encode|raw }};
             const partnerSelect = document.getElementById('partner_id');
             const shippingSelect = document.getElementById('shipping_address_id');
@@ -97,8 +97,8 @@
                 });
             }
 
-            partnerSelect.addEventListener('change', fillAddressSelects);
+            jQuery(partnerSelect).on('change', fillAddressSelects);
             fillAddressSelects();
-        })();
+        });
     </script>
 {% endblock %}
