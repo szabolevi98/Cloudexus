@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'list_title' => 'API log',
+    'api_user' => 'API user',
+    'all_users' => 'All users',
+    'outcome' => 'Outcome',
+    'outcome_all' => 'All',
+    'outcome_ok' => 'Success',
+    'outcome_client_error' => 'Client error',
+    'outcome_rate_limited' => 'Rate limited',
+    'outcome_server_error' => 'Server error',
+    'summary_total' => 'Total requests',
+    'summary_ok' => 'Success',
+    'summary_client_error' => 'Client error',
+    'summary_rate_limited' => 'Rate limited',
+    'summary_server_error' => 'Server error',
+    'col_time' => 'Time',
+    'col_user' => 'User',
+    'col_method_path' => 'Method / path',
+    'col_status' => 'Status',
+    'col_duration' => 'Duration',
+    'col_ip' => 'IP',
+    'unknown_user' => 'Unknown / invalid token',
+    'none_found' => 'No entries match the filter.',
+    'retention_hint' => 'The log automatically deletes entries older than {days} days.',
+];

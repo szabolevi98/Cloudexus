@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'list_title' => 'API napló',
+    'api_user' => 'API felhasználó',
+    'all_users' => 'Minden felhasználó',
+    'outcome' => 'Eredmény',
+    'outcome_all' => 'Mind',
+    'outcome_ok' => 'Sikeres',
+    'outcome_client_error' => 'Kliens hiba',
+    'outcome_rate_limited' => 'Rate limitelve',
+    'outcome_server_error' => 'Szerver hiba',
+    'summary_total' => 'Összes kérés',
+    'summary_ok' => 'Sikeres',
+    'summary_client_error' => 'Kliens hiba',
+    'summary_rate_limited' => 'Rate limitelve',
+    'summary_server_error' => 'Szerver hiba',
+    'col_time' => 'Időpont',
+    'col_user' => 'Felhasználó',
+    'col_method_path' => 'Metódus / útvonal',
+    'col_status' => 'Státusz',
+    'col_duration' => 'Válaszidő',
+    'col_ip' => 'IP',
+    'unknown_user' => 'Ismeretlen / érvénytelen token',
+    'none_found' => 'Nincs a szűrésnek megfelelő bejegyzés.',
+    'retention_hint' => 'A napló önműködően törli a {days} napnál régebbi bejegyzéseket.',
+];

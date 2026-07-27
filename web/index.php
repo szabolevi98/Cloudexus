@@ -180,6 +180,7 @@ $router->post('/customer-groups/{id}/delete', fn($id) => (new CustomerGroupContr
 
 $router->get('/api-docs', fn() => (new ApiUserController())->docs());
 $router->get('/api-users', fn() => (new ApiUserController())->list());
+$router->get('/api-logs', fn() => (new ApiUserController())->logs());
 $router->post('/api-users/create', fn() => (new ApiUserController())->create());
 $router->post('/api-users/{id}', fn($id) => (new ApiUserController())->update((int) $id));
 $router->post('/api-users/{id}/toggle', fn($id) => (new ApiUserController())->toggle((int) $id));

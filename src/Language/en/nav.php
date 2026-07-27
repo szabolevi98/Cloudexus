@@ -37,6 +37,7 @@ return [
     'currencies' => 'Currencies',
     'languages' => 'Languages',
     'api_users' => 'API users',
+    'api_logs' => 'API log',
     'api_docs' => 'API documentation',
     'profile' => 'Profile',
     'logout' => 'Log out',

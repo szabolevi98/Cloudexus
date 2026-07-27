@@ -37,6 +37,7 @@ return [
     'currencies' => 'Pénznemek',
     'languages' => 'Nyelvek',
     'api_users' => 'API felhasználók',
+    'api_logs' => 'API napló',
     'api_docs' => 'API dokumentáció',
     'profile' => 'Profil',
     'logout' => 'Kilépés',

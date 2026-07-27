@@ -2,16 +2,20 @@
 
 namespace Cloudexus\Controller;
 
+use Cloudexus\Core\Paginator;
+use Cloudexus\Model\Account\ApiRequestLogModel;
 use Cloudexus\Model\Account\ApiUserModel;
 
 class ApiUserController extends BaseController
 {
     private ApiUserModel $apiUsers;
+    private ApiRequestLogModel $apiLogs;
 
     public function __construct()
     {
         parent::__construct();
         $this->apiUsers = new ApiUserModel();
+        $this->apiLogs = new ApiRequestLogModel();
         $this->activeMenu = 'api-users';
     }
 
@@ -21,6 +25,30 @@ class ApiUserController extends BaseController
 
         $this->pageTitle = $this->t('api_users.list_title');
         $this->render('api-users/list.twig', ['api_users' => $this->apiUsers->all()]);
+    }
+
+    public function logs(): void
+    {
+        $this->requireAdmin();
+
+        $filters = [
+            'api_user_id' => (int) ($_GET['api_user_id'] ?? 0),
+            'outcome' => $_GET['outcome'] ?? '',
+            'date_from' => $_GET['date_from'] ?? '',
+            'date_to' => $_GET['date_to'] ?? '',
+        ];
+        $pager = new Paginator(50);
+
+        $this->activeMenu = 'api-logs';
+        $this->pageTitle = $this->t('api_logs.list_title');
+        $this->render('api-users/logs.twig', [
+            'logs' => $this->apiLogs->paginate($filters, $pager),
+            'summary' => $this->apiLogs->summary($filters),
+            'pager' => $pager->toTwig($filters),
+            'filters' => $filters,
+            'api_users' => $this->apiUsers->all(),
+            'retention_days' => (int) \Cloudexus\Core\Config::get('api.log_retention_days', 14),
+        ]);
     }
 
     public function docs(): void
