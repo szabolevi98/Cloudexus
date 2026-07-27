@@ -2,9 +2,11 @@
 
 namespace Cloudexus\Controller\Api;
 
+use Cloudexus\Core\Config;
 use Cloudexus\Core\Currency;
 use Cloudexus\Core\Language;
 use Cloudexus\Core\Paginator;
+use Cloudexus\Model\Account\ApiRequestLogModel;
 use Cloudexus\Model\Account\ApiUserModel;
 
 /**
@@ -18,15 +20,53 @@ abstract class ApiController
 
     protected ?array $apiUser = null;
 
-    /** Rejects the request with 401 unless a valid, active token is present. */
+    /**
+     * Rejects the request with 401 unless a valid, active token is present,
+     * and with 429 if the token's rate limit is exceeded. Every call also
+     * logs the request to api_request_logs (see ApiRequestLogModel) — this
+     * is the single hook point for every /api/* endpoint, so no individual
+     * controller needs to touch logging or rate limiting itself.
+     */
     protected function authenticate(): void
     {
         $this->apiUser = (new ApiUserModel())->findActiveByToken($this->bearerToken());
+
+        $log = new ApiRequestLogModel();
+        $logId = $log->start(
+            $this->apiUser['id'] ?? null,
+            $_SERVER['REQUEST_METHOD'] ?? '',
+            strtok($_SERVER['REQUEST_URI'] ?? '', '?'),
+            $_SERVER['REMOTE_ADDR'] ?? ''
+        );
+        $this->registerLogFinish($log, $logId);
+
+        // Traffic-driven self-cleanup: no cron dependency, negligible overhead.
+        if (random_int(1, 100) === 1) {
+            $log->purgeOlderThan((int) Config::get('api.log_retention_days', 14));
+        }
+
         if (!$this->apiUser) {
             $this->error('Invalid or missing API token.', 401);
         }
 
+        $limit = (int) Config::get('api.rate_limit_per_minute', 60);
+        $recentCount = $log->countRecent((int) $this->apiUser['id'], 60);
+        header('X-RateLimit-Limit: ' . $limit);
+        header('X-RateLimit-Remaining: ' . max(0, $limit - $recentCount));
+        if ($recentCount > $limit) {
+            $this->error('Rate limit exceeded. Try again later.', 429);
+        }
+
         $this->applyLanguage();
+    }
+
+    /** Fills in the log row's status code and duration once the response is final. */
+    private function registerLogFinish(ApiRequestLogModel $log, int $logId): void
+    {
+        $start = microtime(true);
+        register_shutdown_function(static function () use ($log, $logId, $start): void {
+            $log->finish($logId, http_response_code() ?: 0, (microtime(true) - $start) * 1000);
+        });
     }
 
     /**

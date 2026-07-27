@@ -28,6 +28,21 @@ A missing or invalid token returns `401`:
 { "error": { "status": 401, "message": "Invalid or missing API token." } }
 ```
 
+## Rate limiting
+
+Each API token is limited to 60 requests per rolling minute. Every response carries:
+
+```
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 47
+```
+
+Exceeding the limit returns `429`:
+
+```json
+{ "error": { "status": 429, "message": "Rate limit exceeded. Try again later." } }
+```
+
 ## Pagination
 
 List endpoints use offset-based pagination:
@@ -109,7 +124,7 @@ All API messages (including error messages) are in **English**:
 ```
 
 Status codes used: `200` OK, `201` created, `400/422` bad request,
-`401` authentication missing/invalid, `404` resource not found.
+`401` authentication missing/invalid, `404` resource not found, `429` rate limit exceeded.
 
 ---
 

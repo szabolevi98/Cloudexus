@@ -44,3 +44,9 @@ site_key =
 secret_key =
 ; v3 score küszöb (0.0-1.0), ez alatt a bejelentkezés elutasítva
 min_score = 0.5
+
+[api]
+; API user-enkénti kérésszám-korlát percenként (lásd ApiController::authenticate())
+rate_limit_per_minute = 60
+; ennyi napig tartjuk meg az api_request_logs sorokat, azon túl önműködően törlődnek
+log_retention_days = 14
